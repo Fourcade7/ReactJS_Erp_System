@@ -7,17 +7,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Button } from 'react-bootstrap';
 import LoginScreen from './auth/LoginContent';
+import RegisterScreen from './auth/RegisterContent';
+import HomeScreen from './home/HomeContent';
+import MainScreen from './main/MainContent';
 
 
-function PR(){
-  return(
-    <div>
-      <small style={{fontSize:"10px"}}>Thisis small text</small>
-      <h1>This is h1</h1>
-     <Button className='px-4 rounded-5' style={{fontSize:"12px"}} >asdfasdf</Button>
-    </div>
-  )
-}
+
 
 function App() {
   const [count, setCount] = useState(0)
@@ -27,7 +22,9 @@ function App() {
      <BrowserRouter>
       <Routes>
         {/* <Route path='' element={<PR></PR>}></Route> */}
-        <Route path='' element={<LoginScreen></LoginScreen>}></Route>
+        <Route path='' element={<MainScreen></MainScreen>}></Route>
+        <Route path='login' element={<LoginScreen></LoginScreen>}></Route>
+        <Route path='register' element={<RegisterScreen></RegisterScreen>}></Route>
       </Routes>
      </BrowserRouter>
     </>

@@ -2,23 +2,26 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import logoblack from "../assets/logoblack.png"
+
 
 function NavbarScreen() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary sticky-top">
-      <Container>
-        <Navbar.Brand href="#home">ID Group</Navbar.Brand>
+      <Container fluid>
+        <img src={logoblack} width={40} height={40} alt="" />
+        <Nav.Link href="#link">Главная страница</Nav.Link>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
-            <Nav.Link href="#home">Home</Nav.Link>
-            <Nav.Link href="#link">Link</Nav.Link>
-            <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+            <Nav.Link href="#home">Поддержка</Nav.Link>
+            <Nav.Link href="#link">Планы</Nav.Link>
+            <NavDropdown title="Aminov Fourcade" id="basic-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
                 Another action
               </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+              <NavDropdown.Item href="#action/3.  3">Something</NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item href="#action/3.4">
                 Separated link
@@ -30,5 +33,23 @@ function NavbarScreen() {
     </Navbar>
   );
 }
+function NavbarScreenFourAuth() {
+  return (
+    <Navbar expand="lg" className="bg-body-tertiary sticky-top">
+      <Container>
+        {/* <Navbar.Brand className='' href="#home">Главная страница</Navbar.Brand> */}
+        <img src={logoblack} width={40} height={40} alt="" />
+        <Nav.Link href="#link">ID Group</Nav.Link>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="ms-auto">
+            
+            <Nav.Link to href="/register">Регистрация</Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
+}
 
-export default NavbarScreen;
+export {NavbarScreenFourAuth,NavbarScreen};
