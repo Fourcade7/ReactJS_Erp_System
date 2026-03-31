@@ -2,7 +2,7 @@ import { NavbarScreen } from "../navbar/NavbarContent";
 import LeftTab from "../main/SidebarTabContent";
 import {BarChartEdited, ChartLinearEdited} from "./statistics/ChartsContent";
 import Card from 'react-bootstrap/Card';
-import { Col, Row } from "react-bootstrap";
+import { Col, Row ,Tab,Tabs} from "react-bootstrap";
 
 
 
@@ -94,6 +94,36 @@ function CardImage(){
   )
 }
 
+function HomeTab() {
+  return (
+    <Tabs
+      defaultActiveKey="profile"
+      id="fill-tab-example"
+      className="mb-3 mt-3"
+      //fill
+      variant='underline' //pills //tabs //underline
+      //style={{fontSize:"12px"}}
+    >
+      <Tab eventKey="home" title="Список остатков">
+         
+      </Tab>
+      <Tab eventKey="profile" title="Добавить новый остаток">
+        <div className='d-flex align-items-center justify-content-center'>
+        <Col xs={4}>
+        
+        </Col>
+        </div>
+      </Tab>
+      {/* <Tab eventKey="longer-tab" title="Loooonger Tab">
+        Tab content for Loooonger Tab
+      </Tab>
+      <Tab eventKey="contact" title="Contact" disabled>
+        Tab content for Contact
+      </Tab> */}
+    </Tabs>
+  );
+}
+
 
 function HomeScreen(){
     return(
@@ -110,7 +140,7 @@ function HomeScreen(){
           </Row>
           <br />
           
-
+        <HomeTab></HomeTab>
           
           
          
