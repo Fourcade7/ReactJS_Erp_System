@@ -22,7 +22,7 @@ const data2 = [
   { name: '15', uv: 3400, pv: 3700, amt: 1500 },
   { name: '16', uv: 3100, pv: 3500, amt: 1400 },
   { name: '17', uv: 2800, pv: 3200, amt: 1300 },
-  { name: '18', uv: 2300, pv: 2700, amt: 1100 },
+  { name: '18', uv: 2300, pv: 22700, amt: 112100 },
   { name: '19', uv: 2000, pv: 2500, amt: 1000 },
   { name: '20', uv: 2700, pv: 3100, amt: 1200 },
   { name: '21', uv: 3500, pv: 3800, amt: 1500 },
@@ -51,7 +51,7 @@ const data = [
 
 function BarChartEdited() {
   return (
-    <div style={{ width: '100%', maxWidth: '400px' }}>
+    <div style={{ width: '100%' }}>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart
           data={data}
@@ -63,10 +63,28 @@ function BarChartEdited() {
           }}
         >
            <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="name" niceTicks="snap125" />
+      {/* <XAxis dataKey="name" niceTicks="snap125" />
       <YAxis width="auto" niceTicks="snap125" />
       <Tooltip />
-      <Legend />
+      <Legend /> */}
+
+      <XAxis 
+          dataKey="name"
+          tick={{ fontSize: 10 }} 
+          />
+          
+           <YAxis 
+            tick={{ fontSize: 10 }} 
+          />
+
+          <Tooltip 
+            contentStyle={{ fontSize: '10px' }}
+            labelStyle={{ fontSize: '10px' }}
+          />
+
+          <Legend 
+            wrapperStyle={{ fontSize: '10px' }}
+          />
       <Bar dataKey="pv" stackId="a" fill="#0b4bedff" background />
       
         </BarChart>
@@ -77,8 +95,8 @@ function BarChartEdited() {
 
 function ChartLinearEdited() {
   return (
-    <div style={{ width: '100%', maxWidth: '900px' }}>
-      <ResponsiveContainer width="100%" height={300}>
+    <div style={{ width: '100%' }}>
+      <ResponsiveContainer width="100%" height={200}>
         <LineChart
           data={data2}
           margin={{
@@ -89,10 +107,23 @@ function ChartLinearEdited() {
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
+          <XAxis 
+          dataKey="name"
+          tick={{ fontSize: 10 }} 
+          />
+          
+           <YAxis 
+            tick={{ fontSize: 10 }} 
+          />
+
+          <Tooltip 
+            contentStyle={{ fontSize: '10px' }}
+            labelStyle={{ fontSize: '10px' }}
+          />
+
+          <Legend 
+            wrapperStyle={{ fontSize: '10px' }}
+          />
 
           <Line type="monotone" dataKey="uv" stroke="blue" />
           {/* <Line type="monotone" dataKey="uv" stroke="black" /> */}

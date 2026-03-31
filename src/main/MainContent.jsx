@@ -1,6 +1,10 @@
 
 import { NavbarScreen } from "../navbar/NavbarContent";
-import LeftTab from "./TabContent";
+import LeftTab from "./SidebarTabContent";
+
+
+
+
 function MainScreen(){
     return(
         <div className="">

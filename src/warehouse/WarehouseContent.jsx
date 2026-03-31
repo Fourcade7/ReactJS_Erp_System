@@ -16,7 +16,8 @@ import eyewhite from "../assets/eye.png"
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
 
-function UserListGroup() {
+
+function WarehouseListGroup() {
   const users = [
     {
       id: 1,
@@ -40,7 +41,7 @@ function UserListGroup() {
       surname: "Bird",
       phone: "998907777777",
       email: "larry@mail.com",
-      role: "User"
+      role: "Manager"
     }
   ];
 
@@ -60,15 +61,14 @@ function UserListGroup() {
             </div>
             <div className='d-flex ms-auto'>
               
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
-            <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{user.role}</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>200</small>
+            
             
             </div>
           </div>
           <div className='d-flex ms-5'>
-            <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button>
+            <Button variant='warning p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
+            <Button variant='danger p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button>
           </div>
           
         </ListGroup.Item>
@@ -78,9 +78,7 @@ function UserListGroup() {
 }
 
 
-
-
-function UserList() {
+function WareHouseList() {
   const users = [
     {
       id: 1,
@@ -115,10 +113,7 @@ function UserList() {
           <tr>
             <th>#</th>
             <th>Имя</th>
-            <th>Фамилия</th>
-            <th>Телефон</th>
-            <th>Электронная почта</th>
-            <th>Роль</th>
+            
             <th>Изменить</th>
             <th>Удалить</th>
           </tr>
@@ -129,10 +124,7 @@ function UserList() {
             <tr key={user.id}>
               <td>{index + 1}</td>
               <td>{user.name}</td>
-              <td>{user.surname}</td>
-              <td>{user.phone}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
+             
 
               <td>
                 <Link
@@ -161,7 +153,7 @@ function UserList() {
 }
 
 
-function UserAdd(){
+function WareHouseAdd(){
     return(
         <div>
             <Form className="mt-3">
@@ -173,76 +165,7 @@ function UserAdd(){
         
       </Form.Group>
 
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        <Form.Control className="" type="email" placeholder="Введите фамилия" />
-        
-      </Form.Group>
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        <Form.Control className="" type="email" placeholder="Введите телефон номер" />
-        
-      </Form.Group>
-
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        
-        <Form.Control className="" type="email" placeholder="Введите адрес электронной почты" />
-        
-      </Form.Group>
-
-
-      <InputGroup className="mb-3">
-        <Form.Control aria-label="Text input with dropdown button" />
-
-        <DropdownButton
-          variant="outline-secondary"
-          title="Рол"
-          id="input-group-dropdown-2"
-          align="end"
-        >
-          <Dropdown.Item href="#">User</Dropdown.Item>
-          <Dropdown.Item href="#">Admin</Dropdown.Item>
-          
-          
-          
-        </DropdownButton>
-      </InputGroup>
-
-      <Form.Group className="mb-2" controlId="formBasicPassword">
-        <Form.Label>
-            <small>Пароль</small>
-        </Form.Label>
-        <InputGroup>
-        <Form.Control type="password" placeholder="Введите пароль" />
-        
-          <div  type="button" className="d-flex px-3 align-items-center justify-content-center bg-primary rounded-end">
-
-          <img className="" src={eyewhite} width={18} height={18} alt="" /> 
-          </div>
-          
-         
-       
-      </InputGroup>
-      </Form.Group>
-
-
-      <Form.Group className="mb-2" controlId="formBasicPassword">
-        
-        <InputGroup>
-        <Form.Control type="password" placeholder="Повторите пароль" />
-        
-          <div  type="button" className="d-flex px-3 align-items-center justify-content-center bg-primary rounded-end">
-
-          <img className="" src={eyewhite} width={18} height={18} alt="" /> 
-          </div>
-          
-         
-       
-      </InputGroup>
-      </Form.Group>
+      
       <Col className="d-grid">        
         <Button variant="primary" type="submit">
           Сохранить
@@ -254,7 +177,7 @@ function UserAdd(){
     )
 }
 
-function UserTabs() {
+function WareHouseTab() {
   return (
     <Tabs
       defaultActiveKey="profile"
@@ -264,13 +187,13 @@ function UserTabs() {
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
-      <Tab eventKey="home" title="Список сотрудников">
-         <UserListGroup></UserListGroup>
+      <Tab eventKey="home" title="Список складов">
+         <WarehouseListGroup></WarehouseListGroup>
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый сотрудник">
+      <Tab eventKey="profile" title="Добавить новый склад">
         <div className='d-flex align-items-center justify-content-center'>
         <Col xs={4}>
-        <UserAdd></UserAdd>
+        <WareHouseAdd></WareHouseAdd>
         </Col>
         </div>
       </Tab>
@@ -289,10 +212,10 @@ function UserTabs() {
 
 
 
-function UserScreen() {
+function WareHouseScreen() {
   return (
    <div>
-    <UserTabs></UserTabs>
+    <WareHouseTab></WareHouseTab>
    
    </div>
    
@@ -300,4 +223,4 @@ function UserScreen() {
 }
 
 
-export default UserScreen;
+export default WareHouseScreen;
