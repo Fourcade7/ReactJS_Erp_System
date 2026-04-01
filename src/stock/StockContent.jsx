@@ -151,7 +151,7 @@ function StockTab() {
          <StpclListGroup></StpclListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый остаток">
-        <div className='d-flex align-items-center justify-content-center'>
+        <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <StockAdd></StockAdd>
         </Col>

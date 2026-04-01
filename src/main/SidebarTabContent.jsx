@@ -9,6 +9,8 @@ import WareHouseScreen from '../warehouse/WarehouseContent';
 import CategoryScreen from '../category/CategoryContent';
 import ProductScreen from '../product/ProductContent';
 import StockScreen from '../stock/StockContent';
+import PurchaseScreen from '../purchase/PurchaseContent';
+import SaleScreen from '../sale/SaleContent';
 
 function LeftTab() {
   return (
@@ -86,6 +88,14 @@ function LeftTab() {
 
             <Tab.Pane eventKey="eighth">
               <StockScreen></StockScreen>
+            </Tab.Pane>
+
+             <Tab.Pane eventKey="nineth">
+              <PurchaseScreen></PurchaseScreen>
+            </Tab.Pane>
+
+            <Tab.Pane eventKey="teenth">
+              <SaleScreen></SaleScreen>
             </Tab.Pane>
           </Tab.Content>
         </Col>

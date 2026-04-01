@@ -191,7 +191,7 @@ function WareHouseTab() {
          <WarehouseListGroup></WarehouseListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый склад">
-        <div className='d-flex align-items-center justify-content-center'>
+        <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <WareHouseAdd></WareHouseAdd>
         </Col>

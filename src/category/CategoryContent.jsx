@@ -192,7 +192,7 @@ function CategoryTab() {
          <CategoryListGroup></CategoryListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый категория">
-        <div className='d-flex align-items-center justify-content-center'>
+        <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <CategoryAdd></CategoryAdd>
         </Col>

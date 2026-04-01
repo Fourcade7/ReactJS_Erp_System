@@ -268,7 +268,7 @@ function UserTabs() {
          <UserListGroup></UserListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый сотрудник">
-        <div className='d-flex align-items-center justify-content-center'>
+        <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <UserAdd></UserAdd>
         </Col>

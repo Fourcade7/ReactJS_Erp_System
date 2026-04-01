@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 
 import logoblack from "../assets/logoblack.png"
 import eyewhite from "../assets/eye.png"
+import { loginUser } from "./AuthApi";
 
 
 
@@ -39,7 +40,26 @@ function AlertDismissibleExample() {
   );
 }
 
-function LoginForm() {
+function LoginForm(props) {  
+    const [login, setLogin] = useState("");
+   const [password, setPassword] = useState("");
+
+  const handleLogin = async (e)=>{
+    e.preventDefault();
+
+    try{
+      const res = await loginUser(login,password);
+      const result = await res.json();
+      console.log(res);
+      console.log(result);
+      props.handleResult(result);
+      
+    }catch(error){
+
+    }
+  }
+
+
   return (
     <Form className="mt-0">
       <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -47,7 +67,10 @@ function LoginForm() {
          <small style={{fontSize:"12px"}}>Логин</small>
         </Form.Label>
         
-        <Form.Control className="" type="email" placeholder="Введите адрес электронной почты" />
+        <Form.Control className="" type="email" placeholder="Введите адрес электронной почты"
+         value={login}
+         onChange={(e) => setLogin(e.target.value)}
+        />
         <Form.Text className="text-muted">
          <small>Мы никогда не будем делиться вашим электронным письмом ни с кем другим.</small>
         </Form.Text>
@@ -58,7 +81,11 @@ function LoginForm() {
             <small style={{fontSize:"12px"}}>Пароль</small>
         </Form.Label>
         <InputGroup>
-        <Form.Control type="password" placeholder="Введите пароль" />
+        <Form.Control type="password" placeholder="Введите пароль"
+        
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        />
         
           <div  type="button" className="d-flex px-3 align-items-center justify-content-center bg-primary rounded-end">
 
@@ -80,7 +107,12 @@ function LoginForm() {
         </Button>   
         </Col>
         <Col className="d-grid">        
-        <Button  variant="primary">
+        <Button  variant="primary"
+        onClick={(e)=>{
+            handleLogin(e);   // ✅ event berildi
+            
+        }}
+        >
           Вход
         </Button>     
         </Col>
@@ -107,7 +139,11 @@ function LoginScreen(){
                  
                 <Col className="col-12 col-md-4 col-lg-4 col-sm-12">
                  <AlertDismissibleExample></AlertDismissibleExample>
-                <LoginForm></LoginForm>
+                <LoginForm handleResult={(res)=>{
+                 console.log(res);
+                  console.log("res in form");
+                  
+                }}></LoginForm>
                 </Col>
             </Col>
         </div>

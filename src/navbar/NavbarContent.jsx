@@ -44,7 +44,7 @@ function NavbarScreenFourAuth() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             
-            <Nav.Link to href="/register">Регистрация</Nav.Link>
+            <Nav.Link  href="/register">Регистрация</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

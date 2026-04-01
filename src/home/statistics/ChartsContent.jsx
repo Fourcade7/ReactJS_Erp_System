@@ -4,6 +4,9 @@ import { RechartsDevtools } from '@recharts/devtools';
 
 import { ResponsiveContainer } from 'recharts';
 
+
+
+
 const data2 = [
   { name: '1', uv: 1200, pv: 2400, amt: 800 },
   { name: '2', uv: 1800, pv: 2100, amt: 900 },
@@ -95,7 +98,7 @@ function BarChartEdited() {
 
 function ChartLinearEdited() {
   return (
-    <div style={{ width: '100%' }}>
+    <div className='' style={{ width: '100%' }}>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart
           data={data2}
