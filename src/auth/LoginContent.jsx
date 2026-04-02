@@ -1,26 +1,23 @@
-import { Button,Col,Row,InputGroup, Collapse} from "react-bootstrap";
+import { Button,Col,Row,InputGroup, Collapse,ProgressBar,Spinner} from "react-bootstrap";
 import {NavbarScreenFourAuth} from "../navbar/NavbarContent";
 import { useState,useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
-
-
 import Form from 'react-bootstrap/Form';
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 import logoblack from "../assets/logoblack.png"
 import eyewhite from "../assets/eye.png"
 import { loginUser } from "./AuthApi";
 
 
 
-function AlertDismissibleExample() {
+function AlertDismissibleExample(props) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
     const timer = setTimeout(() => {
       setShow(true);
-    }, 500);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
@@ -32,32 +29,33 @@ function AlertDismissibleExample() {
     */
     <Collapse in={show}>
       <div> 
-        <Alert  variant="danger"  onClose={() => setShow(false)} dismissible >
-          <small>Измените то и это и попробуйте</small>
+        <Alert className="mt-3"  variant="danger"  onClose={() => setShow(false)} dismissible >
+          <small>{props.message}</small>
         </Alert>
       </div>
     </Collapse>
   );
 }
 
+
+function ProgressDismissible() {
+ 
+  return (
+   
+    
+      <div className="d-flex flex-column"> 
+        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
+        <ProgressBar  className="my-3" animated variant="primary" now={100} />
+      </div>
+   
+  );
+}
+
 function LoginForm(props) {  
-    const [login, setLogin] = useState("");
-   const [password, setPassword] = useState("");
+    const [login, setLogin] = useState("user3@gmail.com");
+   const [password, setPassword] = useState("password");
 
-  const handleLogin = async (e)=>{
-    e.preventDefault();
-
-    try{
-      const res = await loginUser(login,password);
-      const result = await res.json();
-      console.log(res);
-      console.log(result);
-      props.handleResult(result);
-      
-    }catch(error){
-
-    }
-  }
+ 
 
 
   return (
@@ -109,7 +107,8 @@ function LoginForm(props) {
         <Col className="d-grid">        
         <Button  variant="primary"
         onClick={(e)=>{
-            handleLogin(e);   // ✅ event berildi
+            //props.handleLogin(e);   // ✅ event berildi
+            props.clickLogin(e, login, password);
             
         }}
         >
@@ -127,6 +126,49 @@ function LoginForm(props) {
 
 
 function LoginScreen(){
+
+    const navigate = useNavigate();
+
+    const [show, setShow] = useState(false);
+    const [pshow, psetShow] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+
+   const handleLogin = async (e, login, password) => {
+          e.preventDefault();
+
+          try {
+            psetShow(true)  
+            setShow(false);
+           
+            
+            const res = await loginUser(login, password);
+            const result = await res.json();
+            
+
+            if (!res.ok) {
+              psetShow(false) 
+              setAlertMessage(result.message);
+              setTimeout(() => setShow(true), 50);
+              
+              return;
+            }
+
+           
+            console.log("SUCCESS:", result);
+            navigate("/home")
+
+           
+
+          } catch (error) {
+            psetShow(false) 
+            setShow(true)
+            setAlertMessage("Не удалось подключиться к серверу");
+            
+            //setTimeout(() => setShow(true), 50);
+          }
+    };
+
+
     return(
 
         <div className="vh-100">
@@ -138,12 +180,25 @@ function LoginScreen(){
 
                  
                 <Col className="col-12 col-md-4 col-lg-4 col-sm-12">
-                 <AlertDismissibleExample></AlertDismissibleExample>
-                <LoginForm handleResult={(res)=>{
-                 console.log(res);
-                  console.log("res in form");
+                 {show && 
+                 
+                 <AlertDismissibleExample message = {alertMessage}></AlertDismissibleExample>
+                 }
+
                   
-                }}></LoginForm>
+                
+                 <Collapse in={pshow}>
+                    <div>
+                      {pshow && 
+                    <ProgressDismissible></ProgressDismissible>
+                    }
+                    </div>
+                  </Collapse>
+                
+                 
+                 
+                 
+                <LoginForm  clickLogin={handleLogin}></LoginForm>
                 </Col>
             </Col>
         </div>

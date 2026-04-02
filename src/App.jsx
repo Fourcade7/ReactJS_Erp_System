@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Button } from 'react-bootstrap';
 import LoginScreen from './auth/LoginContent';
-import RegisterScreen from './auth/RegisterContent';
+import {RegisterScreen} from './auth/RegisterContent';
 import HomeScreen from './home/HomeContent';
 import MainScreen from './main/MainContent';
 
@@ -23,6 +23,7 @@ function App() {
       <Routes>
         {/* <Route path='' element={<PR></PR>}></Route> */}
         <Route path='' element={<MainScreen></MainScreen>}></Route>
+        <Route path='home' element={<MainScreen></MainScreen>}></Route>
         <Route path='login' element={<LoginScreen></LoginScreen>}></Route>
         <Route path='register' element={<RegisterScreen></RegisterScreen>}></Route>
       </Routes>

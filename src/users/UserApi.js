@@ -82,18 +82,18 @@ async function getAllContragents(){
 
 }
 
-async function getAllProducts(offset,search){
+async function getAllUsersPagination(page,limit){
 
    
 
     try{
-        let response = await fetch(`http://localhost:3000/getallproducts/${offset}/${search}`,{ 
+        let response = await fetch(`http://localhost:3000/user/allpag?page=${page}&limit=10`,{ 
             method:"GET"
 
         });
 
         const result = await response.json();
-        console.log(result);
+        //console.log(result);
         
         return result;
 
@@ -105,4 +105,4 @@ async function getAllProducts(offset,search){
 
 }
 
-export {getAllContragents,loginUser,registerUser}
+export {getAllUsersPagination}
