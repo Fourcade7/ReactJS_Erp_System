@@ -125,26 +125,25 @@ function UserListGroup() {
           </div>
           <div className='d-flex ms-3'>
           
-           <Dropdown >
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded">
+           <Dropdown>
+            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
               Опции  
             </Dropdown.Toggle>
 
-            <Dropdown.Menu className="my-dropdown" align="start">
-              <Dropdown.Item
-              onClick={() =>{
-                setShowEdit(true);
-                setUid(user.id);
-              }}
-              >Изменить</Dropdown.Item>
-              <Dropdown.Item
-              onClick={() =>{
-                setShowDel(true);
-                setUid(user.id);
-              }}
-              >Удалить</Dropdown.Item>
+            <Dropdown.Menu 
+              className="my-dropdown" 
+              align="end" 
+              popperConfig={{ strategy: 'fixed' }} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
+            >
+              <Dropdown.Item onClick={() => { setShowEdit(true); setUid(user.id); }}>
+                Изменить
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => { setShowDel(true); setUid(user.id); }}>
+                Удалить
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
+
           
 
             {/* <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
