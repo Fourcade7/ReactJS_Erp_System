@@ -43,6 +43,8 @@ function UserListGroup() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDel, setShowDel] = useState(false);
   const [showLoad, setShowLoad] = useState(false);
+  const [showRes, setShowRes] = useState(false);
+  const [showResTitle, setShowResTitle] = useState("Success");
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
   const [categoryName,setCategoryName]=useState("");
   const [categoryNameUZ,setCategoryNameUZ]=useState("");
@@ -69,7 +71,8 @@ function UserListGroup() {
         
         
       }catch(error){
-
+          console.log(error.message);
+          
       }
     }
 
@@ -133,7 +136,8 @@ function UserListGroup() {
             <Dropdown.Menu 
               className="my-dropdown" 
               align="end" 
-              popperConfig={{ strategy: 'fixed' }} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
+              //popperConfig={{ strategy: 'fixed' }}
+              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
             >
               <Dropdown.Item onClick={() => { setShowEdit(true); setUid(user.id); }}>
                 Изменить
@@ -150,14 +154,14 @@ function UserListGroup() {
             <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button> */}
           </div>
           
-        </ListGroup.Item>
-      ))}
-    </ListGroup>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
 
-    <div className="mt-4">
-      <Pagination>{items}</Pagination>
-      
-    </div>
+            <div className="mt-4">
+              <Pagination>{items}</Pagination>
+              
+            </div>
 
 
 
@@ -226,19 +230,25 @@ function UserListGroup() {
                           setShowLoad(true);
                           
                           //await deleteCategory(cid);
-                          const res = await deleteUser(uid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
-                          setTimeout(() => {
+                          //const res = await deleteUser(uid);
+                          //const deleteResponse = await res.json();
+                          //console.log(deleteResponse.message); 
+                           setTimeout(() => {
                             console.log("log");
                             setShowDel(false);
-                          }, 2000);                         
+                          }, 2000);   
                           
-                          setShowLoadTitle("Ishlidi axir")
+                          setTimeout(() => {
+                            console.log("log");
+                            setShowLoadTitle("Ishlidi axir")
+                          }, 3000);   
+                          
+                          
 
                            setTimeout(() => {
                             setShowLoad(false);
-                          }, 2000);
+                            setShowRes(true);
+                          }, 4000);
                           
                           //window.location.reload();
                         }
@@ -262,6 +272,26 @@ function UserListGroup() {
                           <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
                           <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
                           <ProgressBar  className="my-3" animated variant="primary" now={100} />
+                          
+                        </div>
+
+                        
+            </Modal>
+
+            {
+             //Success
+            }
+
+            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
+                        <Modal.Header closeButton>
+                        <Modal.Title>{showResTitle}</Modal.Title>
+                        </Modal.Header>
+                        
+                        <div className="d-flex flex-column mx-4"> 
+                          
+                          
+                          <Modal.Body className="mx-auto">Success</Modal.Body>
+                          
                           
                         </div>
 
