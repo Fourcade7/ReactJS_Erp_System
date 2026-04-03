@@ -82,6 +82,31 @@ async function getAllContragents(){
 
 }
 
+
+
+async function deleteUser(id){
+
+   
+
+    try{
+        let response = await fetch(`http://localhost:3000/user/delete/${id}`,{ 
+            method:"DELETE"
+
+        });
+
+        //const result = await response.json();
+        //console.log(result);
+        
+        return response;
+
+
+    }catch(error){
+        console.log("Catch Error:",error);
+        
+    }
+
+}
+
 async function getAllUsersPagination(page,limit){
 
    
@@ -105,4 +130,4 @@ async function getAllUsersPagination(page,limit){
 
 }
 
-export {getAllUsersPagination}
+export {getAllUsersPagination,deleteUser}

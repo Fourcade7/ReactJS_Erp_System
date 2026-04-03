@@ -108,7 +108,7 @@ function UserTabs() {
     <Tabs
       defaultActiveKey="profile"
       id="fill-tab-example"
-      className="mb-3 mt-3"
+      className="mb-3 mt-"
       //fill
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
