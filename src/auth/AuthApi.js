@@ -18,7 +18,7 @@ async function registerUser(username,surname,phone,email, password) {
                 phone,
                 email,
                 password: password,
-                role:"user"
+                role:"User"
             })
         });
 

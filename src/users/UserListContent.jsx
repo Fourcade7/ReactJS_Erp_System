@@ -4,7 +4,7 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar} from "react-
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import { deleteUser, getAllUsersPagination } from "./UserApi";
+import { deleteUser, getAllUsersPagination, updateUser } from "./UserApi";
 
 import ellipsis from "../assets/ellipsis.png"
 import "./user.css"
@@ -38,7 +38,7 @@ function PaginationExample() {
 
 
 
-function UserListGroup() {
+function UserListGroup(props) {
  
   const [showEdit, setShowEdit] = useState(false);
   const [showDel, setShowDel] = useState(false);
@@ -46,9 +46,18 @@ function UserListGroup() {
   const [showRes, setShowRes] = useState(false);
   const [showResTitle, setShowResTitle] = useState("Success");
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
-  const [categoryName,setCategoryName]=useState("");
-  const [categoryNameUZ,setCategoryNameUZ]=useState("");
-  const [categoryNameEN,setCategoryNameEN]=useState("");
+  const [showResAlert, setShowResAlert] = useState(false);
+
+  const [userName,setUserName]=useState("");
+  const [surName,setSurname]=useState("");
+  const [phone,setPhone]=useState("");
+  const [email,setEmail]=useState("");
+  const [role,setRole]=useState("");
+  const [password,setPassword]=useState("");
+
+  //const [reload, setReload] = useState(false);
+
+
   const fileInputRef=useRef(null);
   const [uid, setUid] = useState(-1);
 
@@ -76,8 +85,12 @@ function UserListGroup() {
       }
     }
 
-    loadAllUserPag();
-  },[active])
+    
+      if (props.activeTab === "home") {
+        loadAllUserPag();
+      }
+      
+  },[active,showResAlert,props.activeTab])  
 
 
 
@@ -104,6 +117,7 @@ function UserListGroup() {
 
   return (
     <div>
+       <Form.Control className="mb-2" type="text" placeholder="Поиск..." />
         <ListGroup as="ol"  className="rounded overflow-hidden">
       {userList.map((user,index) => (
         <ListGroup.Item
@@ -123,6 +137,10 @@ function UserListGroup() {
             <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
             <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{user.role}</small>
+            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
+            
+             new Date( user.createdAt).toLocaleString("UZ")
+            }</small>
             
             </div>
           </div>
@@ -139,7 +157,18 @@ function UserListGroup() {
               //popperConfig={{ strategy: 'fixed' }}
               //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
             >
-              <Dropdown.Item onClick={() => { setShowEdit(true); setUid(user.id); }}>
+              <Dropdown.Item onClick={() => { 
+                setShowEdit(true);
+                 setUid(user.id);
+                 setUserName(user.username);
+                 setSurname(user.surname);
+                 setPhone(user.phone);
+                 setEmail(user.email);
+                 setRole(user.role);
+                 //setPassword(user.password);
+
+                
+                }}>
                 Изменить
               </Dropdown.Item>
               <Dropdown.Item onClick={() => { setShowDel(true); setUid(user.id); }}>
@@ -156,12 +185,12 @@ function UserListGroup() {
           
                 </ListGroup.Item>
               ))}
-            </ListGroup>
+      </ListGroup>
 
-            <div className="mt-4">
-              <Pagination>{items}</Pagination>
+       <div className="mt-4">
+         <Pagination>{items}</Pagination>
               
-            </div>
+       </div>
 
 
 
@@ -174,23 +203,57 @@ function UserListGroup() {
                 </Modal.Header>
                 <Modal.Body>
                     <small>Название категории</small>
-                     <Form.Control className="mt-2" type="text" placeholder="введите название категории RUS"
-                        value={categoryName}
-                        onChange={(e)=>{setCategoryName(e.target.value)}}
+                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
+                        value={userName}
+                        onChange={(e)=>{setUserName(e.target.value)}}
                         />
-                        <Form.Control className="mt-2" type="text" placeholder="введите название категории UZB"
-                        value={categoryNameUZ}
-                        onChange={(e)=>{setCategoryNameUZ(e.target.value)}}
+                        <Form.Control className="mt-2" type="text" placeholder="Введите фамилия"
+                        value={surName}
+                        onChange={(e)=>{setSurname(e.target.value)}}
                         />
-                        <Form.Control className="mt-2" type="text" placeholder="введите название категории ENG"
-                        value={categoryNameEN}
-                        onChange={(e)=>{setCategoryNameEN(e.target.value)}}
+                        <Form.Control className="mt-2" type="text" placeholder="Введите телефон номер"
+                        value={phone}
+                        onChange={(e)=>{setPhone(e.target.value)}}
+                        />
+
+                        <Form.Control className="mt-2" type="text" placeholder="Введите адрес электронной почты"
+                        value={email}
+                        onChange={(e)=>{setEmail(e.target.value)}}
+                        />
+
+                    <Dropdown className="my-2">
+                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
+                      
+                        <Form.Control className='me- me-2' value={role}  type="text" placeholder="Имя контрагент или Номер телефона" />
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu align="end" className="mt-1 w-100">
+                        
+                            <Dropdown.Item
+                              
+                              onClick={() => {setRole("User")}}
+                            >
+                              User
+                            </Dropdown.Item>
+
+                            <Dropdown.Item
+                              
+                              onClick={() => {setRole("Admin")}}
+                            >
+                              Admin
+                            </Dropdown.Item>
+                          
+                        </Dropdown.Menu>
+                      </Dropdown>
+                         <Form.Control className="mt-2" type="text" placeholder="Введите пароль"
+                        value={password}
+                        onChange={(e)=>{setPassword(e.target.value)}}
                         />
                     
-                      <Form.Group controlId="formFile" className="mt-3">
+                      {/* <Form.Group controlId="formFile" className="mt-3">
                           <small>Выберите изображение</small>
                           <Form.Control type="file" ref={fileInputRef} />
-                      </Form.Group>
+                      </Form.Group> */}
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" 
@@ -199,10 +262,33 @@ function UserListGroup() {
                 </Button>
                 <Button variant="warning" 
                  onClick={async()=>{
-                 
+                 setShowResAlert(false)
                  //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
                  //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)
+                 setShowEdit(false)                 
+                 setShowLoad(true)
+                 setShowLoadTitle("Загрузка...")
+                 const res = await updateUser(uid,userName,surName,phone,email,role,password)
+                 const data= await res.json();
+                 setShowLoad(false);
+                 
+                 
+                 if(!res.ok){
+                  setShowResAlert(false)
+                  setShowResTitle(data.message)
+                 }else{
+                  setShowResAlert(true)
+                  setShowResTitle("Сотрудник успешно обновлён")
+                 
+                } 
+                
+                setShowRes(true);
+                const timer = setTimeout(() => {
+                  setShowRes(false);
+
+                }, 1000);
+                return () => clearTimeout(timer);
+                
                  
                 }}
                 >
@@ -225,30 +311,37 @@ function UserListGroup() {
                         </Button>
                         <Button variant="danger" 
                         onClick={ async ()=>{
+                          setShowResAlert(false)
                           setShowLoadTitle("Загрузка...")
                           setShowDel(false);
-                          setShowLoad(true);
+                          setShowLoad(true);                         
                           
-                          //await deleteCategory(cid);
-                          //const res = await deleteUser(uid);
-                          //const deleteResponse = await res.json();
-                          //console.log(deleteResponse.message); 
+                          const res = await deleteUser(uid);
+                          const deleteResponse = await res.json();
+                          console.log(deleteResponse.message); 
+
+                          if(!res.ok){
+                              setShowResAlert(false)
+                          }else{
+                              setShowResAlert(true)
+                          }
                            setTimeout(() => {
                             console.log("log");
                             setShowDel(false);
-                          }, 2000);   
+                          }, 500);   
                           
                           setTimeout(() => {
                             console.log("log");
-                            setShowLoadTitle("Ishlidi axir")
-                          }, 3000);   
+                            setShowLoadTitle("Почти готово")
+                          }, 1000);   
                           
                           
 
                            setTimeout(() => {
                             setShowLoad(false);
+                            setShowResTitle(deleteResponse.message)
                             setShowRes(true);
-                          }, 4000);
+                          }, 2000);
                           
                           //window.location.reload();
                         }
@@ -284,13 +377,13 @@ function UserListGroup() {
 
             <Modal show={showRes} onHide={() => setShowRes(false)} centered>
                         <Modal.Header closeButton>
-                        <Modal.Title>{showResTitle}</Modal.Title>
+                      
                         </Modal.Header>
                         
                         <div className="d-flex flex-column mx-4"> 
                           
                           
-                          <Modal.Body className="mx-auto">Success</Modal.Body>
+                          <Modal.Body className={`mx-auto alert alert-${showResAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
                           
                           
                         </div>

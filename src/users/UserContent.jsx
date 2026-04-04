@@ -15,98 +15,27 @@ import { Link } from "react-router-dom";
 import ListGroup from 'react-bootstrap/ListGroup';
 import { RegisterScreenforTab } from '../auth/RegisterContent';
 import { UserListGroup } from './UserListContent';
+import { useState } from 'react';
 
 
 
 
 
-function UserList() {
-  const users = [
-    {
-      id: 1,
-      name: "Ali",
-      surname: "Karimov",
-      phone: "+998901112233",
-      email: "ali@gmail.com",
-      role: "Admin",
-    },
-    {
-      id: 2,
-      name: "Vali",
-      surname: "Rasulov",
-      phone: "+998907778899",
-      email: "vali@mail.com",
-      role: "User",
-    },
-    {
-      id: 3,
-      name: "Sardor",
-      surname: "Yusupov",
-      phone: "+998935556677",
-      email: "sardor@mail.com",
-      role: "Manager",
-    },
-  ];
 
-  return (
-    <div className="rounded overflow-hidden">
-      <Table striped bordered hover className="m-0">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Имя</th>
-            <th>Фамилия</th>
-            <th>Телефон</th>
-            <th>Электронная почта</th>
-            <th>Роль</th>
-            <th>Изменить</th>
-            <th>Удалить</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user, index) => (
-            <tr key={user.id}>
-              <td>{index + 1}</td>
-              <td>{user.name}</td>
-              <td>{user.surname}</td>
-              <td>{user.phone}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
-
-              <td>
-                <Link
-                  className="btn btn-warning"
-                  style={{ fontSize: "12px" }}
-                >
-                  Изменить
-                </Link>
-              </td>
-
-              <td>
-                <button
-                  className="btn btn-danger"
-                  style={{ fontSize: "12px" }}
-                  onClick={() => console.log("Delete:", user.id)}
-                >
-                  Удалить
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </div>
-  );
-}
 
 
 
 
 function UserTabs() {
+
+
+  const [activeTab,setActiveTab] =useState("home")
+
   return (
     <Tabs
-      defaultActiveKey="profile"
+      //defaultActiveKey={changeTab}
+      activeKey={activeTab}
+      onSelect={(k) => setActiveTab(k)} // 🔥 qo‘shib qo‘y
       id="fill-tab-example"
       className="mb-3 mt-"
       //fill
@@ -114,12 +43,14 @@ function UserTabs() {
       //style={{fontSize:"12px"}}
     >
       <Tab eventKey="home" title="Список сотрудников">
-         <UserListGroup></UserListGroup>
+         <UserListGroup activeTab={activeTab}></UserListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый сотрудник">
         <div className='d-flex align-items-center justify-content-start'>
         <Col>
-        <RegisterScreenforTab></RegisterScreenforTab>
+        <RegisterScreenforTab tabChange={(tabName)=>{
+          setActiveTab(tabName)
+        }}></RegisterScreenforTab>
         </Col>
         </div>
       </Tab>

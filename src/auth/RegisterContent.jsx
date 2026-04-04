@@ -316,7 +316,7 @@ function RegisterFormforTab(props) {
 }
 
 
-function RegisterScreenforTab(){
+function RegisterScreenforTab(props){
  const [pshow, psetShow] = useState(false);
   const [showDanger, setShowDanger] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -336,9 +336,15 @@ function RegisterScreenforTab(){
         setShowDanger(true)
         setAlertMessage(result.message)
         psetShow(false)
+       
       }else{
         setShowSuccess(true);
         psetShow(false)
+        const timer = setTimeout(() => {
+        props.tabChange("home")
+        }, 2000);
+        return () => clearTimeout(timer); 
+       //props.tabChange("home")
       }
 
       
@@ -348,6 +354,7 @@ function RegisterScreenforTab(){
       setShowDanger(true)
       setAlertMessage("Не удалось подключиться к серверу");
       psetShow(false)
+      //props.tabChange("home")
     }
   };
 
@@ -382,7 +389,7 @@ function RegisterScreenforTab(){
 }
 
 function RegisterScreen(){
- const [pshow, psetShow] = useState(false);
+  const [pshow, psetShow] = useState(false);
   const [showDanger, setShowDanger] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);

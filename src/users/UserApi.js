@@ -83,6 +83,41 @@ async function getAllContragents(){
 }
 
 
+async function updateUser(
+  id,
+  username,
+  surname,
+  phone,
+  email,
+  role,
+  password
+) {
+  try {
+
+    const body = {};
+
+    if (username) body.username = username;
+    if (surname) body.surname = surname;
+    if (phone) body.phone = phone;
+    if (email) body.email = email;
+    if (password) body.password = password;
+    if (role) body.role = role;
+
+    const response = await fetch(`http://localhost:3000/user/update/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    //const data = await response.json();
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 
 async function deleteUser(id){
 
@@ -130,4 +165,4 @@ async function getAllUsersPagination(page,limit){
 
 }
 
-export {getAllUsersPagination,deleteUser}
+export {getAllUsersPagination,deleteUser,updateUser}
