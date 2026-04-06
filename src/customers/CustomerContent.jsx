@@ -1,225 +1,263 @@
-import Table from 'react-bootstrap/Table';
-import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton} from "react-bootstrap";
-
+import { Button,Col,Row,InputGroup,Collapse,Spinner,ProgressBar,Form} from "react-bootstrap";
+import {NavbarScreenFourAuth} from "../navbar/NavbarContent";
+import { useState,useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
+
 
 
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import Form from 'react-bootstrap/Form';
+
 import { Link } from "react-router-dom";
 
 import eyewhite from "../assets/eye.png"
 
 
 
-import Badge from 'react-bootstrap/Badge';
-import ListGroup from 'react-bootstrap/ListGroup';
 
-function CustomerListGroup() {
-  const users = [
-    {
-      id: 1,
-      name: "Mark",
-      surname: "Otto",
-      phone: "998901234567",
-      email: "mark@mail.com",
-      role: "Admin"
-    },
-    {
-      id: 2,
-      name: "Jacob",
-      surname: "Thornton",
-      phone: "998909876543",
-      email: "jacob@mail.com",
-      role: "User"
-    },
-    {
-      id: 3,
-      name: "Larry",
-      surname: "Bird",
-      phone: "998907777777",
-      email: "larry@mail.com",
-      role: "Manager"
-    }
-  ];
+import { RegisterScreenforTab } from '../auth/RegisterContent';
+
+import { CustomerListGroup } from './CustomerListContent';
+import { addCustomer } from "./CustomerApi";
+
+function AlertDismissibleDanger(props) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <ListGroup as="ol"  className="rounded overflow-hidden">
-      {users.map((user) => (
-        <ListGroup.Item
-          key={user.id}
-          as="li"
-          className="d-flex "
+    /* 
+      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
+      Aks holda animatsiya (collapse effekti) ishlamaydi.
+    */
+    <Collapse in={show}>
+      <div> 
+        <Alert  variant="danger"  onClose={() => setShow(false)} dismissible >
+          <small>{props.alertMsg}</small>
+        </Alert>
+      </div>
+    </Collapse>
+  );
+}
+
+function ProgressDismissible() {
+ 
+  return (
+   
+    
+      <div className="d-flex flex-column"> 
+        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
+        <ProgressBar  className="my-3" animated variant="primary" now={100} />
+      </div>
+   
+  );
+}
+
+function AlertDismissibleSuccess() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    /* 
+      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
+      Aks holda animatsiya (collapse effekti) ishlamaydi.
+    */
+    <Collapse in={show}>
+      <div> 
+        <Alert  variant="success"  onClose={() => setShow(false)} dismissible >
+          <small>Пользователь успешно зарегистрирован</small>
+        </Alert>
+      </div>
+    </Collapse>
+  );
+}
+
+function CustomerForm(props) {
+   const [username, setUsername] = useState("");
+   const [surname, setSurname] = useState("");
+   const [phone, setPhone] = useState("");
+   
+
+
+
+
+
+
+  return (
+    <Form className="mt-2">
+
+      <Form.Group className="mb-2" controlId="formBasicEmail">
+      
+        
+        <Form.Control className="" placeholder="Введите имя"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        />
+        
+      </Form.Group>
+
+      <Form.Group className="mb-2" controlId="formBasicEmail">
+       
+        <Form.Control className=""  placeholder="Введите фамилия"
+        value={surname}
+        onChange={(e) => setSurname(e.target.value)}
+        />
+        
+      </Form.Group>
+
+      <Form.Group className="mb-2" controlId="formBasicEmail">
+       
+        <Form.Control className="" placeholder="Введите телефон номер"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        />
+        
+      </Form.Group>
+
+
+     
+     
+     
+       
+        <Col className="d-grid">        
+        <Button variant="primary"
+          onClick={(e)=>{
+            props.handleRegister(e,username,surname,phone)
+          }}
         >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{user.id}</small>
-              <h6 className='m-0 p-0'>{user.name}</h6>
-              <h6 className='ms-2 m-0 p-0'>{user.name}</h6>
-            </div>
-            <div className='d-flex ms-auto'>
-              
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
-            <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
-           
-            
-            </div>
-          </div>
-          <div className='d-flex ms-5'>
-            <Button variant='warning p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='danger p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button>
-          </div>
-          
-        </ListGroup.Item>
-      ))}
-    </ListGroup>
-  );
-}
-
-
-
-
-function CustomerList() {
-  const users = [
-    {
-      id: 1,
-      name: "Ali",
-      surname: "Karimov",
-      phone: "+998901112233",
-      email: "ali@gmail.com",
-      role: "Admin",
-    },
-    {
-      id: 2,
-      name: "Vali",
-      surname: "Rasulov",
-      phone: "+998907778899",
-      email: "vali@mail.com",
-      role: "User",
-    },
-    {
-      id: 3,
-      name: "Sardor",
-      surname: "Yusupov",
-      phone: "+998935556677",
-      email: "sardor@mail.com",
-      role: "Manager",
-    },
-  ];
-
-  return (
-    <div className="rounded overflow-hidden">
-      <Table striped bordered hover className="m-0">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Имя</th>
-            <th>Фамилия</th>
-            <th>Телефон</th>
-            <th>Электронная почта</th>
-            <th>Роль</th>
-            <th>Изменить</th>
-            <th>Удалить</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user, index) => (
-            <tr key={user.id}>
-              <td>{index + 1}</td>
-              <td>{user.name}</td>
-              <td>{user.surname}</td>
-              <td>{user.phone}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
-
-              <td>
-                <Link
-                  className="btn btn-warning"
-                  style={{ fontSize: "12px" }}
-                >
-                  Изменить
-                </Link>
-              </td>
-
-              <td>
-                <button
-                  className="btn btn-danger"
-                  style={{ fontSize: "12px" }}
-                  onClick={() => console.log("Delete:", user.id)}
-                >
-                  Удалить
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </div>
-  );
-}
-
-
-function CustomerAdd(){
-    return(
-        <div>
-            <Form className="mt-3">
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-      
-        
-        <Form.Control className="" type="email" placeholder="Введите имя" />
-        
-      </Form.Group>
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        <Form.Control className="" type="email" placeholder="Введите фамилия" />
-        
-      </Form.Group>
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        <Form.Control className="" type="email" placeholder="Введите телефон номер" />
-        
-      </Form.Group>
-
-
-     
-
-
-      
-
-     
-      <Col className="d-grid">        
-        <Button variant="primary" type="submit">
           Сохранить
         </Button>     
         </Col>
+    
       
     </Form>
+  );
+}
+function AddNewCustomer(props){
+ const [pshow, psetShow] = useState(false);
+  const [showDanger, setShowDanger] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleRegister = async (e,username,surname,phone) =>{
+      e.preventDefault();
+
+    try{
+      psetShow(true)
+      setShowDanger(false)
+      setShowSuccess(false);
+      const res = await addCustomer(username,surname,phone)
+      const result = await res.json();
+
+      if(!res.ok){
+        setShowDanger(true)
+        setAlertMessage(result.message)
+        psetShow(false)
+       
+      }else{
+        setShowSuccess(true);
+        psetShow(false)
+        const timer = setTimeout(() => {
+        props.tabChange("home")
+        }, 2000);
+        return () => clearTimeout(timer); 
+       //props.tabChange("home")
+      }
+
+      
+      console.log(result);
+      
+    }catch(error){
+      setShowDanger(true)
+      setAlertMessage("Не удалось подключиться к серверу");
+      psetShow(false)
+      //props.tabChange("home")
+    }
+  };
+
+
+    return(
+
+        <div>
+         
+            
+
+                 
+                <Col className="col-12 col-md-4 col-lg-4 col-sm-12">
+                  {showDanger &&
+                    <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
+                    }
+                   {showSuccess &&
+                  <AlertDismissibleSuccess></AlertDismissibleSuccess>
+                  }
+
+                   <Collapse in={pshow}>
+                    <div>
+                    {pshow && 
+                       <ProgressDismissible></ProgressDismissible>
+                     }
+                      </div>
+                     </Collapse>
+                <CustomerForm handleRegister={handleRegister}></CustomerForm>
+                </Col>
+           
         </div>
     )
 }
 
+
+
+
+
+
+
+
 function CustomerTabs() {
+
+
+  const [activeTab,setActiveTab] =useState("home")
+
   return (
     <Tabs
-      defaultActiveKey="profile"
+      //defaultActiveKey={changeTab}
+      activeKey={activeTab}
+      onSelect={(k) => setActiveTab(k)} // 🔥 qo‘shib qo‘y
       id="fill-tab-example"
-      className="mb-3 mt-3"
+      className="mb-3 mt-"
       //fill
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
-      <Tab eventKey="home" title=" Список клиентов">
-         <CustomerListGroup></CustomerListGroup>
+      <Tab eventKey="home" title="Список клиентов">
+        
+         <CustomerListGroup activeTab={activeTab}></CustomerListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый клиент">
         <div className='d-flex align-items-center justify-content-start'>
-        <Col xs={4}>
-        <CustomerAdd></CustomerAdd>
+        <Col>
+        {/* <RegisterScreenforTab tabChange={(tabName)=>{
+          setActiveTab(tabName)
+        }}></RegisterScreenforTab> */}
+        <AddNewCustomer 
+        tabChange={(tabName)=>{
+          setActiveTab(tabName)
+        }}
+        ></AddNewCustomer>
         </Col>
         </div>
       </Tab>

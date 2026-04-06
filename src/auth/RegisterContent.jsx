@@ -317,7 +317,7 @@ function RegisterFormforTab(props) {
 
 
 function RegisterScreenforTab(props){
- const [pshow, psetShow] = useState(false);
+  const [pshow, psetShow] = useState(false);
   const [showDanger, setShowDanger] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);

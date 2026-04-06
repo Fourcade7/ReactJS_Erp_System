@@ -165,4 +165,28 @@ async function getAllUsersPagination(page,limit){
 
 }
 
-export {getAllUsersPagination,deleteUser,updateUser}
+
+async function getAllUsersPaginationSearch(page,limit,search){
+
+   
+
+    try{
+        let response = await fetch(`http://localhost:3000/user/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+            method:"GET"
+
+        });
+
+        const result = await response.json();
+        //console.log(result);
+        
+        return result;
+
+
+    }catch(error){
+        console.log("Catch Error:",error);
+        
+    }
+
+}
+
+export {getAllUsersPagination,deleteUser,updateUser,getAllUsersPaginationSearch}

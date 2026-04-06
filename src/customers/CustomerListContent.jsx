@@ -4,41 +4,15 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar} from "react-
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import { deleteUser, getAllUsersPagination, getAllUsersPaginationSearch, updateUser } from "./UserApi";
+import { deleteCustomer,  getAllCustomersPaginationSearch, getAllUsersPagination, updateCustomer } from "./CustomerApi";
 
 import ellipsis from "../assets/ellipsis.png"
-import "./user.css"
-
-
-function PaginationExample() {
-  const [active, setActive] = useState(1);
-
-  let items = [];
-
-  for (let number = 1; number <= 5; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-  return (
-    <div className="mt-4">
-      <Pagination>{items}</Pagination>
-      <br />
-      <p>Active page: {active}</p>
-    </div>
-  );
-}
+import "./customer.css"
 
 
 
-function UserListGroup(props) {
+
+function CustomerListGroup(props) {
  
   const [showEdit, setShowEdit] = useState(false);
   const [showDel, setShowDel] = useState(false);
@@ -51,9 +25,7 @@ function UserListGroup(props) {
   const [userName,setUserName]=useState("");
   const [surName,setSurname]=useState("");
   const [phone,setPhone]=useState("");
-  const [email,setEmail]=useState("");
-  const [role,setRole]=useState("");
-  const [password,setPassword]=useState("");
+ 
 
   //const [reload, setReload] = useState(false);
   const [searchTerm, setSearchTerm] = useState(""); // 
@@ -88,7 +60,7 @@ function UserListGroup(props) {
     async function loadAllUserPag() {
       try{
         setShowLoad(true)
-        const userListPag= await getAllUsersPaginationSearch(active,10,debouncedSearch);
+        const userListPag= await getAllCustomersPaginationSearch(active,10,debouncedSearch);
         
         console.log(userListPag);
         setPageCount(userListPag.meta.totalPages);
@@ -160,8 +132,7 @@ function UserListGroup(props) {
             <div className='d-flex ms-auto'>
               
             <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
-            <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{user.role}</small>
+           
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
             
              new Date( user.createdAt).toLocaleString("UZ")
@@ -241,44 +212,7 @@ function UserListGroup(props) {
                         onChange={(e)=>{setPhone(e.target.value)}}
                         />
 
-                        <Form.Control className="mt-2" type="text" placeholder="Введите адрес электронной почты"
-                        value={email}
-                        onChange={(e)=>{setEmail(e.target.value)}}
-                        />
-
-                    <Dropdown className="my-2">
-                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
-                      
-                        <Form.Control className='me- me-2' value={role}  type="text" placeholder="Имя контрагент или Номер телефона" />
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu align="end" className="mt-1 w-100">
-                        
-                            <Dropdown.Item
-                              
-                              onClick={() => {setRole("User")}}
-                            >
-                              User
-                            </Dropdown.Item>
-
-                            <Dropdown.Item
-                              
-                              onClick={() => {setRole("Admin")}}
-                            >
-                              Admin
-                            </Dropdown.Item>
-                          
-                        </Dropdown.Menu>
-                      </Dropdown>
-                         <Form.Control className="mt-2" type="text" placeholder="Введите пароль"
-                        value={password}
-                        onChange={(e)=>{setPassword(e.target.value)}}
-                        />
-                    
-                      {/* <Form.Group controlId="formFile" className="mt-3">
-                          <small>Выберите изображение</small>
-                          <Form.Control type="file" ref={fileInputRef} />
-                      </Form.Group> */}
+                       
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" 
@@ -293,7 +227,7 @@ function UserListGroup(props) {
                  setShowEdit(false)                 
                  setShowLoad(true)
                  setShowLoadTitle("Загрузка...")
-                 const res = await updateUser(uid,userName,surName,phone,email,role,password)
+                 const res = await updateCustomer(uid,userName,surName,phone)
                  const data= await res.json();
                  setShowLoad(false);
                  
@@ -341,7 +275,7 @@ function UserListGroup(props) {
                           setShowDel(false);
                           setShowLoad(true);                         
                           
-                          const res = await deleteUser(uid);
+                          const res = await deleteCustomer(uid);
                           const deleteResponse = await res.json();
                           console.log(deleteResponse.message); 
 
@@ -420,4 +354,4 @@ function UserListGroup(props) {
 }
 
 
-export {UserListGroup}
+export {CustomerListGroup}
