@@ -1,8 +1,8 @@
 import Table from 'react-bootstrap/Table';
-import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton} from "react-bootstrap";
+import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton,Modal,Spinner,ProgressBar} from "react-bootstrap";
 
 import Alert from 'react-bootstrap/Alert';
-
+import "./warehouse.css"
 
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
@@ -15,185 +15,482 @@ import eyewhite from "../assets/eye.png"
 
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
+import { useEffect, useState } from 'react';
+import { addWareHouse, deleteWareHouse, getAllWareHouse, updateWareHouse } from './WareHouseApi';
 
 
-function WarehouseListGroup() {
-  const users = [
-    {
-      id: 1,
-      name: "Mark",
-      surname: "Otto",
-      phone: "998901234567",
-      email: "mark@mail.com",
-      role: "Admin"
-    },
-    {
-      id: 2,
-      name: "Jacob",
-      surname: "Thornton",
-      phone: "998909876543",
-      email: "jacob@mail.com",
-      role: "User"
-    },
-    {
-      id: 3,
-      name: "Larry",
-      surname: "Bird",
-      phone: "998907777777",
-      email: "larry@mail.com",
-      role: "Manager"
+
+
+
+
+
+function WarehouseListGroup(props) {
+
+
+  const [showEdit, setShowEdit] = useState(false);
+  const [showDel, setShowDel] = useState(false);
+  const [showLoad, setShowLoad] = useState(false);
+  const [showRes, setShowRes] = useState(false);
+  const [showResTitle, setShowResTitle] = useState("Success");
+  const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
+  const [showResTypeAlert, setShowResTypeAlert] = useState(false);
+
+  const [wid, setWid] = useState(-1);
+  const [wName,setWname]=useState("");
+  const [weight,setWeight]=useState("");
+  
+
+
+  const [wList,setWlist] = useState([]);
+
+   useEffect(()=>{
+    const handleWareHouse = async ()=>{
+    try{
+
+      const res = await getAllWareHouse();
+
+      if(!res.ok){
+        console.log(res);
+        
+      }else{
+        console.log(res);
+        const result = await res.json();
+        console.log(result);
+        
+        console.log("wlist");
+        setWlist(result)       
+        
+      }
+    }catch(error){
+      console.log(error.message);      
     }
-  ];
+   };
+   handleWareHouse()
+   },[props.activeTab,showResTypeAlert])
+
+
+
+
+
 
   return (
-    <ListGroup as="ol"  className="rounded overflow-hidden">
-      {users.map((user) => (
+   <div>
+     <ListGroup as="ol"  className="rounded overflow-hidden">
+      { wList &&
+        wList.map((whouse) => (
         <ListGroup.Item
-          key={user.id}
+          key={whouse.id}
           as="li"
           className="d-flex "
         >
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{user.id}</small>
-              <h6 className='m-0 p-0'>{user.name}</h6>
-              <h6 className='ms-2 m-0 p-0'>{user.name}</h6>
+              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{whouse.id}</small>
+              <h6 className='m-0 p-0'>{whouse.name}</h6>
+              
             </div>
             <div className='d-flex ms-auto'>
               
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>200</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{whouse.weight}</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ms-2'>{new Date(whouse.date).toLocaleString("uz")}</small>
             
             
             </div>
           </div>
-          <div className='d-flex ms-5'>
-            <Button variant='warning p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='danger p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button>
+           <div className='d-flex ms-3'>
+          
+           <Dropdown>
+            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
+              Опции  
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu 
+              className="my-dropdown" 
+              align="end" 
+              //popperConfig={{ strategy: 'fixed' }}
+              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
+            >
+              <Dropdown.Item onClick={() => { 
+                 setShowEdit(true);
+                 setWid(whouse.id);
+                 setWname(whouse.name);
+                 setWeight(whouse.weight);  
+                }}>
+                Изменить
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => { 
+                setShowDel(true); 
+                setWid(whouse.id);
+                 }}>
+                Удалить
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+
+          
+
+            
           </div>
           
         </ListGroup.Item>
       ))}
     </ListGroup>
+
+
+
+      {
+            //Edit
+            }
+            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
+                <Modal.Header closeButton>
+                <Modal.Title>Редактировать</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <small>Название категории</small>
+                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
+                        value={wName}
+                        onChange={(e)=>{setWname(e.target.value)}}
+                        />
+                        <Form.Control className="mt-2" type="text" placeholder="Введите обем"
+                        value={weight}
+                        onChange={(e)=>{setWeight(e.target.value)}}
+                        />
+                       
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" 
+                onClick={() => setShowEdit(false)}>
+                   Отмена
+                </Button>
+                <Button variant="warning" 
+                 onClick={async()=>{
+                 setShowResTypeAlert(false)
+                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
+                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
+                 setShowEdit(false)                 
+                 setShowLoad(true)
+                 setShowLoadTitle("Загрузка...")
+                 const res = await updateWareHouse(wid,wName,weight)
+                 const data= await res.json();
+                 setShowLoad(false);
+                 
+                 
+                 if(!res.ok){
+                  setShowResTypeAlert(false)
+                  setShowResTitle(data.message)
+                 }else{
+                  setShowResTypeAlert(true)
+                  setShowResTitle("Склад успешно обновлён")
+                 
+                } 
+                
+                setShowRes(true);
+                const timer = setTimeout(() => {
+                  //setShowRes(false);
+
+                }, 1000);
+                return () => clearTimeout(timer);
+                
+                 
+                }}
+                >
+                    Сохранять
+                </Button>
+                </Modal.Footer>
+            </Modal>
+            {
+            //delete
+            }
+
+            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
+                        <Modal.Header closeButton>
+                        <Modal.Title>Удалить</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+                        <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowDel(false)}>
+                            Отмена
+                        </Button>
+                        <Button variant="danger" 
+                        onClick={ async ()=>{
+                          setShowResTypeAlert(false)
+                          setShowLoadTitle("Загрузка...")
+                          setShowDel(false);
+                          setShowLoad(true);                         
+                          
+                          const res = await deleteWareHouse(wid);
+                          const deleteResponse = await res.json();
+                          console.log(deleteResponse.message); 
+
+                          if(!res.ok){
+                              setShowResTypeAlert(false)
+                          }else{
+                              setShowResTypeAlert(true)
+                          }
+                           setTimeout(() => {
+                            console.log("log");
+                            setShowDel(false);
+                          }, 500);   
+                          
+                          setTimeout(() => {
+                            console.log("log");
+                            setShowLoadTitle("Почти готово")
+                          }, 1000);   
+                          
+                          
+
+                           setTimeout(() => {
+                            setShowLoad(false);
+                            setShowResTitle(deleteResponse.message)
+                            setShowRes(true);
+                          }, 2000);
+                          
+                          //window.location.reload();
+                        }
+                }>
+                    Удалить
+                </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {
+             //Loading
+            }
+
+            <Modal show={showLoad} onHide={() => setShowLoad(false)} centered>
+                        <Modal.Header closeButton>
+                        <Modal.Title>{showLoadTitle}</Modal.Title>
+                        </Modal.Header>
+                        
+                        <div className="d-flex flex-column mx-4"> 
+                          
+                          <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
+                          <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
+                          <ProgressBar  className="my-3" animated variant="primary" now={100} />
+                          
+                        </div>
+
+                        
+            </Modal>
+
+            {
+             //Success
+            }
+
+            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
+                        <Modal.Header closeButton>
+                      
+                        </Modal.Header>
+                        
+                        <div className="d-flex flex-column mx-4"> 
+                          
+                          
+                          <Modal.Body className={`mx-auto alert alert-${showResTypeAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
+                          
+                          
+                        </div>
+
+                        
+            </Modal>
+   </div>
   );
 }
 
 
-function WareHouseList() {
-  const users = [
-    {
-      id: 1,
-      name: "Ali",
-      surname: "Karimov",
-      phone: "+998901112233",
-      email: "ali@gmail.com",
-      role: "Admin",
-    },
-    {
-      id: 2,
-      name: "Vali",
-      surname: "Rasulov",
-      phone: "+998907778899",
-      email: "vali@mail.com",
-      role: "User",
-    },
-    {
-      id: 3,
-      name: "Sardor",
-      surname: "Yusupov",
-      phone: "+998935556677",
-      email: "sardor@mail.com",
-      role: "Manager",
-    },
-  ];
+
+function AlertDismissibleDanger(props) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="rounded overflow-hidden">
-      <Table striped bordered hover className="m-0">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Имя</th>
-            
-            <th>Изменить</th>
-            <th>Удалить</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user, index) => (
-            <tr key={user.id}>
-              <td>{index + 1}</td>
-              <td>{user.name}</td>
-             
-
-              <td>
-                <Link
-                  className="btn btn-warning"
-                  style={{ fontSize: "12px" }}
-                >
-                  Изменить
-                </Link>
-              </td>
-
-              <td>
-                <button
-                  className="btn btn-danger"
-                  style={{ fontSize: "12px" }}
-                  onClick={() => console.log("Delete:", user.id)}
-                >
-                  Удалить
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </div>
+    /* 
+      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
+      Aks holda animatsiya (collapse effekti) ishlamaydi.
+    */
+    <Collapse in={show}>
+      <div> 
+        <Alert className='w-100'  variant="danger"  onClose={() => setShow(false)} dismissible >
+          <small>{props.alertMsg}</small>
+        </Alert>
+      </div>
+    </Collapse>
   );
 }
 
+function ProgressDismissible() {
+ 
+  return (
+   
+    
+      <div className="d-flex flex-column"> 
+        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
+        <ProgressBar  className="my-3" animated variant="primary" now={100} />
+      </div>
+   
+  );
+}
 
-function WareHouseAdd(){
+function AlertDismissibleSuccess() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    /* 
+      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
+      Aks holda animatsiya (collapse effekti) ishlamaydi.
+    */
+    <Collapse in={show}>
+      <div> 
+        <Alert  variant="success"  onClose={() => setShow(false)} dismissible >
+          <small>Пользователь успешно зарегистрирован</small>
+        </Alert>
+      </div>
+    </Collapse>
+  );
+}
+
+function WareHouseAdd(props){
+
+  const [wname,setWname] = useState("")
+  const [weight,setWeight] = useState("")
+
+
+
+  const [pshow, psetShow] = useState(false);
+  const [showDanger, setShowDanger] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+   const handleWareHouse = async (name,weight)=>{
+
+    try{
+      psetShow(true)
+      setShowDanger(false)
+      setShowSuccess(false);
+      const res = await addWareHouse(name,weight);
+      const result = await res.json();
+
+      if(!res.ok){
+        setShowDanger(true)
+        setAlertMessage(result.message)
+        psetShow(false)
+       
+      }else{
+        setShowSuccess(true);
+        psetShow(false)
+        const timer = setTimeout(() => {
+        props.tabChange("home")
+        }, 2000);
+        return () => clearTimeout(timer); 
+       //props.tabChange("home")
+      }
+
+      
+      console.log(result);
+      
+    }catch(error){
+      setShowDanger(true)
+      setAlertMessage("Не удалось подключиться к серверу");
+      psetShow(false)
+      //props.tabChange("home")
+    }
+
+
+   };
+
+
+
     return(
-        <div>
-            <Form className="mt-3">
+        <div className=''>
+           <Col className="w-100">
+                            {showDanger &&
+                              <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
+                              }
+                             {showSuccess &&
+                            <AlertDismissibleSuccess></AlertDismissibleSuccess>
+                            }
+          
+                             <Collapse in={pshow}>
+                              <div>
+                              {pshow && 
+                                 <ProgressDismissible></ProgressDismissible>
+                               }
+                                </div>
+                               </Collapse>
+                               
+                          </Col>
+            <Form className="">
 
       <Form.Group className="mb-2" controlId="formBasicEmail">
       
         
-        <Form.Control className="" type="email" placeholder="Введите имя" />
+        <Form.Control className="" type="text"
+        value={wname}
+        onChange={(e) => setWname(e.target.value)}
+        placeholder="Введите имя" />
+
+        <Form.Control className="mt-2" 
+        value={weight}
+        onChange={(e) => setWeight(e.target.value)}
+        placeholder="Введите обем"/>
         
       </Form.Group>
 
       
       <Col className="d-grid">        
-        <Button variant="primary" type="submit">
+        <Button variant="primary" 
+        onClick={(e)=>{
+          e.preventDefault()
+          handleWareHouse(wname,weight)
+        }}>
           Сохранить
         </Button>     
         </Col>
       
-    </Form>
+             </Form>
         </div>
     )
 }
 
 function WareHouseTab() {
+
+  const [activeTab,setActiveTab] =useState("home")
   return (
     <Tabs
-      defaultActiveKey="profile"
+      //defaultActiveKey="home"
+      activeKey={activeTab}
+      onSelect={(k) => setActiveTab(k)}
       id="fill-tab-example"
-      className="mb-3 mt-3"
+      className="mb-3 "
       //fill
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
       <Tab eventKey="home" title="Список складов">
-         <WarehouseListGroup></WarehouseListGroup>
+         <WarehouseListGroup activeTab={activeTab}></WarehouseListGroup>
       </Tab>
       <Tab eventKey="profile" title="Добавить новый склад">
         <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
-        <WareHouseAdd></WareHouseAdd>
+        <WareHouseAdd tabChange={(tname)=>{
+          setActiveTab(tname);
+        }}></WareHouseAdd>
         </Col>
         </div>
       </Tab>

@@ -219,7 +219,7 @@ function UserListGroup(props) {
 
 
 
-      {
+            {
             //Edit
             }
             <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
