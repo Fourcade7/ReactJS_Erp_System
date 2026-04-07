@@ -4,10 +4,10 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar} from "react-
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import { deleteCustomer,  getAllCustomersPaginationSearch, getAllUsersPagination, updateCustomer } from "./CustomerApi";
+import { deleteCustomer,  getAllCustomersPaginationSearch, updateCustomer } from "./CustomerApi";
 
 import ellipsis from "../assets/ellipsis.png"
-import "./customer.css"
+//import "./customer.css"
 
 
 

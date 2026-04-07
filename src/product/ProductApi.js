@@ -1,0 +1,124 @@
+
+
+
+async function updateProduct(
+  id,
+  name,
+  barCode,
+  price,
+  bulkPrice,
+  buyPrice,
+  categoryId,
+  unit
+ 
+) {
+  try {
+
+    const body = {};
+
+    if (name) body.name = name;
+    if (barCode) body.barCode = barCode;
+    if (price) body.price = price;
+    if (bulkPrice) body.bulkPrice = bulkPrice;
+    if (buyPrice) body.buyPrice = buyPrice;
+    if (categoryId) body.categoryId = categoryId;
+    if (unit) body.unit = unit;
+   
+
+    const response = await fetch(`http://localhost:3000/product/update/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    //const data = await response.json();
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+async function deleteProduct(id){
+
+   
+
+    try{
+        let response = await fetch(`http://localhost:3000/product/delete/${id}`,{ 
+            method:"DELETE"
+
+        });
+
+        //const result = await response.json();
+        //console.log(result);
+        
+        return response;
+
+
+    }catch(error){
+        console.log("Catch Error:",error);
+        
+    }
+
+}
+
+
+
+async function getAllProductPaginationSearch(page,limit,search){
+
+   
+
+    try{
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+            method:"GET"
+
+        });
+
+        const result = await response.json();
+        //console.log(result);
+        
+        return result;
+
+
+    }catch(error){
+        console.log("Catch Error:",error);
+        
+    }
+
+}
+
+
+async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
+    try {
+        let response = await fetch(`http://localhost:3000/product/add`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                
+                name:name,
+                barCode,
+                price,
+                bulkPrice,
+                buyPrice,
+                categoryId:Number(categoryId),
+                unit:"Штук"
+                
+            })
+        });
+
+        // const result = await response.json();
+        // //console.log(result);
+        // console.log(response.status);
+
+        return response;
+
+    } catch (error) {
+        console.log("Catch Error:", error);
+    }
+}
+
+export {getAllProductPaginationSearch,addProduct,deleteProduct,updateProduct}

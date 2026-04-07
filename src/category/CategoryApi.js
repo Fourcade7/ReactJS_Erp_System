@@ -1,17 +1,17 @@
 
 
 
-async function updateWareHouse(
+async function updateCategory(
   id,
-  name,
-  weight
+  name
+ 
 ) {
   try {
 
     const body = {};
 
     if (name) body.name = name;
-    if (weight) body.weight = Number(weight);
+   
     
 
     const response = await fetch(`http://localhost:3000/category/update/${id}`, {
@@ -30,7 +30,7 @@ async function updateWareHouse(
 }
 
 
-async function deleteWareHouse(id){
+async function deleteCategory(id){
 
    
 
@@ -54,7 +54,7 @@ async function deleteWareHouse(id){
 }
 
 
-async function getAllWareHouse(){
+async function getAllCategory(){
 
    
 
@@ -77,7 +77,7 @@ async function getAllWareHouse(){
 
 }
 
-async function addWareHouse(name,weight) {
+async function addCategory(name,weight) {
     try {
         let response = await fetch(`http://localhost:3000/category/add`, {
             method: "POST",
@@ -102,4 +102,4 @@ async function addWareHouse(name,weight) {
     }
 }
 
-export {addWareHouse,getAllWareHouse,deleteWareHouse,updateWareHouse}
+export {addCategory,getAllCategory ,deleteCategory,updateCategory}

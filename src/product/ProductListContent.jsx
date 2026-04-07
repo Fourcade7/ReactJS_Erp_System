@@ -1,43 +1,18 @@
 
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar} from "react-bootstrap";
+import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "react-bootstrap";
 
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import { deleteUser, getAllUsersPagination, getAllUsersPaginationSearch, updateUser } from "./UserApi";
+import {   deleteProduct, getAllProductPaginationSearch, updateProduct } from "./ProductApi";
 
 import ellipsis from "../assets/ellipsis.png"
-
-
-function PaginationExample() {
-  const [active, setActive] = useState(1);
-
-  let items = [];
-
-  for (let number = 1; number <= 5; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-  return (
-    <div className="mt-4">
-      <Pagination>{items}</Pagination>
-      <br />
-      <p>Active page: {active}</p>
-    </div>
-  );
-}
+//import "./customer.css"
 
 
 
-function UserListGroup(props) {
+
+function ProductListGroup(props) {
  
   const [showEdit, setShowEdit] = useState(false);
   const [showDel, setShowDel] = useState(false);
@@ -47,12 +22,16 @@ function UserListGroup(props) {
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
   const [showResAlert, setShowResAlert] = useState(false);
 
-  const [userName,setUserName]=useState("");
-  const [surName,setSurname]=useState("");
-  const [phone,setPhone]=useState("");
-  const [email,setEmail]=useState("");
-  const [role,setRole]=useState("");
-  const [password,setPassword]=useState("");
+  const [name,setName]=useState("");
+  const [barCode,setBarcode]=useState("");
+  const [price,setPrice]=useState("");
+  const [bulkPrice,setBulkPrice]=useState("");
+  const [buyPrice,setBuyPrice]=useState("");
+
+  const [showStockAlert, setShowStockAlert] = useState(false);
+   const [stock,setStock]=useState("");
+  
+ 
 
   //const [reload, setReload] = useState(false);
   const [searchTerm, setSearchTerm] = useState(""); // 
@@ -60,7 +39,7 @@ function UserListGroup(props) {
 
 
   const fileInputRef=useRef(null);
-  const [uid, setUid] = useState(-1);
+  const [pid, setPid] = useState(-1);
 
 
   const [userList,setUserList] = useState([]);
@@ -87,12 +66,13 @@ function UserListGroup(props) {
     async function loadAllUserPag() {
       try{
         setShowLoad(true)
-        const userListPag= await getAllUsersPaginationSearch(active,10,debouncedSearch);
+        const productListPag= await getAllProductPaginationSearch(active,10,debouncedSearch);
         
-        console.log(userListPag);
-        setPageCount(userListPag.meta.totalPages);
+        console.log("productListPag.stock");
+        console.log(productListPag.stock);
+        setPageCount(productListPag.meta.totalPages);
         console.log(active);
-        setUserList(userListPag.data)
+        setUserList(productListPag.data)
         setShowLoad(false)
         
         
@@ -143,27 +123,34 @@ function UserListGroup(props) {
         }}
        />
         <ListGroup as="ol"  className="rounded overflow-hidden">
-      {userList.map((user,index) => (
+      {userList.map((product,index) => (
         <ListGroup.Item
-          key={user.id}
+          key={product.id}
           as="li"
           className="d-flex "
         >
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{user.id}</small>
-              <h6 className='m-0 p-0'>{user.username}</h6>
-              <h6 className='ms-2 m-0 p-0'>{user.surname}</h6>
+              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{product.id}</small>
+              <h6 className='m-0 p-0'>{product.name}</h6>
+              <h6 className='ms-2 m-0 p-0'>{product.surname}</h6>
             </div>
             <div className='d-flex ms-auto'>
               
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
-            <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{user.role}</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.barCode}</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.category.name}</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.price} So'm</small>
+            <Col className="col-auto">
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.bulkPrice} So'm</small>
+            </Col>
+            <Col>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.buyPrice} So'm</small>
+            </Col>
+           
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
             
-             new Date( user.createdAt).toLocaleString("UZ")
+             new Date( product.date).toLocaleString("UZ")
             }</small>
             
             </div>
@@ -181,21 +168,24 @@ function UserListGroup(props) {
               //popperConfig={{ strategy: 'fixed' }}
               //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
             >
+              <Dropdown.Item disabled={!product.stock} onClick={() => { setShowStockAlert(true); setPid(product.id); }}>
+                Добавить начальный остаток
+              </Dropdown.Item>
               <Dropdown.Item onClick={() => { 
-                setShowEdit(true);
-                 setUid(user.id);
-                 setUserName(user.username);
-                 setSurname(user.surname);
-                 setPhone(user.phone);
-                 setEmail(user.email);
-                 setRole(user.role);
+                 setShowEdit(true);
+                 setPid(product.id);
+                 setName(product.name);
+                 setBarcode(product.barCode);
+                 setPrice(product.price);
+                 setBulkPrice(product.bulkPrice);
+                 setBuyPrice(product.buyPrice);
                  //setPassword(user.password);
 
                 
                 }}>
                 Изменить
               </Dropdown.Item>
-              <Dropdown.Item onClick={() => { setShowDel(true); setUid(user.id); }}>
+              <Dropdown.Item onClick={() => { setShowDel(true); setPid(product.id); }}>
                 Удалить
               </Dropdown.Item>
             </Dropdown.Menu>
@@ -218,7 +208,7 @@ function UserListGroup(props) {
 
 
 
-            {
+           {
             //Edit
             }
             <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
@@ -226,58 +216,31 @@ function UserListGroup(props) {
                 <Modal.Title>Редактировать</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <small>Название категории</small>
+                    <small>Название продукт</small>
                      <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={userName}
-                        onChange={(e)=>{setUserName(e.target.value)}}
+                        value={name}
+                        onChange={(e)=>{setName(e.target.value)}}
                         />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите фамилия"
-                        value={surName}
-                        onChange={(e)=>{setSurname(e.target.value)}}
+                        <Form.Control className="mt-2" type="text" placeholder="Введите штрих код"
+                        value={barCode}
+                        onChange={(e)=>{setBarcode(e.target.value)}}
                         />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите телефон номер"
-                        value={phone}
-                        onChange={(e)=>{setPhone(e.target.value)}}
-                        />
-
-                        <Form.Control className="mt-2" type="text" placeholder="Введите адрес электронной почты"
-                        value={email}
-                        onChange={(e)=>{setEmail(e.target.value)}}
+                        <Form.Control className="mt-2" type="text" placeholder="Введите сумма"
+                        value={price}
+                        onChange={(e)=>{setPrice(e.target.value)}}
                         />
 
-                    <Dropdown className="my-2">
-                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
-                      
-                        <Form.Control className='me- me-2' value={role}  type="text" placeholder="Имя контрагент или Номер телефона" />
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu align="end" className="mt-1 w-100">
-                        
-                            <Dropdown.Item
-                              
-                              onClick={() => {setRole("User")}}
-                            >
-                              User
-                            </Dropdown.Item>
-
-                            <Dropdown.Item
-                              
-                              onClick={() => {setRole("Admin")}}
-                            >
-                              Admin
-                            </Dropdown.Item>
-                          
-                        </Dropdown.Menu>
-                      </Dropdown>
-                         <Form.Control className="mt-2" type="text" placeholder="Введите пароль"
-                        value={password}
-                        onChange={(e)=>{setPassword(e.target.value)}}
+                        <Form.Control className="mt-2" type="text" placeholder="Введите оптом сумма"
+                        value={bulkPrice}
+                        onChange={(e)=>{setBulkPrice(e.target.value)}}
                         />
-                    
-                      {/* <Form.Group controlId="formFile" className="mt-3">
-                          <small>Выберите изображение</small>
-                          <Form.Control type="file" ref={fileInputRef} />
-                      </Form.Group> */}
+
+                        <Form.Control className="mt-2" type="text" placeholder="Введите продажа сумма"
+                        value={buyPrice}
+                        onChange={(e)=>{setBuyPrice(e.target.value)}}
+                        />
+
+                       
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" 
@@ -292,7 +255,66 @@ function UserListGroup(props) {
                  setShowEdit(false)                 
                  setShowLoad(true)
                  setShowLoadTitle("Загрузка...")
-                 const res = await updateUser(uid,userName,surName,phone,email,role,password)
+                 const res = await updateProduct(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice))
+                 const data= await res.json();
+                 setShowLoad(false);
+                 
+                 
+                 if(!res.ok){
+                  setShowResAlert(false)
+                  setShowResTitle(data.message)
+                 }else{
+                  setShowResAlert(true)
+                  setShowResTitle("Сотрудник успешно обновлён")
+                 
+                } 
+                
+                setShowRes(true);
+                const timer = setTimeout(() => {
+                  setShowRes(false);
+
+                }, 1000);
+                return () => clearTimeout(timer);
+                
+                 
+                }}
+                >
+                    Сохранять
+                </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {
+            //Stock add
+            }
+            <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
+                <Modal.Header closeButton>
+                <Modal.Title>Добавить начальный остаток</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <small>Остаток</small>
+                     <Form.Control className="mt-2" type="text" placeholder="Введите остаток"
+                        value={name}
+                        onChange={(e)=>{setName(e.target.value)}}
+                        />
+                        
+
+                       
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" 
+                onClick={() => setShowStockAlert(false)}>
+                   Отмена
+                </Button>
+                <Button variant="primary" 
+                 onClick={async()=>{
+                 setShowResAlert(false)
+                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
+                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
+                 setShowEdit(false)                 
+                 setShowLoad(true)
+                 setShowLoadTitle("Загрузка...")
+                 const res = await updateProduct(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice))
                  const data= await res.json();
                  setShowLoad(false);
                  
@@ -340,7 +362,7 @@ function UserListGroup(props) {
                           setShowDel(false);
                           setShowLoad(true);                         
                           
-                          const res = await deleteUser(uid);
+                          const res = await deleteProduct(pid);
                           const deleteResponse = await res.json();
                           console.log(deleteResponse.message); 
 
@@ -419,4 +441,4 @@ function UserListGroup(props) {
 }
 
 
-export {UserListGroup}
+export {ProductListGroup}

@@ -8,14 +8,7 @@ import Alert from 'react-bootstrap/Alert';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
-import { Link } from "react-router-dom";
 
-import eyewhite from "../assets/eye.png"
-
-
-
-
-import { RegisterScreenforTab } from '../auth/RegisterContent';
 
 import { CustomerListGroup } from './CustomerListContent';
 import { addCustomer } from "./CustomerApi";

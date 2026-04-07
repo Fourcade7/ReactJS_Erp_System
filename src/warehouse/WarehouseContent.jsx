@@ -2,7 +2,7 @@ import Table from 'react-bootstrap/Table';
 import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton,Modal,Spinner,ProgressBar} from "react-bootstrap";
 
 import Alert from 'react-bootstrap/Alert';
-import "./warehouse.css"
+//import "./warehouse.css"
 
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';

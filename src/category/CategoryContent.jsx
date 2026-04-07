@@ -2,7 +2,7 @@ import Table from 'react-bootstrap/Table';
 import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton,Modal,Spinner,ProgressBar} from "react-bootstrap";
 
 import Alert from 'react-bootstrap/Alert';
-import "./category.css"
+//import "./category.css"
 
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
@@ -16,7 +16,7 @@ import eyewhite from "../assets/eye.png"
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { useEffect, useState } from 'react';
-import { addWareHouse, deleteWareHouse, getAllWareHouse, updateWareHouse } from './CategoryApi';
+import { addCategory,getAllCategory ,deleteCategory,updateCategory } from './CategoryApi';
 
 
 
@@ -35,19 +35,19 @@ function WarehouseListGroup(props) {
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
   const [showResTypeAlert, setShowResTypeAlert] = useState(false);
 
-  const [wid, setWid] = useState(-1);
-  const [wName,setWname]=useState("");
-  const [weight,setWeight]=useState("");
+  const [cid, setCid] = useState(-1);
+  const [cName,setCname]=useState("");
+ 
   
 
 
-  const [wList,setWlist] = useState([]);
+  const [categoryList,setCategoryList] = useState([]);
 
    useEffect(()=>{
     const handleWareHouse = async ()=>{
     try{
 
-      const res = await getAllWareHouse();
+      const res = await getAllCategory();
 
       if(!res.ok){
         console.log(res);
@@ -58,7 +58,7 @@ function WarehouseListGroup(props) {
         console.log(result);
         
         console.log("wlist");
-        setWlist(result)       
+        setCategoryList(result)       
         
       }
     }catch(error){
@@ -76,24 +76,25 @@ function WarehouseListGroup(props) {
   return (
    <div>
      <ListGroup as="ol"  className="rounded overflow-hidden">
-      { wList &&
-        wList.map((whouse) => (
+      { categoryList &&
+        categoryList.map((category) => (
         <ListGroup.Item
-          key={whouse.id}
+          key={category.id}
           as="li"
           className="d-flex "
         >
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{whouse.id}</small>
-              <h6 className='m-0 p-0'>{whouse.name}</h6>
+              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{category.id}</small>
+              <h6 className='m-0 p-0'>{category.name}</h6>
               
             </div>
             <div className='d-flex ms-auto'>
               
            
             
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ms-2'>{new Date(whouse.date).toLocaleString("uz")}</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ms-2'>{category.products.length}</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ms-2'>{new Date(category.date).toLocaleString("uz")}</small>
             </div>
           </div>
            <div className='d-flex ms-3'>
@@ -111,15 +112,15 @@ function WarehouseListGroup(props) {
             >
               <Dropdown.Item onClick={() => { 
                  setShowEdit(true);
-                 setWid(whouse.id);
-                 setWname(whouse.name);
-                 setWeight(whouse.weight);  
+                 setCid(category.id);
+                 setCname(category.name);
+                 
                 }}>
                 Изменить
               </Dropdown.Item>
               <Dropdown.Item onClick={() => { 
                 setShowDel(true); 
-                setWid(whouse.id);
+                setCid(category.id);
                  }}>
                 Удалить
               </Dropdown.Item>
@@ -147,13 +148,10 @@ function WarehouseListGroup(props) {
                 <Modal.Body>
                     <small>Название категории</small>
                      <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={wName}
-                        onChange={(e)=>{setWname(e.target.value)}}
+                        value={cName}
+                        onChange={(e)=>{setCname(e.target.value)}}
                         />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите обем"
-                        value={weight}
-                        onChange={(e)=>{setWeight(e.target.value)}}
-                        />
+                       
                        
                 </Modal.Body>
                 <Modal.Footer>
@@ -169,7 +167,7 @@ function WarehouseListGroup(props) {
                  setShowEdit(false)                 
                  setShowLoad(true)
                  setShowLoadTitle("Загрузка...")
-                 const res = await updateWareHouse(wid,wName,weight)
+                 const res = await updateCategory(cid,cName)
                  const data= await res.json();
                  setShowLoad(false);
                  
@@ -179,7 +177,7 @@ function WarehouseListGroup(props) {
                   setShowResTitle(data.message)
                  }else{
                   setShowResTypeAlert(true)
-                  setShowResTitle("Склад успешно обновлён")
+                  setShowResTitle("Категория успешно обновлён")
                  
                 } 
                 
@@ -217,7 +215,7 @@ function WarehouseListGroup(props) {
                           setShowDel(false);
                           setShowLoad(true);                         
                           
-                          const res = await deleteWareHouse(wid);
+                          const res = await deleteCategory(cid);
                           const deleteResponse = await res.json();
                           console.log(deleteResponse.message); 
 
@@ -364,7 +362,7 @@ function AlertDismissibleSuccess() {
   );
 }
 
-function WareHouseAdd(props){
+function CategoryAdd(props){
 
   const [wname,setWname] = useState("")
   const [weight,setWeight] = useState("")
@@ -382,7 +380,7 @@ function WareHouseAdd(props){
       psetShow(true)
       setShowDanger(false)
       setShowSuccess(false);
-      const res = await addWareHouse(name,weight);
+      const res = await addCategory(name,weight);
       const result = await res.json();
 
       if(!res.ok){
@@ -444,10 +442,7 @@ function WareHouseAdd(props){
         onChange={(e) => setWname(e.target.value)}
         placeholder="Введите имя" />
 
-        <Form.Control className="mt-2" 
-        value={weight}
-        onChange={(e) => setWeight(e.target.value)}
-        placeholder="Введите обем"/>
+      
         
       </Form.Group>
 
@@ -487,9 +482,9 @@ function CategoryTab() {
       <Tab eventKey="profile" title="Добавить новый категория">
         <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
-        <WareHouseAdd tabChange={(tname)=>{
+        <CategoryAdd tabChange={(tname)=>{
           setActiveTab(tname);
-        }}></WareHouseAdd>
+        }}></CategoryAdd>
         </Col>
         </div>
       </Tab>

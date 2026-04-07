@@ -1,5 +1,5 @@
 
-
+/* 
 .custom-tabs .nav-tabs {
   border-bottom: none !important;
 }
@@ -29,11 +29,36 @@
 
 
 .nav-pills .nav-link.active {
-  background-color: var(--bs-transparent) !important; /* secondary */
+  background-color: var(--bs-transparent) !important; 
   color: var(--bs-primary) !important;
 }
 
 .nav-pills .nav-link {
   
   color: var(--bs-secondary) !important;
+}
+
+
+ */
+
+
+
+
+
+
+/* 1. List item ichidagi hamma narsa tashqariga chiqa olishi kerak */
+.list-group-item {
+  overflow: visible !important;
+  z-index: auto !important;
+}
+
+/* 2. ListGroup o'zi ham menyuni to'smasligi kerak */
+.list-group {
+  overflow: visible !important;
+}
+
+/* 3. Dropdown menyu har doim hamma narsadan ustun turishi uchun */
+.my-dropdown {
+  z-index: 9999 !important;
+  position: absolute !important;
 }
