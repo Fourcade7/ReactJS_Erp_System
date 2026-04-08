@@ -181,7 +181,7 @@ function RegisterForm(props) {
       <Row className="mt-3 gx-1 align-items-center">
         <Col className="d-grid">     
         {/* <Link to={"/home"}>Регистрация</Link> */}
-         <Button as={Link} to={"/"} variant="outline-primary" type="submit">
+         <Button as={Link} to={"/login"} variant="outline-primary" type="submit">
         Вход
         </Button>   
         </Col>
@@ -411,6 +411,7 @@ function RegisterScreen(){
       }else{
         setShowSuccess(true);
         psetShow(false)
+        
       }
 
       

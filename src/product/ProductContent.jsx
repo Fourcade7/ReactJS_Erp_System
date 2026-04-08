@@ -118,7 +118,7 @@ function ProductAdd(props){
   const [categoryList,setCategoryList] = useState([]);
 
    useEffect(()=>{
-    const handleWareHouse = async ()=>{
+  const handleWareHouse = async ()=>{
     try{
 
       const res = await getAllCategory();

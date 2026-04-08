@@ -77,6 +77,8 @@ async function getAllCategory(){
 
 }
 
+
+
 async function addCategory(name,weight) {
     try {
         let response = await fetch(`http://localhost:3000/category/add`, {

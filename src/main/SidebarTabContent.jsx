@@ -12,14 +12,27 @@ import StockScreen from '../stock/StockContent';
 import PurchaseScreen from '../purchase/PurchaseContent';
 import SaleScreen from '../sale/SaleContent';
 
+import { useState } from 'react';
+
 function LeftTab() {
+
+ const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeTab") || "first";
+  });
   return (
-    <Tab.Container className="" id="left-tabs-example" defaultActiveKey="first">
+    <Tab.Container className="" id="left-tabs-example" 
+    activeKey={activeTab}
+    onSelect={(k) => {
+      setActiveTab(k)
+      localStorage.setItem("activeTab", k);
+    }}
+    
+    >
       <Row>
         <Col sm={2} className='border-endx bg-body-tertiaryx ps-4' >
           <Nav variant="pills" className="flex-column mt-2 bg-body-tertiaryx">
             <Nav.Item variant="secondary">
-              <Nav.Link eventKey="first" >Главная страница</Nav.Link>
+              <Nav.Link eventKey="first">Главная страница</Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="second" >Сотрудники</Nav.Link>
@@ -29,7 +42,7 @@ function LeftTab() {
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="fourth" >Склад</Nav.Link>
+              <Nav.Link eventKey="fourth" disabled={localStorage.getItem("role")==="User"}>Склад</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>

@@ -6,6 +6,7 @@ import Table from 'react-bootstrap/Table';
 import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton} from "react-bootstrap";
 
 import Alert from 'react-bootstrap/Alert';
+import { useState } from 'react';
 
 
 import Tab from 'react-bootstrap/Tab';
@@ -19,6 +20,7 @@ import eyewhite from "../assets/eye.png"
 
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
+import { StockListGroup } from './StockListContent';
 
 function StpclListGroup() {
 const products = [
@@ -138,9 +140,12 @@ function StockAdd(){
 }
 
 function StockTab() {
+  
+  const [activeTab,setActiveTab] =useState("home")
   return (
     <Tabs
-      defaultActiveKey="profile"
+      activeKey={activeTab}
+      onSelect={(k) => setActiveTab(k)}
       id="fill-tab-example"
       className="mb-3 mt-3"
       //fill
@@ -148,21 +153,11 @@ function StockTab() {
       //style={{fontSize:"12px"}}
     >
       <Tab eventKey="home" title="Список остатков">
-         <StpclListGroup></StpclListGroup>
+          <StockListGroup 
+          activeTab={activeTab}
+          ></StockListGroup>
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый остаток">
-        <div className='d-flex align-items-center justify-content-start'>
-        <Col xs={4}>
-        <StockAdd></StockAdd>
-        </Col>
-        </div>
-      </Tab>
-      {/* <Tab eventKey="longer-tab" title="Loooonger Tab">
-        Tab content for Loooonger Tab
-      </Tab>
-      <Tab eventKey="contact" title="Contact" disabled>
-        Tab content for Contact
-      </Tab> */}
+     
     </Tabs>
   );
 }

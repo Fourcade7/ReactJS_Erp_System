@@ -16,7 +16,11 @@ function NavbarScreen() {
           <Nav className="ms-auto">
             <Nav.Link href="#home">Поддержка</Nav.Link>
             <Nav.Link href="#link">Планы</Nav.Link>
-            <NavDropdown title="Aminov Fourcade" id="basic-nav-dropdown">
+            <NavDropdown title={
+              localStorage.getItem("username")
+            } id="basic-nav-dropdown"
+            align="end"
+            >
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
                 Another action

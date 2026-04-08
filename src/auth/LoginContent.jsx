@@ -156,13 +156,15 @@ function LoginScreen(){
            
             console.log("SUCCESS:", result);
             navigate("/home")
-
-           
+            localStorage.setItem("username", result.user.username);
+           localStorage.setItem("userid", result.user.id);
+           localStorage.setItem("role", result.user.role);
 
           } catch (error) {
             psetShow(false) 
             setShow(true)
             setAlertMessage("Не удалось подключиться к серверу");
+            
             
             //setTimeout(() => setShow(true), 50);
           }

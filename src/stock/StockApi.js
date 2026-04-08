@@ -1,31 +1,24 @@
 
 
 
-async function updateProduct(
+async function updateStock(
   id,
-  name,
-  barCode,
-  price,
-  bulkPrice,
-  buyPrice,
-  categoryId,
-  unit
- 
+  product_id,
+  warehouse_id,
+  quantity
+    
 ) {
   try {
 
     const body = {};
 
-    if (name) body.name = name;
-    if (barCode) body.barCode = barCode;
-    if (price) body.price = price;
-    if (bulkPrice) body.bulkPrice = bulkPrice;
-    if (buyPrice) body.buyPrice = buyPrice;
-    if (categoryId) body.categoryId = categoryId;
-    if (unit) body.unit = unit;
+    if (product_id) body.product_id = product_id;
+    if (warehouse_id) body.warehouse_id = warehouse_id;
+    if (quantity) body.quantity = quantity;
+    
    
 
-    const response = await fetch(`http://localhost:3000/product/update/${id}`, {
+    const response = await fetch(`http://localhost:3000/stock/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -43,12 +36,12 @@ async function updateProduct(
 
 
 
-async function deleteProduct(id){
+async function deleteStock(id){
 
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/delete/${id}`,{ 
+        let response = await fetch(`http://localhost:3000/stock/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -148,7 +141,7 @@ async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
 }
 
 
-async function addStock(productId,warehouseId,userId,quantity) {
+async function addStock(productId,warehouseId,quantity) {
     try {
         let response = await fetch(`http://localhost:3000/stock/add`, {
             method: "POST",
@@ -158,7 +151,6 @@ async function addStock(productId,warehouseId,userId,quantity) {
             body: JSON.stringify({
                 product_id:productId,
                 warehouse_id:warehouseId,
-                user_id:userId,
                 quantity                
             })
         });
@@ -174,4 +166,28 @@ async function addStock(productId,warehouseId,userId,quantity) {
     }
 }
 
-export {getAllProductPaginationSearch,addProduct,deleteProduct,updateProduct,getAllWareHouse,addStock}
+
+async function getAllStockPaginationSearch(page,limit,search){
+
+   
+
+    try{
+        let response = await fetch(`http://localhost:3000/stock/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+            method:"GET"
+
+        });
+
+        const result = await response.json();
+        //console.log(result);
+        
+        return result;
+
+
+    }catch(error){
+        console.log("Catch Error:",error);
+        
+    }
+
+}
+
+export {getAllStockPaginationSearch,getAllProductPaginationSearch,addProduct,deleteStock,updateStock,getAllWareHouse,addStock}
