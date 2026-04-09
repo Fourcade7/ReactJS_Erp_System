@@ -59,7 +59,7 @@ function CustomerListGroup(props) {
   useEffect(()=>{
     async function loadAllUserPag() {
       try{
-        setShowLoad(true)
+        //setShowLoad(true)
         const userListPag= await getAllCustomersPaginationSearch(active,10,debouncedSearch);
         
         console.log(userListPag);

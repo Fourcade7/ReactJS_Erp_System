@@ -69,7 +69,7 @@ function ProductListGroup(props) {
   useEffect(()=>{
     async function loadAllUserPag() {
       try{
-        setShowLoad(true)
+        //setShowLoad(true)
         const productListPag= await getAllProductPaginationSearch(active,10,debouncedSearch);
         const wareHouseListResult = await getAllWareHouse();
         setWareHouseList(wareHouseListResult)

@@ -4,7 +4,7 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "r
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {   addStock, deleteStock,  getAllStockPaginationSearch, getAllWareHouse, updateStock } from "./StockApi";
+import {   addStock, deleteProduct, getAllProductPaginationSearch, getAllWareHouse, updateProduct } from "./SaleApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
@@ -12,7 +12,7 @@ import ellipsis from "../assets/ellipsis.png"
 
 
 
-function StockListGroup(props) {
+function SaleProductListGroup(props) {
  
   const [showEdit, setShowEdit] = useState(false);
   const [showDel, setShowDel] = useState(false);
@@ -39,11 +39,12 @@ function StockListGroup(props) {
 
 
   const fileInputRef=useRef(null);
-  const [sid, setSid] = useState(-1);
   const [pid, setPid] = useState(-1);
 
 
   const [productList,setProductList] = useState([]); 
+  //const [orderList,setOrderList] = useState([]); 
+
   const [pageCount,setPageCount] = useState(0);
 
    const [wareHouseList,setWareHouseList] = useState([]);
@@ -70,17 +71,16 @@ function StockListGroup(props) {
   useEffect(()=>{
     async function loadAllUserPag() {
       try{
-        //setShowLoad(true)
-        const productListPag= await getAllStockPaginationSearch(active,10,debouncedSearch);
+        setShowLoad(true)
+        const productListPag= await getAllProductPaginationSearch(active,20,debouncedSearch);
         const wareHouseListResult = await getAllWareHouse();
-        setWareHouseList(wareHouseListResult)
+        setWareHouseList(wareHouseListResult);
         
         console.log("productListPag.stock");
         console.log(productListPag.stock);
-        console.log(productListPag);
         setPageCount(productListPag.meta.totalPages);
         console.log(active);
-        setProductList(productListPag.data);
+        setProductList(productListPag.data)
         setShowLoad(false)
         
         
@@ -90,13 +90,15 @@ function StockListGroup(props) {
           
       }
     }
-
+    loadAllUserPag();
     
-      if (props.activeTab === "home") {
-        loadAllUserPag();
-      }
+      // if (props.activeTab === "home") {
+      //   loadAllUserPag();
+      // }
       
-  },[active,showResAlert,props.activeTab,debouncedSearch])  
+  },[active,showResAlert,debouncedSearch])  
+
+  //active,showResAlert,props.activeTab,debouncedSearch
 
 
 
@@ -130,82 +132,74 @@ function StockListGroup(props) {
           setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
         }}
        />
-        <ListGroup as="ol"  className="rounded overflow-hidden">
-      {productList.map((stock,index) => (
+  <ListGroup as="ol"  className="rounded overflow-auto" style={{ maxHeight: '60vh' }}>
+     
+      { productList && 
+       
+      productList.filter(p =>(p.stock.length>0)).map((product,index) => (
         <ListGroup.Item
-          key={stock.id}
+          key={product.id}
           as="li"
-          className="d-flex "
+          className={`d-flex ${index % 2 === 1 ? "bg-light" : "bg-dark-subtle "} p-2`}
+          onClick={() => {
+              props.setOrderList(prev => {
+                const exists = prev.find(item => item.id === product.id);
+
+                if (exists) {
+                  return prev.map(item =>
+                    item.id === product.id
+                      ? { 
+                          ...item, 
+                          quantity: (item.quantity || 0) + 1 
+                        }
+                      : item
+                  );
+                }
+
+                return [
+                  ...prev,
+                  {
+                    ...product,
+                    quantity: 1
+                  }
+                ];
+              });
+            }}
+          
         >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{stock.id}</small>
-              <h6 className='m-0 p-0'>{stock.product.name}</h6>
-              
+          <div className='d-flex flex-row w-100 '>
+            <div>
+                <small className={`m-0 p-0 py-1 px-2 rounded mt-0 ${index % 2 === 1 ? "bg-dark-subtle" : "bg-light"}`}>{product.id}</small>
             </div>
-            <div className='d-flex ms-auto'>
+            <div className='d-flex flex-column'>
+            <h6 className='ms-2 m-0 p-0 text-wrap'>{product.name}</h6>              
               
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.username}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.surname}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.email}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.product.barCode}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.warehouse.name}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.quantity} {stock.product.unit}</small>
+            <div>
+            <small className='ms-0 m-0 p-0 bg-success-subtlex ms-2 rounded mt-1'>{product.barCode}</small>
+            <small className='ms-0 m-0 p-0 bg-warning-subtlex ms-2  rounded mt-1'>{product.code}</small>
             
+            </div>
+            </div>
+
+            <div className="d-flex flex-column  ms-auto ">
+              <small className='m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.stock[0]?.quantity} {product.unit}</small>            
+              <small className='m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap text-center'>{product.stock[0]?.warehouse.name}</small>            
+
+            </div>
+             
+            <div className='d-flex flex-column ms-2'>
+            <small className='ms-0 m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.buyPrice.toLocaleString("uz")} So'm</small>            
+              
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-1 text-nowrap'>{product.category.name}</small>
+            
+            </div>
            
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
-            
-             new Date( stock.date).toLocaleString("UZ")
-            }</small>
-            
-            </div>
           </div>
-          <div className='d-flex ms-3'>
+         
           
-           <Dropdown>
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
-              Опции  
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu 
-              className="my-dropdown" 
-              align="end" 
-              //popperConfig={{ strategy: 'fixed' }}
-              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
-            >
-              
-              <Dropdown.Item  disabled={stock.stock && stock.stock.length > 0} onClick={() => { 
-                setShowStockAlert(true); 
-                setSid(stock.id); 
-                setPid(stock.product.id);
-                setWareHouseId(stock.warehouse.id);
-                setWareHouseName(stock.warehouse.name);
-                setQuantity(stock.quantity)
-                }}>
-                 Изменить
-              </Dropdown.Item>
-              
-              <Dropdown.Item onClick={() => {
-                 setShowDel(true); 
-                 setSid(stock.id);
-                 setPid(stock.product.id);
-                  }}>
-                Удалить
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-
-          
-
-            {/* <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button> */}
-          </div>
-          
-                </ListGroup.Item>
-              ))}
-      </ListGroup>
-
+        </ListGroup.Item>
+      ))}
+    </ListGroup>
        <div className="mt-4">
          <Pagination>{items}</Pagination>
               
@@ -216,10 +210,85 @@ function StockListGroup(props) {
            {
             //Edit
             }
-           
-            <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
+            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
                 <Modal.Header closeButton>
                 <Modal.Title>Редактировать</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <small>Название продукт</small>
+                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
+                        value={name}
+                        onChange={(e)=>{setName(e.target.value)}}
+                        />
+                        <Form.Control className="mt-2" type="text" placeholder="Введите штрих код"
+                        value={barCode}
+                        onChange={(e)=>{setBarcode(e.target.value)}}
+                        />
+                        <Form.Control className="mt-2" type="text" placeholder="Введите сумма"
+                        value={price}
+                        onChange={(e)=>{setPrice(e.target.value)}}
+                        />
+
+                        <Form.Control className="mt-2" type="text" placeholder="Введите оптом сумма"
+                        value={bulkPrice}
+                        onChange={(e)=>{setBulkPrice(e.target.value)}}
+                        />
+
+                        <Form.Control className="mt-2" type="text" placeholder="Введите продажа сумма"
+                        value={buyPrice}
+                        onChange={(e)=>{setBuyPrice(e.target.value)}}
+                        />
+
+                       
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" 
+                onClick={() => setShowEdit(false)}>
+                   Отмена
+                </Button>
+                <Button variant="warning" 
+                 onClick={async()=>{
+                 setShowResAlert(false)
+                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
+                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
+                 setShowEdit(false)                 
+                 setShowLoad(true)
+                 setShowLoadTitle("Загрузка...")
+                 const res = await updateProduct(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice))
+                 const data= await res.json();
+                 setShowLoad(false);
+                 
+                 
+                 if(!res.ok){
+                  setShowResAlert(false)
+                  setShowResTitle(data.message)
+                 }else{
+                  setShowResAlert(true)
+                  setShowResTitle("Сотрудник успешно обновлён")
+                 
+                } 
+                
+                setShowRes(true);
+                const timer = setTimeout(() => {
+                  setShowRes(false);
+
+                }, 1000);
+                return () => clearTimeout(timer);
+                
+                 
+                }}
+                >
+                    Сохранять
+                </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {
+            //Stock add
+            }
+            <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
+                <Modal.Header closeButton>
+                <Modal.Title>Добавить начальный остаток</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <small>Остаток</small>
@@ -269,7 +338,7 @@ function StockListGroup(props) {
                 onClick={() => setShowStockAlert(false)}>
                    Отмена
                 </Button>
-                <Button variant="warning" 
+                <Button variant="primary" 
                  onClick={async()=>{
                  setShowResAlert(false)
                  //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
@@ -277,7 +346,7 @@ function StockListGroup(props) {
                  setShowEdit(false)                 
                  setShowLoad(true)
                  setShowLoadTitle("Загрузка...")
-                 const res = await updateStock(sid,pid,wareHouseId,Number(quantity))
+                 const res = await addStock(pid,wareHouseId,Number(localStorage.getItem("userid")),Number(quantity))
                  const data= await res.json();
                  setShowLoad(false);
                  setShowStockAlert(false);
@@ -326,7 +395,7 @@ function StockListGroup(props) {
                           setShowDel(false);
                           setShowLoad(true);                         
                           
-                          const res = await deleteStock(sid);
+                          const res = await deleteProduct(pid);
                           const deleteResponse = await res.json();
                           console.log(deleteResponse.message); 
 
@@ -405,4 +474,4 @@ function StockListGroup(props) {
 }
 
 
-export {StockListGroup}
+export {SaleProductListGroup}

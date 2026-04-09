@@ -25,6 +25,7 @@ function LeftTab() {
     onSelect={(k) => {
       setActiveTab(k)
       localStorage.setItem("activeTab", k);
+      //window.location.reload();
     }}
     
     >
@@ -42,7 +43,7 @@ function LeftTab() {
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="fourth" disabled={localStorage.getItem("role")==="User"}>Склад</Nav.Link>
+              <Nav.Link eventKey="fourth" disabled={!localStorage.getItem("role")==="User"}>Склад</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>

@@ -86,14 +86,14 @@ function UserListGroup(props) {
   useEffect(()=>{
     async function loadAllUserPag() {
       try{
-        setShowLoad(true)
+        //setShowLoad(true)
         const userListPag= await getAllUsersPaginationSearch(active,10,debouncedSearch);
         
         console.log(userListPag);
         setPageCount(userListPag.meta.totalPages);
         console.log(active);
         setUserList(userListPag.data)
-        setShowLoad(false)
+        setShowLoad(false)  
         
         
       }catch(error){

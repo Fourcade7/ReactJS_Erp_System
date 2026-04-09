@@ -75,7 +75,7 @@ function WarehouseListGroup(props) {
 
   return (
    <div>
-     <ListGroup as="ol"  className="rounded overflow-hidden">
+     <ListGroup as="ol"  className="rounded overflow-auto" style={{ maxHeight: '60vh' }}>
       { categoryList &&
         categoryList.map((category) => (
         <ListGroup.Item
