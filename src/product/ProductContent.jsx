@@ -342,7 +342,7 @@ function ProductTab() {
         Tab content for Loooonger Tab
       </Tab>
       <Tab eventKey="contact" title="Contact" disabled>
-        Tab content for Contact
+        Tab content for Contactx
       </Tab> */}
     </Tabs>
   );
