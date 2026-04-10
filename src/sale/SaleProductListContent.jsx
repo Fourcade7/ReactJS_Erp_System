@@ -125,6 +125,7 @@ function SaleProductListGroup(props) {
 
   return (
     <div>
+     
        <Form.Control className="mb-2" type="text" placeholder="Поиск..." 
         value={searchTerm}
         onChange={(e) => {
@@ -142,29 +143,46 @@ function SaleProductListGroup(props) {
           as="li"
           className={`d-flex ${index % 2 === 1 ? "bg-light" : "bg-dark-subtle "} p-2`}
           onClick={() => {
-              props.setOrderList(prev => {
-                const exists = prev.find(item => item.id === product.id);
+                props.setOrderList(prev => {
+                  const exists = prev.find(item => item.id === product.id);
 
-                if (exists) {
-                  return prev.map(item =>
-                    item.id === product.id
-                      ? { 
-                          ...item, 
-                          quantity: (item.quantity || 0) + 1 
+                  //const stockQty = product.stock?.[0]?.quantity || 0;
+                   const stockQty = product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
+
+                  if (exists) {
+                    return prev.map(item => {
+                      if (item.id === product.id) {
+
+                        // ❗ LIMIT CHECK
+                        if (item.quantity >= stockQty) {
+                          console.log("Stock yetarli emas");
+                          return item; // oshirmaydi
                         }
-                      : item
-                  );
-                }
 
-                return [
-                  ...prev,
-                  {
-                    ...product,
-                    quantity: 1
+                        return {
+                          ...item,
+                          quantity: item.quantity + 1
+                        };
+                      }
+                      return item;
+                    });
                   }
-                ];
-              });
-            }}
+
+                  // ❗ yangi qo‘shishda ham tekshir
+                  if (stockQty <= 0) {
+                    console.log("Stock yo‘q");
+                    return prev;
+                  }
+
+                  return [
+                    ...prev,
+                    {
+                      ...product,
+                      quantity: 1
+                    }
+                  ];
+  });
+}}
           
         >
           <div className='d-flex flex-row w-100 '>
@@ -182,7 +200,7 @@ function SaleProductListGroup(props) {
             </div>
 
             <div className="d-flex flex-column  ms-auto ">
-              <small className='m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.stock[0]?.quantity} {product.unit}</small>            
+              <small className={`m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap ${product.stock[0]?.quantity <10 ? "text-danger": null}`}>{product.stock[0]?.quantity} {product.unit}</small>            
               <small className='m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap text-center'>{product.stock[0]?.warehouse.name}</small>            
 
             </div>

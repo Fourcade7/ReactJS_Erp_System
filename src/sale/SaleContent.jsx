@@ -1,16 +1,5 @@
-
-
-
-
-
-
-
-
-
-
-
 import Table from 'react-bootstrap/Table';
-import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton} from "react-bootstrap";
+import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton,Spinner,ProgressBar} from "react-bootstrap";
 
 import Alert from 'react-bootstrap/Alert';
 
@@ -28,6 +17,76 @@ import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { SaleProductListGroup } from './SaleProductListContent';
 import { addNewSale } from './SaleApi';
+
+
+function AlertDismissibleDanger(props) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    /* 
+      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
+      Aks holda animatsiya (collapse effekti) ishlamaydi.
+    */
+    <Collapse in={show}>
+      <div> 
+        <Alert  variant="danger"  onClose={() => setShow(false)} dismissible >
+          <small>{props.alertMsg}</small>
+        </Alert>
+      </div>
+    </Collapse>
+  );
+}
+
+function ProgressDismissible() {
+ 
+  return (
+   
+    
+      <div className="d-flex flex-column"> 
+        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
+        <ProgressBar  className="my-3" animated variant="primary" now={100} />
+      </div>
+   
+  );
+}
+
+function AlertDismissibleSuccess() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    /* 
+      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
+      Aks holda animatsiya (collapse effekti) ishlamaydi.
+    */
+    <Collapse in={show}>
+      <div> 
+        <Alert  variant="success"  onClose={() => setShow(false)} dismissible >
+          <small>Пользователь успешно зарегистрирован</small>
+        </Alert>
+      </div>
+    </Collapse>
+  );
+}
+
+
 
 
 function PaymentList() {
@@ -109,15 +168,40 @@ function OrderListGroup(props) {
     props.setOrderList(prev => prev.filter(item => item.id !== id));
   };
 
+  // const increase = (id) => {
+  //   props.setOrderList(prev =>
+  //     prev.map(item =>
+  //       item.id === id
+  //         ? { ...item, quantity: item.quantity + 1 }
+  //         : item
+  //     )
+  //   );
+  // };
+
   const increase = (id) => {
-    props.setOrderList(prev =>
-      prev.map(item =>
-        item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
-  };
+  props.setOrderList(prev =>
+    prev.map(item => {
+
+      if (item.id === id) {
+
+        const stockQty = item.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
+
+        // ❗ LIMIT CHECK
+        if (item.quantity >= stockQty) {
+          console.log("Stock yetarli emas");
+          return item;
+        }
+
+        return {
+          ...item,
+          quantity: item.quantity + 1
+        };
+      }
+
+      return item;
+    })
+  );
+};
 
   const decrease = (id) => {
     props.setOrderList(prev =>
@@ -137,8 +221,11 @@ function OrderListGroup(props) {
 
 
   return (
-    <ListGroup as="ol"  className="rounded overflow-hidden">
-      
+    <div>
+      <small>Корзина</small>
+      <ListGroup as="ol"  className="rounded mt-2 overflow-hidden ">
+
+     
       {props.orderList.map((product,index) => (
         <ListGroup.Item
           key={product.id}
@@ -166,6 +253,7 @@ function OrderListGroup(props) {
                  decrease(product.id)
                    
                  }}
+                 
                 className="p-0 ms-2 d-flex" variant="outline-danger">
                 <svg className="mx-1 p-0" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                        <path d="M4.875 12C4.875 11.3787 5.37868 10.875 6 10.875H18.0007C18.622 10.875 19.1257 11.3787 19.1257 12C19.1257 12.6213 18.622 13.125 18.0007 13.125H6C5.37868 13.125 4.875 12.6213 4.875 12Z" fill="#323544"/>
@@ -175,8 +263,11 @@ function OrderListGroup(props) {
                 <Button
                 onClick={()=>{
                   increase(product.id)
+                  
                    
                  }}
+
+                 disabled={product.quantity >= (product.stock?.reduce((s, x) => s + x.quantity, 0) || 0)}
                 className="p-0 ms-2 d-flex" variant="outline-primary">
                 <svg className="mx-1 p-0" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12.0002 4.875C12.6216 4.875 13.1252 5.37868 13.1252 6V10.8752H18.0007C18.622 10.8752 19.1257 11.3789 19.1257 12.0002C19.1257 12.6216 18.622 13.1252 18.0007 13.1252H13.1252V18.0007C13.1252 18.622 12.6216 19.1257 12.0002 19.1257C11.3789 19.1257 10.8752 18.622 10.8752 18.0007V13.1252H6C5.37868 13.1252 4.875 12.6216 4.875 12.0002C4.875 11.3789 5.37868 10.8752 6 10.8752H10.8752V6C10.8752 5.37868 11.3789 4.875 12.0002 4.875Z" fill="#323544"/>
@@ -205,6 +296,7 @@ function OrderListGroup(props) {
         </ListGroup.Item>
       ))}
     </ListGroup>
+    </div>
   );
 }
 
@@ -276,6 +368,13 @@ const products = [
 
 function SaleAdd(props) {
 
+  const [open, setOpen] = useState(false);
+
+    const [pshow, psetShow] = useState(false);
+    const [showDanger, setShowDanger] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [showSuccess, setShowSuccess] = useState(false);
+
     //   const numbers = [1, 2, 3, 4];
 
     // const sum = numbers.reduce((acc, item) => {
@@ -292,14 +391,41 @@ function SaleAdd(props) {
 
   
     const handleSale = async () => {
-       try{
+      
+
+        try{
+          psetShow(true)
+          setShowDanger(false)
+          setShowSuccess(false);
           const res = await addNewSale(props.orderList,totalCost);
-          console.log(res);
+     
+          const result = await res.json();
+          if(!res.ok){
+            setShowDanger(true)
+            setAlertMessage(result.message)
+            psetShow(false)
           
-       }catch(error){
-        console.log(error.message);
+          }else{
+            setShowSuccess(true);
+            psetShow(false)
+            const timer = setTimeout(() => {
+              setShowSuccess(false);
+               window.location.reload(); 
+            }, 3000);
+           
+            return () => clearTimeout(timer); 
+          
+          }
+
+          
+          console.log(result);
+          
+        }catch(error){
+          setShowDanger(true)
+          setAlertMessage("Не удалось подключиться к серверу");
+          psetShow(false)
         
-       }
+        }
     }
 
 
@@ -308,14 +434,39 @@ function SaleAdd(props) {
   return (
     <div>
       <Form className="mt-0">
+      <small>Продажа</small>
+      <div className='d-grid my-2'>
+        <Button variant='outline-primary' onClick={() => setOpen(!open)}>
+        Дополнительные функции
+      </Button>
+      </div>
 
-        <Form.Group className="mb-2">
+        <Collapse in={open}>
+        <div className="my-2 p-2 bg-light">
+          <Form.Group className="mb-2">
           <Form.Control type="email" placeholder="Сумма скидка" />
         </Form.Group>
 
-        <CustomerList />
+         <CustomerList />
 
         <PaymentList />
+        </div>
+      </Collapse>
+
+      {showDanger &&
+           <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
+         }
+        {showSuccess &&
+                        <AlertDismissibleSuccess></AlertDismissibleSuccess>
+       }
+      
+      <Collapse in={pshow}>
+        <div>
+          {pshow && 
+            <ProgressDismissible></ProgressDismissible>
+             }
+          </div>
+       </Collapse>
 
         <Button
         onClick={()=>{
@@ -323,7 +474,9 @@ function SaleAdd(props) {
           handleSale()
           
         }}
-        className="mt-auto m-0 p-4 w-100">
+
+        disabled={totalCost<=0}
+        className="mt-auto p-4 w-100">
           <h4 className="m-0 p-0">
             Итого: {totalCost.toLocaleString("uz")} UZS
           </h4>

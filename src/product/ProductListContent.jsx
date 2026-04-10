@@ -128,7 +128,7 @@ function ProductListGroup(props) {
           setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
         }}
        />
-        <ListGroup as="ol"  className="rounded overflow-hidden">
+        <ListGroup as="ol"  className="rounded overflow-hiddenx">
       {productList.map((product,index) => (
         <ListGroup.Item
           key={product.id}

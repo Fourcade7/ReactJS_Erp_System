@@ -130,7 +130,7 @@ function StockListGroup(props) {
           setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
         }}
        />
-        <ListGroup as="ol"  className="rounded overflow-hidden">
+        <ListGroup as="ol"  className="rounded overflow-hiddenx">
       {productList.map((stock,index) => (
         <ListGroup.Item
           key={stock.id}
@@ -151,7 +151,7 @@ function StockListGroup(props) {
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.email}</small>
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.product.barCode}</small>
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.warehouse.name}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.quantity} {stock.product.unit}</small>
+            <small className={`ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ${stock.quantity <10 ? "text-danger": null}`}>{stock.quantity} {stock.product.unit}</small>
             
            
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
