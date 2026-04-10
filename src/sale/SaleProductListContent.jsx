@@ -4,7 +4,7 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "r
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {   addStock, deleteProduct, getAllProductPaginationSearch, getAllWareHouse, updateProduct } from "./SaleApi";
+import {   getAllProductPaginationSearch } from "./SaleApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
@@ -14,22 +14,14 @@ import ellipsis from "../assets/ellipsis.png"
 
 function SaleProductListGroup(props) {
  
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDel, setShowDel] = useState(false);
+  
   const [showLoad, setShowLoad] = useState(false);
   const [showRes, setShowRes] = useState(false);
   const [showResTitle, setShowResTitle] = useState("Success");
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
   const [showResAlert, setShowResAlert] = useState(false);
 
-  const [name,setName]=useState("");
-  const [barCode,setBarcode]=useState("");
-  const [price,setPrice]=useState("");
-  const [bulkPrice,setBulkPrice]=useState("");
-  const [buyPrice,setBuyPrice]=useState("");
-
-  const [showStockAlert, setShowStockAlert] = useState(false);
-  const [quantity,setQuantity]=useState("");
+  
   
  
 
@@ -38,20 +30,12 @@ function SaleProductListGroup(props) {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
 
-  const fileInputRef=useRef(null);
-  const [pid, setPid] = useState(-1);
-
 
   const [productList,setProductList] = useState([]); 
-  //const [orderList,setOrderList] = useState([]); 
 
   const [pageCount,setPageCount] = useState(0);
 
-   const [wareHouseList,setWareHouseList] = useState([]);
-   const [wareHouseName,setWareHouseName] = useState("");
-   const [wareHouseId,setWareHouseId] = useState(-1);
-  
-
+ 
   const [active, setActive] = useState(1);
 
 
@@ -73,8 +57,7 @@ function SaleProductListGroup(props) {
       try{
         setShowLoad(true)
         const productListPag= await getAllProductPaginationSearch(active,20,debouncedSearch);
-        const wareHouseListResult = await getAllWareHouse();
-        setWareHouseList(wareHouseListResult);
+       
         
         console.log("productListPag.stock");
         console.log(productListPag.stock);
@@ -85,6 +68,8 @@ function SaleProductListGroup(props) {
         
         
       }catch(error){
+          setShowRes(true)
+          setShowResTitle("Не удалось подключиться к серверу")
           console.log(error.message);
           setShowLoad(false)
           
@@ -225,228 +210,7 @@ function SaleProductListGroup(props) {
 
 
 
-           {
-            //Edit
-            }
-            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Редактировать</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Название продукт</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={name}
-                        onChange={(e)=>{setName(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите штрих код"
-                        value={barCode}
-                        onChange={(e)=>{setBarcode(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите сумма"
-                        value={price}
-                        onChange={(e)=>{setPrice(e.target.value)}}
-                        />
-
-                        <Form.Control className="mt-2" type="text" placeholder="Введите оптом сумма"
-                        value={bulkPrice}
-                        onChange={(e)=>{setBulkPrice(e.target.value)}}
-                        />
-
-                        <Form.Control className="mt-2" type="text" placeholder="Введите продажа сумма"
-                        value={buyPrice}
-                        onChange={(e)=>{setBuyPrice(e.target.value)}}
-                        />
-
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowEdit(false)}>
-                   Отмена
-                </Button>
-                <Button variant="warning" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await updateProduct(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice))
-                 const data= await res.json();
-                 setShowLoad(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Сотрудник успешно обновлён")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
-                >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {
-            //Stock add
-            }
-            <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Добавить начальный остаток</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Остаток</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите остаток"
-                        value={quantity}
-                        onChange={(e)=>{setQuantity(e.target.value)}}
-                        />
-
-                        <Dropdown className="my-2">
-                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
-                      
-                        <Form.Control className='me- me-2' value={wareHouseName}   type="text" placeholder="Выберите Склад" />
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu align="end" className="mt-1 w-100">
-                        
-                           {wareHouseList && 
-                           
-                           wareHouseList.map(wareHouse => (
-
-                            <div>
-                               <Dropdown.Item
-                              
-                              onClick={() => {
-                                  setWareHouseName(wareHouse.name)
-                                  setWareHouseId(wareHouse.id)
-
-                              }}
-                            >
-                              {wareHouse.name}
-                            </Dropdown.Item>
-
-                            
-                            </div>
-                           ))
-                           
-                           }
-                          
-                        </Dropdown.Menu>
-                      </Dropdown>
-                        
-
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowStockAlert(false)}>
-                   Отмена
-                </Button>
-                <Button variant="primary" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await addStock(pid,wareHouseId,Number(localStorage.getItem("userid")),Number(quantity))
-                 const data= await res.json();
-                 setShowLoad(false);
-                 setShowStockAlert(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Остаток успешно добавлен")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
-                >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            {
-            //delete
-            }
-
-            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Удалить</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDel(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" 
-                        onClick={ async ()=>{
-                          setShowResAlert(false)
-                          setShowLoadTitle("Загрузка...")
-                          setShowDel(false);
-                          setShowLoad(true);                         
-                          
-                          const res = await deleteProduct(pid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
-
-                          if(!res.ok){
-                              setShowResAlert(false)
-                          }else{
-                              setShowResAlert(true)
-                          }
-                           setTimeout(() => {
-                            console.log("log");
-                            setShowDel(false);
-                          }, 500);   
-                          
-                          setTimeout(() => {
-                            console.log("log");
-                            setShowLoadTitle("Почти готово")
-                          }, 1000);   
-                          
-                          
-
-                           setTimeout(() => {
-                            setShowLoad(false);
-                            setShowResTitle(deleteResponse.message)
-                            setShowRes(true);
-                          }, 2000);
-                          
-                          //window.location.reload();
-                        }
-                }>
-                    Удалить
-                </Button>
-                </Modal.Footer>
-            </Modal>
+          
 
             {
              //Loading
