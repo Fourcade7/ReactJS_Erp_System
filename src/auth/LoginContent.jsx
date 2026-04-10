@@ -52,8 +52,8 @@ function ProgressDismissible() {
 }
 
 function LoginForm(props) {  
-    const [login, setLogin] = useState("user3@gmail.com");
-   const [password, setPassword] = useState("password");
+    const [login, setLogin] = useState("");
+   const [password, setPassword] = useState("");
 
  
 
