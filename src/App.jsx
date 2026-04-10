@@ -22,7 +22,7 @@ function App() {
      <BrowserRouter>
       <Routes>
         {/* <Route path='' element={<PR></PR>}></Route> */}
-        <Route path='' element={<MainScreen></MainScreen>}></Route>
+        <Route path='' element={<LoginScreen></LoginScreen>}></Route>
         <Route path='home' element={<MainScreen></MainScreen>}></Route>
         <Route path='login' element={<LoginScreen></LoginScreen>}></Route>
         <Route path='register' element={<RegisterScreen></RegisterScreen>}></Route>
