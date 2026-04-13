@@ -116,7 +116,7 @@ function SaleListGroup(props) {
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{sale.id}</small>
+              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>Продажа id: {sale.id}</small>
               <h6 className='m-0 p-0'>{sale.user.username}</h6>
               <h6 className='ms-2 m-0 p-0'>{sale.customer.username}</h6>
             </div>
@@ -125,14 +125,20 @@ function SaleListGroup(props) {
             
             <Col className="col-auto">
              {sale.discount > 0 &&
-              <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>Скидка {sale.discount.toLocaleString("uz")} So'm</small>
+              <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>Скидка {sale.discount.toLocaleString("uz")} So'm</small>
              }
             </Col>
             <Col>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{sale.total.toLocaleString("uz")} So'm</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.items.length} x</small>
+            </Col>
+            <Col>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.items[0].warehouse.name}</small>
+            </Col>
+            <Col>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.total.toLocaleString("uz")} So'm</small>
             </Col>
            
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
+            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0 text-nowrap'>{
             
              new Date( sale.date).toLocaleString("UZ")
             }</small>

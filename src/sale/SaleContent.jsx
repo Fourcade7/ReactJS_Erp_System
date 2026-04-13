@@ -385,18 +385,25 @@ function SaleTab() {
       
       <Tab eventKey="sale" title="Добавить новый продажа">
         <div className='d-flex  justify-content-center'>
-        <Col xs={4}>
-        <SaleProductListGroup setOrderList={setOrderList}></SaleProductListGroup>
-        </Col>
+         <Row className="w-100">
 
-        <Col className='ms-2'>
-        <OrderListGroup orderList={orderList} setOrderList={setOrderList}></OrderListGroup>
-        </Col>
-         
-        <Col className='ms-2' xs={3}>
-        <SaleAdd orderList={orderList}></SaleAdd>
-        </Col>
-        
+              <Col xs={12} md={4} className="mb-3">
+                <SaleProductListGroup setOrderList={setOrderList} />
+              </Col>
+
+              <Col xs={12} md={5} className="mb-3">
+                <OrderListGroup
+                  orderList={orderList}
+                  setOrderList={setOrderList}
+                />
+              </Col>
+
+              <Col xs={12} md={3} className="mb-3">
+                <SaleAdd orderList={orderList} />
+              </Col>
+
+        </Row>
+            
         </div>
       </Tab>
       
