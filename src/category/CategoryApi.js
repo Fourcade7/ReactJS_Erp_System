@@ -14,7 +14,7 @@ async function updateCategory(
    
     
 
-    const response = await fetch(`http://109.196.103.18:3000/category/update/${id}`, {
+    const response = await fetch(`http://localhost:3000/category/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -35,7 +35,7 @@ async function deleteCategory(id){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/category/delete/${id}`,{ 
+        let response = await fetch(`http://localhost:3000/category/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -59,7 +59,7 @@ async function getAllCategory(){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/category/all`,{ 
+        let response = await fetch(`http://localhost:3000/category/all`,{ 
             method:"GET"
 
         });
@@ -81,7 +81,7 @@ async function getAllCategory(){
 
 async function addCategory(name,weight) {
     try {
-        let response = await fetch(`http://109.196.103.18:3000/category/add`, {
+        let response = await fetch(`http://localhost:3000/category/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

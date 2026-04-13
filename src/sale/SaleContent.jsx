@@ -18,74 +18,9 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { SaleProductListGroup } from './SaleProductListContent';
 import { addNewSale } from './SaleApi';
 import { SaleListGroup } from './SaleListContent';
+import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
 
 
-function AlertDismissibleDanger(props) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
-    <Collapse in={show}>
-      <div> 
-        <Alert  variant="danger"  onClose={() => setShow(false)} dismissible >
-          <small>{props.alertMsg}</small>
-        </Alert>
-      </div>
-    </Collapse>
-  );
-}
-
-function ProgressDismissible() {
- 
-  return (
-   
-    
-      <div className="d-flex flex-column"> 
-        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-        <ProgressBar  className="my-3" animated variant="primary" now={100} />
-      </div>
-   
-  );
-}
-
-function AlertDismissibleSuccess() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
-    <Collapse in={show}>
-      <div> 
-        <Alert  variant="success"  onClose={() => setShow(false)} dismissible >
-          <small>Пользователь успешно зарегистрирован</small>
-        </Alert>
-      </div>
-    </Collapse>
-  );
-}
 
 
 
@@ -349,12 +284,13 @@ function SaleAdd(props) {
           
           }else{
             setShowSuccess(true);
+            setAlertMessage("Успешно...");
             psetShow(false)
             const timer = setTimeout(() => {
               setShowSuccess(false);
                window.location.reload(); 
             }, 3000);
-           
+            
             return () => clearTimeout(timer); 
           
           }
@@ -399,7 +335,7 @@ function SaleAdd(props) {
            <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
          }
         {showSuccess &&
-                        <AlertDismissibleSuccess></AlertDismissibleSuccess>
+               <AlertDismissibleSuccess alertMsg={alertMessage}></AlertDismissibleSuccess>
        }
       
       <Collapse in={pshow}>
@@ -432,7 +368,7 @@ function SaleTab() {
 
 
    const [orderList,setOrderList] = useState([]); 
-   const [activeTab,setActiveTab] =useState("home")
+   const [activeTab,setActiveTab] =useState("sale")
   return (
     <Tabs
       activeKey={activeTab}
@@ -447,7 +383,7 @@ function SaleTab() {
          <SaleListGroup activeTab={activeTab}></SaleListGroup> 
       </Tab>
       
-      <Tab eventKey="profile" title="Добавить новый продажа">
+      <Tab eventKey="sale" title="Добавить новый продажа">
         <div className='d-flex  justify-content-center'>
         <Col xs={4}>
         <SaleProductListGroup setOrderList={setOrderList}></SaleProductListGroup>

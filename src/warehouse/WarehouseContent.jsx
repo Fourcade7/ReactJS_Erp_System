@@ -17,6 +17,7 @@ import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { useEffect, useState } from 'react';
 import { addWareHouse, deleteWareHouse, getAllWareHouse, updateWareHouse } from './WareHouseApi';
+import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
 
 
 
@@ -298,72 +299,7 @@ function WarehouseListGroup(props) {
 
 
 
-function AlertDismissibleDanger(props) {
-  const [show, setShow] = useState(false);
 
-  useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
-    <Collapse in={show}>
-      <div> 
-        <Alert className='w-100'  variant="danger"  onClose={() => setShow(false)} dismissible >
-          <small>{props.alertMsg}</small>
-        </Alert>
-      </div>
-    </Collapse>
-  );
-}
-
-function ProgressDismissible() {
- 
-  return (
-   
-    
-      <div className="d-flex flex-column"> 
-        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-        <ProgressBar  className="my-3" animated variant="primary" now={100} />
-      </div>
-   
-  );
-}
-
-function AlertDismissibleSuccess() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
-    <Collapse in={show}>
-      <div> 
-        <Alert  variant="success"  onClose={() => setShow(false)} dismissible >
-          <small>Пользователь успешно зарегистрирован</small>
-        </Alert>
-      </div>
-    </Collapse>
-  );
-}
 
 function WareHouseAdd(props){
 
@@ -394,6 +330,7 @@ function WareHouseAdd(props){
       }else{
         setShowSuccess(true);
         psetShow(false)
+        setAlertMessage("Успешно...");
         const timer = setTimeout(() => {
         props.tabChange("home")
         }, 2000);
@@ -423,7 +360,7 @@ function WareHouseAdd(props){
                               <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
                               }
                              {showSuccess &&
-                            <AlertDismissibleSuccess></AlertDismissibleSuccess>
+                            <AlertDismissibleSuccess alertMsg={alertMessage}></AlertDismissibleSuccess>
                             }
           
                              <Collapse in={pshow}>

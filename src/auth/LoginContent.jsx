@@ -7,49 +7,10 @@ import { Link, useNavigate } from "react-router-dom";
 import logoblack from "../assets/logoblack.png"
 import eyewhite from "../assets/eye.png"
 import { loginUser } from "./AuthApi";
+import { AlertDismissibleDanger, ProgressDismissible } from "../utils/UtilsContent";
 
 
 
-function AlertDismissibleExample(props) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
-    <Collapse in={show}>
-      <div> 
-        <Alert className="mt-3"  variant="danger"  onClose={() => setShow(false)} dismissible >
-          <small>{props.message}</small>
-        </Alert>
-      </div>
-    </Collapse>
-  );
-}
-
-
-function ProgressDismissible() {
- 
-  return (
-   
-    
-      <div className="d-flex flex-column"> 
-        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-        <ProgressBar  className="my-3" animated variant="primary" now={100} />
-      </div>
-   
-  );
-}
 
 function LoginForm(props) {  
     const [login, setLogin] = useState("");
@@ -184,7 +145,7 @@ function LoginScreen(){
                 <Col className="col-12 col-md-4 col-lg-4 col-sm-12">
                  {show && 
                  
-                 <AlertDismissibleExample message = {alertMessage}></AlertDismissibleExample>
+                 <AlertDismissibleDanger alertMsg = {alertMessage}></AlertDismissibleDanger>
                  }
 
                   

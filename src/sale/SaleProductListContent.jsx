@@ -122,8 +122,11 @@ function SaleProductListGroup(props) {
      
       { productList && 
        
-      productList.filter(p =>(p.stock.length>0)).map((product,index) => (
-        <ListGroup.Item
+      productList.filter(p =>(p.stock.length>0)).map((product,index) => {
+
+        const totalStock = product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
+        
+        return <ListGroup.Item
           key={product.id}
           as="li"
           className={`d-flex ${index % 2 === 1 ? "bg-light" : "bg-dark-subtle "} p-2`}
@@ -185,8 +188,8 @@ function SaleProductListGroup(props) {
             </div>
 
             <div className="d-flex flex-column  ms-auto ">
-              <small className={`m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap ${product.stock[0]?.quantity <10 ? "text-danger": null}`}>{product.stock[0]?.quantity} {product.unit}</small>            
-              <small className='m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap text-center'>{product.stock[0]?.warehouse.name}</small>            
+              <small className={`m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap ${totalStock <10 ? "text-danger": null}`} >{totalStock} {product.unit}</small>            
+              <small className='m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap text-center'>{product.stock?.map(s => s.warehouse?.name).join(", ")}</small>            
 
             </div>
              
@@ -201,7 +204,7 @@ function SaleProductListGroup(props) {
          
           
         </ListGroup.Item>
-      ))}
+      }   )}
     </ListGroup>
        <div className="mt-4">
          <Pagination>{items}</Pagination>
