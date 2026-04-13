@@ -112,6 +112,12 @@ function SaleListGroup(props) {
           key={sale.id}
           as="li"
           className="d-flex "
+          onClick={()=>{
+            console.log(sale);
+            props.setSelectedSale(sale);
+            props.setActiveTab("sale_detail")            
+            
+          }}
         >
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
@@ -128,15 +134,15 @@ function SaleListGroup(props) {
               <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>Скидка {sale.discount.toLocaleString("uz")} So'm</small>
              }
             </Col>
-            <Col>
+            
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.items.length} x</small>
-            </Col>
-            <Col>
+           
+           
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.items[0].warehouse.name}</small>
-            </Col>
-            <Col>
+           
+            
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.total.toLocaleString("uz")} So'm</small>
-            </Col>
+            
            
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0 text-nowrap'>{
             

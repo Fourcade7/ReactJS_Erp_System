@@ -19,6 +19,7 @@ import { SaleProductListGroup } from './SaleProductListContent';
 import { addNewSale } from './SaleApi';
 import { SaleListGroup } from './SaleListContent';
 import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
+import { SaleDetailScreen } from './SaleDetail';
 
 
 
@@ -369,6 +370,7 @@ function SaleTab() {
 
    const [orderList,setOrderList] = useState([]); 
    const [activeTab,setActiveTab] =useState("sale")
+   const [selectedSale,setSelectedSale] =useState(null)
   return (
     <Tabs
       activeKey={activeTab}
@@ -380,7 +382,7 @@ function SaleTab() {
       //style={{fontSize:"12px"}}
     >
       <Tab eventKey="home" title="Список продажи">
-         <SaleListGroup activeTab={activeTab}></SaleListGroup> 
+         <SaleListGroup activeTab={activeTab} setSelectedSale={setSelectedSale} setActiveTab={setActiveTab}></SaleListGroup> 
       </Tab>
       
       <Tab eventKey="sale" title="Добавить новый продажа">
@@ -406,6 +408,12 @@ function SaleTab() {
             
         </div>
       </Tab>
+
+      {activeTab==="sale_detail" && 
+       <Tab eventKey="sale_detail" title="Детали продажи">
+         <SaleDetailScreen selectedSale={selectedSale} ></SaleDetailScreen>
+      </Tab>
+      }
       
     </Tabs>
   );
