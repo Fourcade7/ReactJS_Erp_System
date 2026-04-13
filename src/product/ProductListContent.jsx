@@ -129,8 +129,11 @@ function ProductListGroup(props) {
         }}
        />
         <ListGroup as="ol"  className="rounded overflow-hiddenx">
-      {productList.map((product,index) => (
-        <ListGroup.Item
+      {productList.map((product,index) => {
+
+
+        const totalStock = product.stock?.reduce((sum, s) => sum + s.quantity, 0);
+       return  <ListGroup.Item
           key={product.id}
           as="li"
           className="d-flex "
@@ -146,15 +149,19 @@ function ProductListGroup(props) {
               
             <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.barCode}</small>
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.category.name}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.price} So'm</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.price} So'm</small>
             <Col className="col-auto">
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.bulkPrice} So'm</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.bulkPrice} So'm</small>
             </Col>
             <Col>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.buyPrice} So'm</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.buyPrice} So'm</small>
+            </Col>
+
+             <Col>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{`${product.stock[0]?.quantity !==undefined ? totalStock :"Новый"}` }</small>
             </Col>
            
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
+            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0 text-nowrap'>{
             
              new Date( product.date).toLocaleString("UZ")
             }</small>
@@ -205,7 +212,7 @@ function ProductListGroup(props) {
           </div>
           
                 </ListGroup.Item>
-              ))}
+            })}
       </ListGroup>
 
        <div className="mt-4">

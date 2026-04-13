@@ -169,7 +169,7 @@ function SaleProductListGroup(props) {
                       quantity: 1
                     }
                   ];
-  });
+           });
 }}
           
         >
