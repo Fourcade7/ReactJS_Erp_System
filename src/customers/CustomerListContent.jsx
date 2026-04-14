@@ -36,7 +36,7 @@ function CustomerListGroup(props) {
   const [uid, setUid] = useState(-1);
 
 
-  const [userList,setUserList] = useState([]);
+  const [customerList,setCustomerList] = useState([]);
   const [pageCount,setPageCount] = useState(0);
   
 
@@ -65,7 +65,7 @@ function CustomerListGroup(props) {
         console.log(userListPag);
         setPageCount(userListPag.meta.totalPages);
         console.log(active);
-        setUserList(userListPag.data)
+        setCustomerList(userListPag.data)
         setShowLoad(false)
         
         
@@ -116,26 +116,26 @@ function CustomerListGroup(props) {
         }}
        />
         <ListGroup as="ol"  className="rounded overflow-hiddenx">
-      {userList.map((user,index) => (
+      {customerList.map((customer,index) => (
         <ListGroup.Item
-          key={user.id}
+          key={customer.id}
           as="li"
-          className="d-flex "
+          className="d-flex"
         >
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{user.id}</small>
-              <h6 className='m-0 p-0'>{user.username}</h6>
-              <h6 className='ms-2 m-0 p-0'>{user.surname}</h6>
+              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{customer.id}</small>
+              <h6 className='m-0 p-0'>{customer.username}</h6>
+              <h6 className='ms-2 m-0 p-0'>{customer.surname}</h6>
             </div>
             <div className='d-flex ms-auto'>
               
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{customer.phone}</small>
            
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
             
-             new Date( user.createdAt).toLocaleString("UZ")
+             new Date( customer.createdAt).toLocaleString("UZ")
             }</small>
             
             </div>
@@ -155,19 +155,19 @@ function CustomerListGroup(props) {
             >
               <Dropdown.Item onClick={() => { 
                 setShowEdit(true);
-                 setUid(user.id);
-                 setUserName(user.username);
-                 setSurname(user.surname);
-                 setPhone(user.phone);
-                 setEmail(user.email);
-                 setRole(user.role);
+                 setUid(customer.id);
+                 setUserName(customer.username);
+                 setSurname(customer.surname);
+                 setPhone(customer.phone);
+                 setEmail(customer.email);
+                 setRole(customer.role);
                  //setPassword(user.password);
 
                 
                 }}>
                 Изменить
               </Dropdown.Item>
-              <Dropdown.Item onClick={() => { setShowDel(true); setUid(user.id); }}>
+              <Dropdown.Item onClick={() => { setShowDel(true); setUid(customer.id); }}>
                 Удалить
               </Dropdown.Item>
             </Dropdown.Menu>

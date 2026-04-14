@@ -52,10 +52,33 @@ async function getAllProductPaginationSearch(page,limit,search){
 
 
 
+async function getAllCustomersForSale(search) {
+
+    if (!search || search.trim() === "") {
+        return []; // yoki null qaytarasan (UI ga qarab)
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${search}`,
+            {
+                method: "GET"
+            }
+        );
+
+        const result = await response.json();
+        return result;
+
+    } catch (error) {
+        console.log("Catch Error:", error);
+    }
+}
 
 
 
-async function addNewSale(orderList,totalCost) {
+
+
+async function addNewSale(orderList,finalCost,paymentType,discount,customerId,userId) {
 
    
     
@@ -69,8 +92,8 @@ async function addNewSale(orderList,totalCost) {
     ))
 
     const payments =[{
-        method:"cash",
-        amount:totalCost
+        method:paymentType,
+        amount:finalCost
     }];
     
 
@@ -84,9 +107,9 @@ async function addNewSale(orderList,totalCost) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                customer_id:1,
-                user_id:1,
-                discount:0,
+                customer_id:customerId,
+                user_id:userId,
+                discount:discount,
                 items,
                 payments                               
             })
@@ -107,4 +130,8 @@ async function addNewSale(orderList,totalCost) {
 
 
 
-export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch}
+
+
+
+
+export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale}

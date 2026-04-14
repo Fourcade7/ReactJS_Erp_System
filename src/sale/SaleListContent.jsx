@@ -123,25 +123,23 @@ function SaleListGroup(props) {
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>Продажа id: {sale.id}</small>
-              <h6 className='m-0 p-0'>{sale.user.username}</h6>
-              <h6 className='ms-2 m-0 p-0'>{sale.customer.username}</h6>
+             
             </div>
             <div className='d-flex ms-auto'>
               
             
-            <Col className="col-auto">
+            
              {sale.discount > 0 &&
               <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>Скидка {sale.discount.toLocaleString("uz")} So'm</small>
              }
-            </Col>
             
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.items.length} x</small>
-           
-           
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.items[0].warehouse.name}</small>
+            
+            
            
             
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.total.toLocaleString("uz")} So'm</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{sale.payments.reduce(
+             (sum,item) => sum+item.amount,0
+              ).toLocaleString()} So'm</small>
             
            
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0 text-nowrap'>{

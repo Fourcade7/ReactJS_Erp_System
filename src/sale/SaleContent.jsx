@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { SaleProductListGroup } from './SaleProductListContent';
-import { addNewSale } from './SaleApi';
+import { addNewSale, getAllCustomersForSale } from './SaleApi';
 import { SaleListGroup } from './SaleListContent';
 import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
 import { SaleDetailScreen } from './SaleDetail';
@@ -26,7 +26,7 @@ import { SaleDetailScreen } from './SaleDetail';
 
 
 
-function PaymentList() {
+function PaymentList(props) {
   const [payment, setPayment] = useState("Способ оплаты");
 
   const payments = [
@@ -52,7 +52,9 @@ function PaymentList() {
           <Dropdown.Item
             key={item}
             active={payment === item}
-            onClick={() => setPayment(item)}
+            onClick={() => {
+              props.setPaymentType(item)
+              setPayment(item)}}
           >
             {item}
           </Dropdown.Item>
@@ -62,31 +64,63 @@ function PaymentList() {
   );
 }
 
-function CustomerList() {
-  const [customer, setCustomer] = useState("Имя или Номер телефона");
+function CustomerList(props) {
 
-  const customers = [
-    "Eshmat aka",
-    "Gishmat aka",
-    "Mirjalol uka",
-    
-  ];
+  const [searchTerm, setSearchTerm] = useState(""); // 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [customerList,setCustomerList] = useState([]);
+
+  const [customer, setCustomer] = useState("Имя или Номер телефона");
+   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      //setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytarish
+    }, 500); // 500ms kutish
+
+    return () => {
+      clearTimeout(handler); // Agar foydalanuvchi yana yozsa, eski taymerni o'chiradi
+    };
+  }, [searchTerm]);
+
+
+    useEffect(() => {
+    async function loadCustomers() {
+        try {
+            const customerListPag = await getAllCustomersForSale(debouncedSearch);
+
+            console.log(customerListPag);
+
+            setCustomerList(customerListPag.data);
+            
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    loadCustomers();
+}, [debouncedSearch]);
+
+ 
 
   return (
     <Dropdown className="my-2">
       <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
      
-      <Form.Control className='me- me-2' value={customer}  type="text" placeholder="Имя контрагент или Номер телефона" />
+      <Form.Control className='me- me-2' value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)}  type="text" placeholder="Имя контрагент или Номер телефона" />
       </Dropdown.Toggle>
 
       <Dropdown.Menu align="end" className="mt-1 w-100">
-        {customers.map((item) => (
+        {customerList?.map((item) => (
           <Dropdown.Item
-            key={item}
+            key={item}  
             active={customer === item}
-            onClick={() => setCustomer(item)}
+            onClick={() => {
+              setSearchTerm(`${item.username} ${item.surname}`)
+              props.setCustomerId(item.id)
+            }}
           >
-            {item}
+             {item.username} {item.surname} - {item.phone}
           </Dropdown.Item>
         ))}
       </Dropdown.Menu>
@@ -246,12 +280,21 @@ function OrderListGroup(props) {
 
 function SaleAdd(props) {
 
-  const [open, setOpen] = useState(false);
+    const [userId, setUserId] = useState(localStorage.getItem("userid") || 1);
+    const [open, setOpen] = useState(false);
+    const [customerId, setCustomerId] = useState(1);
+
+    const [paymentType, setPaymentType] = useState("Наличные");
+    const [discountType, setDiscountType] = useState("sum");
+    const [discountSum, setDiscountSum] = useState(0);
 
     const [pshow, psetShow] = useState(false);
     const [showDanger, setShowDanger] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [showSuccess, setShowSuccess] = useState(false);
+
+
+   
 
     //   const numbers = [1, 2, 3, 4];
 
@@ -261,10 +304,38 @@ function SaleAdd(props) {
 
     // console.log(sum); // 10
 
-  const totalCost = props.orderList?.reduce(
+
+  let totalCost = props.orderList?.reduce(
     (sum, item) => sum + item.buyPrice * item.quantity,
     0
   );
+
+  let finalCost = 0;
+
+  if (discountType === "sum") {
+    finalCost = totalCost - Number(discountSum || 0);
+  } else {
+    finalCost = totalCost - (totalCost * Number(discountSum || 0)) / 100;
+  }
+
+  // manfiy bo‘lib ketmasin
+  finalCost = Math.max(0, finalCost);
+
+  const discountAmount = discountType === "sum" ? discountSum : (totalCost * discountSum) / 100;
+
+  //const finalCost = totalCost - discountSum;
+
+  //   useEffect(() => {
+  //   const total = props.orderList?.reduce(
+  //     (sum, item) => sum + item.buyPrice * item.quantity,
+  //     0
+  //   );
+
+  //   setTotalCost(total);
+  // }, [props.orderList]);
+
+
+  
 
 
   
@@ -275,7 +346,7 @@ function SaleAdd(props) {
           psetShow(true)
           setShowDanger(false)
           setShowSuccess(false);
-          const res = await addNewSale(props.orderList,totalCost);
+          const res = await addNewSale(props.orderList,finalCost,paymentType,discountAmount,customerId,userId);
      
           const result = await res.json();
           if(!res.ok){
@@ -322,13 +393,32 @@ function SaleAdd(props) {
 
         <Collapse in={open}>
         <div className="my-2 p-2 bg-light">
-          <Form.Group className="mb-2">
-          <Form.Control type="email" placeholder="Сумма скидка" />
+          <small className=''>Скидка</small>
+          <Form.Group className="my-2">
+          <Form.Control type="text" placeholder="Скидка"
+          value={discountSum}
+          onChange={(e)=>{
+            
+            
+             setDiscountSum(Number(e.target.value) || 0);
+          }}
+          />
         </Form.Group>
+        <Form>
+          <Form.Check  inline name="discountType" label="Сумма" type={"radio"} id="1"
+           checked={discountType === "sum"}
+           onChange={() => setDiscountType("sum")}
+          ></Form.Check>
+           <Form.Check  inline name="discountType2" label={`% Процент ${discountType==="percent"? discountAmount.toLocaleString("uz")+" So'm" :""}` } type={"radio"} id="2"
+            checked={discountType === "percent"}
+            onChange={() => setDiscountType("percent")}
+           />
+          
+        </Form>
 
-         <CustomerList />
+         <CustomerList setCustomerId={setCustomerId} />
 
-        <PaymentList />
+        <PaymentList setPaymentType={setPaymentType} />
         </div>
       </Collapse>
 
@@ -336,7 +426,7 @@ function SaleAdd(props) {
            <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
          }
         {showSuccess &&
-               <AlertDismissibleSuccess alertMsg={alertMessage}></AlertDismissibleSuccess>
+           <AlertDismissibleSuccess alertMsg={alertMessage}></AlertDismissibleSuccess>
        }
       
       <Collapse in={pshow}>
@@ -354,10 +444,10 @@ function SaleAdd(props) {
           
         }}
 
-        disabled={totalCost<=0}
+        disabled={finalCost<=0}
         className="mt-auto p-4 w-100">
           <h4 className="m-0 p-0">
-            Итого: {totalCost.toLocaleString("uz")} UZS
+            Итого: {finalCost.toLocaleString("uz")} UZS
           </h4>
         </Button>
 
@@ -410,7 +500,7 @@ function SaleTab() {
       </Tab>
 
       {activeTab==="sale_detail" && 
-       <Tab eventKey="sale_detail" title="Детали продажи">
+       <Tab eventKey="sale_detail" title="Детали продажа">
          <SaleDetailScreen selectedSale={selectedSale} ></SaleDetailScreen>
       </Tab>
       }
