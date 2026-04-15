@@ -166,7 +166,8 @@ function SaleProductListGroup(props) {
                     ...prev,
                     {
                       ...product,
-                      quantity: 1
+                      quantity: 1,
+                      checkPrice:false
                     }
                   ];
            });

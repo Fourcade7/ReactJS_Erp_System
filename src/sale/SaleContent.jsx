@@ -134,6 +134,8 @@ function CustomerList(props) {
 
 function OrderListGroup(props) {
 
+  const [showBulkPrice, setShowBulkPrice] = useState(false);
+
 
   const handleDelete = (id) => {
     props.setOrderList(prev => prev.filter(item => item.id !== id));
@@ -204,9 +206,22 @@ function OrderListGroup(props) {
           className={`d-flex ${index % 2 === 1 ? "bg-light" : "bg-dark-subtle "} ps-2 pe-2`}
          
         >
-          <div className='d-flex flex-row w-100 '>
+          <div className='d-flex flex-row w-100'>
             <div>
-                <small className={`m-0 p-0 py-1 px-2 rounded mt-0 ${index % 2 === 1 ? "bg-dark-subtle" : "bg-light"}`}>{product.id}</small>
+            <small className={`m-0 p-0 py-1 px-2 rounded mt-0 ${index % 2 === 1 ? "bg-dark-subtle" : "bg-light"}`}>{product.id}</small>
+            <Form.Check className=' bg-dangerx me-2 mt-1'   name="discountType"  type={"checkbox"} id={product.id}
+              checked={product.checkPrice}
+              reverse            
+             onChange={() => {
+              props.setOrderList(prev =>
+                prev.map(item =>
+                  item.id === product.id
+                    ? { ...item, checkPrice: !item.checkPrice }
+                    : item
+                )
+              )
+            }}
+              ></Form.Check>
             </div>
             <div className='d-flex flex-column'>
             <h6 className='ms-2 m-0 p-0'>{product.name}</h6>              
@@ -246,20 +261,25 @@ function OrderListGroup(props) {
                 </Button>
             </div>
 
-            <div className='d-flex flex-column'>
+            <div className='d-flex flex-column me-1'>
             <small className='ms-0 m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.buyPrice.toLocaleString("uz")} So'm </small>            
-              
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-1 text-nowrap'>{(product.quantity*product.buyPrice).toLocaleString("uz")} So'm</small>
+            {product.checkPrice && 
+            <small className='ms-0 m-0 p-0 bg-warning-subtle px-2 rounded mt-1 text-nowrap'>{product.bulkPrice.toLocaleString("uz")} So'm </small>            
+            }
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-1 text-nowrap'>{(product.quantity* (product.checkPrice ? product.bulkPrice:product.buyPrice)).toLocaleString("uz")} So'm</small>
             
             </div>
 
-             <svg
+            <div className='d-flex flex-column align-items-end'>
+               <svg
             onClick={() => {
                 handleDelete(product.id)
             }}
-            className="ms-2" type="submit" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            className="bg-warningx me-0" type="submit" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M5.9545 5.95548C6.39384 5.51614 7.10616 5.51614 7.5455 5.95548L11.999 10.409L16.4524 5.95561C16.8918 5.51627 17.6041 5.51627 18.0434 5.95561C18.4827 6.39495 18.4827 7.10726 18.0434 7.5466L13.59 12L18.0434 16.4534C18.4827 16.8927 18.4827 17.605 18.0434 18.0444C17.6041 18.4837 16.8918 18.4837 16.4524 18.0444L11.999 13.591L7.5455 18.0445C7.10616 18.4839 6.39384 18.4839 5.9545 18.0445C5.51517 17.6052 5.51516 16.8929 5.9545 16.4535L10.408 12L5.9545 7.54647C5.51516 7.10713 5.51517 6.39482 5.9545 5.95548Z" fill="red"/>
             </svg>
+              
+            </div>
            
           </div>
          
@@ -306,7 +326,7 @@ function SaleAdd(props) {
 
 
   let totalCost = props.orderList?.reduce(
-    (sum, item) => sum + item.buyPrice * item.quantity,
+    (sum, item) => sum + (item.checkPrice ? item.bulkPrice: item.buyPrice) * item.quantity,
     0
   );
 

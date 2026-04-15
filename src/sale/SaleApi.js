@@ -87,7 +87,8 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
         product_id: item.id,
         warehouse_id: item.stock?.[0]?.warehouse?.id,
         quantity: item.quantity,
-        price: item.buyPrice 
+        price: item.checkPrice ? item.bulkPrice :item.buyPrice,
+        checkPrice:item.checkPrice 
        }
     ))
 

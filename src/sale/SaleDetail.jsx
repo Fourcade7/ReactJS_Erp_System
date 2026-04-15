@@ -40,7 +40,7 @@ function SaleDetailScreen(props){
                         props.selectedSale?.items.map((item,index) => {
 
                             return <>
-                                <ListGroup.Item>{index+1}: {item.product.name} {item.warehouse.name}  {item.quantity}x {item.price.toLocaleString("uz")} So'm</ListGroup.Item>
+                                <ListGroup.Item>{index+1}: {item.product.name} <small className="ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap">{item.warehouse.name}</small>   {item.quantity}x {item.price.toLocaleString("uz")} So'm  {item.checkPrice ? "Оптом цена" :""}</ListGroup.Item>
 
                                 </> 
                         })
@@ -53,7 +53,7 @@ function SaleDetailScreen(props){
                         props.selectedSale?.payments.map((item,index) => {
 
                             return (<>                                                          
-                                <ListGroup.Item>Способ оплаты: {item.method}  </ListGroup.Item> 
+                                <ListGroup.Item className={`${item.method==="В долг" ? "bg-danger": ""}`}>Способ оплаты: {item.method}  </ListGroup.Item> 
                                 <ListGroup.Item  >Оплачено: {item.amount.toLocaleString("uz")} So'm  </ListGroup.Item>                                 
                                </>  
                                )
