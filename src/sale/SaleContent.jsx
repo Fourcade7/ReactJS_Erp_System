@@ -30,12 +30,12 @@ function PaymentList(props) {
   const [payment, setPayment] = useState("Способ оплаты");
 
   const payments = [
-    "Наличные",
-    "Банковская карта",
-    "В долг",
-    "Click",
-    "Payme",
-    "Uzum",
+    "💵 Наличные",
+    "🏦 Банковская карта",
+    "🟥 В долг",
+    "💳 Click",
+    "💳 Payme",
+    "💷 Uzum",
   ];
 
   return (
@@ -53,7 +53,7 @@ function PaymentList(props) {
             key={item}
             active={payment === item}
             onClick={() => {
-              props.setPaymentType(item)
+              props.setPaymentType(item.slice(2).trim())
               setPayment(item)}}
           >
             {item}
@@ -208,8 +208,18 @@ function OrderListGroup(props) {
         >
           <div className='d-flex flex-row w-100'>
             <div>
-            <small className={`m-0 p-0 py-1 px-2 rounded mt-0 ${index % 2 === 1 ? "bg-dark-subtle" : "bg-light"}`}>{product.id}</small>
-            <Form.Check className=' bg-dangerx me-2 mt-1'   name="discountType"  type={"checkbox"} id={product.id}
+            <small className={`m-0 p-0 py-1 px-2 rounded mt-0 ${index % 2 === 1 ? "bg-dark-subtle" : "bg-light"}`}
+            onClick={()=>{
+              props.setOrderList(prev =>
+                prev.map(item =>
+                  item.id === product.id
+                    ? { ...item, checkPrice: !item.checkPrice }
+                    : item
+                )
+              )
+            }}
+            >{product.id}</small>
+            {/* <Form.Check className=' bg-dangerx me-2 mt-1'   name="discountType"  type={"checkbox"} id={product.id}
               checked={product.checkPrice}
               reverse            
              onChange={() => {
@@ -221,7 +231,7 @@ function OrderListGroup(props) {
                 )
               )
             }}
-              ></Form.Check>
+              ></Form.Check> */}
             </div>
             <div className='d-flex flex-column'>
             <h6 className='ms-2 m-0 p-0'>{product.name}</h6>              
@@ -337,11 +347,14 @@ function SaleAdd(props) {
   } else {
     finalCost = totalCost - (totalCost * Number(discountSum || 0)) / 100;
   }
+  // if(paymentType === "В долг"){
+  //   finalCost=0
+  // }
 
   // manfiy bo‘lib ketmasin
   finalCost = Math.max(0, finalCost);
 
-  const discountAmount = discountType === "sum" ? discountSum : (totalCost * discountSum) / 100;
+  const discountAmount = discountType === "sum" ? discountSum : (totalCost * discountSum) / 100 ;
 
   //const finalCost = totalCost - discountSum;
 
@@ -366,7 +379,7 @@ function SaleAdd(props) {
           psetShow(true)
           setShowDanger(false)
           setShowSuccess(false);
-          const res = await addNewSale(props.orderList,finalCost,paymentType,discountAmount,customerId,userId);
+          const res = await addNewSale(props.orderList,(paymentType === "В долг" ? 0:finalCost),paymentType,discountAmount,customerId,userId);
      
           const result = await res.json();
           if(!res.ok){
@@ -464,8 +477,8 @@ function SaleAdd(props) {
           
         }}
 
-        disabled={finalCost<=0}
-        className="mt-auto p-4 w-100">
+        disabled={finalCost<=0 && paymentType !== "В долг"}
+        className={`mt-auto p-4 w-100 ${paymentType === "В долг" ? "btn-danger":"btn-primary"}`}>
           <h4 className="m-0 p-0">
             Итого: {finalCost.toLocaleString("uz")} UZS
           </h4>
