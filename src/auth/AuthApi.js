@@ -1,13 +1,13 @@
 
 
 
-const urlGetALlProducts = "http://localhost:3000/getallproducts"
+const urlGetALlProducts = "http://109.196.103.18:3000/getallproducts"
 //const accessToken = "0401c8f573fb9123965566e3da60e6dd2fda3c1d"
 
 
 async function registerUser(username,surname,phone,email, password) {
     try {
-        let response = await fetch(`http://localhost:3000/user/add`, {
+        let response = await fetch(`http://109.196.103.18:3000/user/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -36,7 +36,7 @@ async function registerUser(username,surname,phone,email, password) {
 
 async function loginUser(email, password) {
     try {
-        let response = await fetch(`http://localhost:3000/user/login`, {
+        let response = await fetch(`http://109.196.103.18:3000/user/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -64,7 +64,7 @@ async function getAllContragents(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/getallcontragents`,{ 
+        let response = await fetch(`http://109.196.103.18:3000/getallcontragents`,{ 
             method:"GET"
 
         });
@@ -87,7 +87,7 @@ async function getAllProducts(offset,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/getallproducts/${offset}/${search}`,{ 
+        let response = await fetch(`http://109.196.103.18:3000/getallproducts/${offset}/${search}`,{ 
             method:"GET"
 
         });
