@@ -4,12 +4,12 @@
 
 
 
-async function getAllSaleListPaginationSearch(page,limit,search){
+async function getAllPurchaseListPaginationSearch(page,limit,search){
 
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/purchase/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
@@ -132,13 +132,6 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
 
 async function addNewPayment(saleId,method,amount) {
 
-   
-    
-    
-
-
-
-
     try {
         let response = await fetch(`http://localhost:3000/payment/add`, {
             method: "POST",
@@ -172,4 +165,4 @@ async function addNewPayment(saleId,method,amount) {
 
 
 
-export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment}
+export {getAllProductPaginationSearch,addNewSale,getAllPurchaseListPaginationSearch,getAllCustomersForSale,addNewPayment}

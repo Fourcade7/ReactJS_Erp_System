@@ -33,46 +33,46 @@ function LeftTab() {
         <Col sm={2} className='border-endx bg-body-tertiaryx ps-4' >
           <Nav variant="pills" className="flex-column mt-2 bg-body-tertiaryx">
             <Nav.Item variant="secondary">
-              <Nav.Link eventKey="first">Главная страница</Nav.Link>
+              <Nav.Link eventKey="first">🖥 Главная страница</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="second" >Сотрудники</Nav.Link>
+              <Nav.Link eventKey="second" >👨‍👦 Сотрудники</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="thrid" >Клиенты</Nav.Link>
+              <Nav.Link eventKey="thrid" >👨‍👦‍👦 Клиенты</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="fourth" disabled={!localStorage.getItem("role")==="User"}>Склад</Nav.Link>
+              <Nav.Link eventKey="fourth" disabled={!localStorage.getItem("role")==="User"}> 🏭 Склад</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="fifth" >Категория</Nav.Link>
+              <Nav.Link eventKey="fifth" >🏷️ Категория</Nav.Link>
             </Nav.Item>
             
 
              <Nav.Item>
-              <Nav.Link eventKey="seventh" >Продукты</Nav.Link>
+              <Nav.Link eventKey="seventh" >📦 Продукты</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="eighth" >Остатки</Nav.Link>
+              <Nav.Link eventKey="eighth" >🔢 Остатки</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="nineth" >Приход</Nav.Link>
+              <Nav.Link eventKey="nineth" >⬇️ Приход</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="teenth" >Продажа</Nav.Link>
+              <Nav.Link eventKey="teenth" >🛍️ Продажа</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="elevn" >Возврат</Nav.Link>
+              <Nav.Link eventKey="elevn" >↩️ Возврат</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="twelw" >Платеж</Nav.Link>
+              <Nav.Link eventKey="twelw" >💵 Платеж</Nav.Link>
             </Nav.Item>
           </Nav>
         </Col>

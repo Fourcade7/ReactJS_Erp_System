@@ -4,7 +4,7 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "r
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {  getAllSaleListPaginationSearch } from "./SaleApi";
+import {  getAllPurchaseListPaginationSearch } from "./PurchaseApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
@@ -50,7 +50,7 @@ function SaleListGroup(props) {
     async function loadAllSalePag() {
       try{
         //setShowLoad(true)
-        const saleListPag= await getAllSaleListPaginationSearch(active,10,debouncedSearch);
+        const saleListPag= await getAllPurchaseListPaginationSearch(active,10,debouncedSearch);
        
         
         console.log("productListPag.stock");
@@ -122,7 +122,7 @@ function SaleListGroup(props) {
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'>#️⃣ Продажа id: {sale.id}</small>
+              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'>#️⃣ Приход id: {sale.id}</small>
              
             </div>
             <div className='d-flex ms-auto'>

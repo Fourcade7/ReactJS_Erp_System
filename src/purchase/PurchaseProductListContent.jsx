@@ -4,7 +4,7 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "r
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {   getAllProductPaginationSearch } from "./SaleApi";
+import {   getAllProductPaginationSearch } from "./PurchaseApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"

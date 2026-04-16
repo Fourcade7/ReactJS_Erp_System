@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Col, ListGroup,Row ,Button,Modal,Form} from "react-bootstrap"
-import { addNewPayment } from "./SaleApi";
+import { addNewPayment } from "./PurchaseApi";
 
 
 function SaleDetailScreen(props){
@@ -74,7 +74,7 @@ function SaleDetailScreen(props){
                                )
                         })
                     } 
-                    <ListGroup.Item>Скидка: 💸{props.selectedSale.discount.toLocaleString("uz")}  So'm </ListGroup.Item>                   
+                    {/* <ListGroup.Item>Скидка: 💸{props.selectedSale?.discount.toLocaleString("uz")}  So'm </ListGroup.Item>                    */}
                     <ListGroup.Item className={`${props.selectedSale.total<=totalPayed+props.selectedSale.discount ? "bg-primary text-white": "bg-danger text-white"}`}>Общая стоимость продажи: 💵 {props.selectedSale.total.toLocaleString("uz")} So'm  </ListGroup.Item>                   
                </ListGroup>
                

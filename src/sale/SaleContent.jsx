@@ -504,11 +504,11 @@ function SaleTab() {
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
-      <Tab eventKey="home" title="Список продажи">
+      <Tab eventKey="home" title="☰ Список продажи">
          <SaleListGroup activeTab={activeTab} setSelectedSale={setSelectedSale} setActiveTab={setActiveTab}></SaleListGroup> 
       </Tab>
       
-      <Tab eventKey="sale" title="Добавить новый продажа">
+      <Tab eventKey="sale" title="✙ Добавить новый продажа">
         <div className='d-flex  justify-content-center'>
          <Row className="w-100">
 
@@ -533,8 +533,8 @@ function SaleTab() {
       </Tab>
 
       {activeTab==="sale_detail" && 
-       <Tab eventKey="sale_detail" title="Детали продажа">
-         <SaleDetailScreen selectedSale={selectedSale} ></SaleDetailScreen>
+       <Tab eventKey="sale_detail" title="ℹ️ Детали продажа">
+         <SaleDetailScreen selectedSale={selectedSale} setActiveTab={setActiveTab} setSelectedSale={setSelectedSale}></SaleDetailScreen>
       </Tab>
       }
       

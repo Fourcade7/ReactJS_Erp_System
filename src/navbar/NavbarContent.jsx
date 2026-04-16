@@ -16,9 +16,7 @@ function NavbarScreen() {
           <Nav className="ms-auto">
             <Nav.Link href="#home">Поддержка</Nav.Link>
             <Nav.Link href="#link">Планы</Nav.Link>
-            <NavDropdown title={
-              localStorage.getItem("username")
-            } id="basic-nav-dropdown"
+            <NavDropdown title={ `🙍🏻‍♂️ ${localStorage.getItem("username")}` } id="basic-nav-dropdown"
             align="end"
             >
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
@@ -28,7 +26,7 @@ function NavbarScreen() {
               <NavDropdown.Item href="#action/3.  3">Something</NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item href="#action/3.4">
-                Separated link
+               ❌ Separated link
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>
