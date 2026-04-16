@@ -114,7 +114,7 @@ function PaymentListGroup(props) {
           className="d-flex "
           onClick={()=>{
             console.log(paymentItem);
-            props.setSelectedSale(paymentItem);
+            props.setSelectedSale(paymentItem.sale || paymentItem.purchase || paymentItem.returns);
             props.setActiveTab("payment_detail")            
             
           }}
@@ -151,7 +151,7 @@ function PaymentListGroup(props) {
              
                 
 
-            {/* {paymentItem.sale && paymentItem.sale.payments.reduce((sum, item) => sum + item.amount, 0) < paymentItem.sale.total - paymentItem.sale.discount && (
+            {paymentItem.sale && paymentItem.sale.payments.reduce((sum, item) => sum + item.amount, 0) < paymentItem.sale.total - paymentItem.sale.discount && (
                 <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>
                   🟥 В долг
                 </small>
@@ -171,7 +171,7 @@ function PaymentListGroup(props) {
                   <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>
                     🟥 В долг
                   </small>
-              )} */}
+              )}
             
             
            
@@ -213,7 +213,7 @@ function PaymentListGroup(props) {
 
 
             
-               {paymentItem.sale && 
+               {/* {paymentItem.sale && 
                   
                      <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>💵 {paymentItem.sale.total.toLocaleString("uz")} So'm</small>
                                      
@@ -229,7 +229,7 @@ function PaymentListGroup(props) {
                   
                      <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>💵 {paymentItem.returns.total.toLocaleString("uz")} So'm</small>
                  
-                )}
+                )} */}
 
 
 

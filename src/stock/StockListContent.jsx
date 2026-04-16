@@ -231,7 +231,7 @@ function StockListGroup(props) {
                         <Dropdown className="my-2">
                         <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
                       
-                        <Form.Control className='me- me-2' value={wareHouseName}   type="text" placeholder="Выберите Склад" />
+                        <Form.Control className='me- me-2' value={wareHouseName} disabled  type="text" placeholder="Выберите Склад" />
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu align="end" className="mt-1 w-100">
