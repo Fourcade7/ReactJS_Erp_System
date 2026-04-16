@@ -416,7 +416,7 @@ function ReturnAdd(props) {
 
   return (
     <div>
-      <Form className="mt-0">
+      <div className="mt-0">
       <small>Продажа</small>
       <div className='d-grid my-2'>
         <Button variant='outline-warning' onClick={() => setOpen(!open)}>
@@ -484,7 +484,7 @@ function ReturnAdd(props) {
           </h4>
         </Button>
 
-      </Form>
+      </div>
     </div>
   );
 }

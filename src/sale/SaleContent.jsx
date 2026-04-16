@@ -425,35 +425,46 @@ function SaleAdd(props) {
       </div>
 
         <Collapse in={open}>
-        <div className="my-2 p-2 bg-light">
-          <small className=''>Скидка</small>
-          <Form.Group className="my-2">
-          <Form.Control type="text" placeholder="Скидка"
-          value={discountSum}
-          onChange={(e)=>{
-            
-            
-             setDiscountSum(Number(e.target.value) || 0);
-          }}
-          />
-        </Form.Group>
-        <Form>
-          <Form.Check  inline name="discountType" label="Сумма" type={"radio"} id="1"
-           checked={discountType === "sum"}
-           onChange={() => setDiscountType("sum")}
-          ></Form.Check>
-           <Form.Check  inline name="discountType2" label={`% Процент ${discountType==="percent"? discountAmount.toLocaleString("uz")+" So'm" :""}` } type={"radio"} id="2"
-            checked={discountType === "percent"}
-            onChange={() => setDiscountType("percent")}
-           />
-          
-        </Form>
+          <div className="my-2 p-2 bg-light">
+            <small>Скидка</small>
+            <Form.Group className="my-2">
+              <Form.Control 
+                type="number" // "text" o'rniga "number"
+                placeholder="Скидка"
+                value={discountSum === 0 ? "" : discountSum} // 0 bo'lsa bo'sh ko'rinsin, yozish oson bo'ladi
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDiscountSum(val === "" ? 0 : Number(val)); // Bo'sh bo'lsa 0, aks holda raqam
+                }}
+              />
+            </Form.Group>
 
-         <CustomerList setCustomerId={setCustomerId} />
+            {/* BU YERDA <Form> TEGINI OLIB TASHLAB, <DIV> QO'YDIK */}
+            <div className="mb-3"> 
+              <Form.Check  
+                inline 
+                name="discountGroup" // Name bir xil bo'lsa, tanlov to'g'ri ishlaydi
+                label="Сумма" 
+                type="radio" 
+                id="radio-sum"
+                checked={discountType === "sum"}
+                onChange={() => setDiscountType("sum")}
+              />
+              <Form.Check  
+                inline 
+                name="discountGroup" 
+                label={`% Процент ${discountType === "percent" ? discountAmount.toLocaleString("uz") + " So'm" : ""}`} 
+                type="radio" 
+                id="radio-percent"
+                checked={discountType === "percent"}
+                onChange={() => setDiscountType("percent")}
+              />
+            </div>
 
-        <PaymentList setPaymentType={setPaymentType} />
-        </div>
-      </Collapse>
+            <CustomerList setCustomerId={setCustomerId} />
+            <PaymentList setPaymentType={setPaymentType} />
+          </div>
+        </Collapse>
 
       {showDanger &&
            <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>

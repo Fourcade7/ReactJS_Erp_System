@@ -198,7 +198,7 @@ function ProductAdd(props){
      <Dropdown className="my-2">
                         <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
                       
-                        <Form.Control className='me- me-2' value={categoryName}   type="text" placeholder="Выберите категория" />
+                        <Form.Control className='me- me-2' value={categoryName}  readOnly  type="text" placeholder="Выберите категория" />
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu align="end" className="mt-1 w-100">
