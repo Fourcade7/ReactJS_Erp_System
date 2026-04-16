@@ -9,8 +9,8 @@ function NavbarScreen() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary sticky-top">
       <Container fluid>
-        <img src={logoblack} width={40} height={40} alt="" />
-        <Nav.Link href="#link">Главная страница</Nav.Link>
+        {/* <img src={logoblack} width={40} height={40} alt="" /> */}
+        <Nav.Link href="#link" className='ms-3'>  🆔 Главная страница</Nav.Link>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">

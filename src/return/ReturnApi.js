@@ -4,12 +4,12 @@
 
 
 
-async function getAllPurchaseListPaginationSearch(page,limit,search){
+async function getAllReturnsListPaginationSearch(page,limit,search){
 
    
 
     try{
-        let response = await fetch(`http://localhost:3000/purchase/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/return/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
@@ -78,7 +78,7 @@ async function getAllCustomersForSale(search) {
 
 
 
-async function addNewPurchase(orderList,finalCost,paymentType,discount,customerId,userId) {
+async function addNewReturn(orderList,finalCost,paymentType,discount,customerId,userId) {
 
    
     
@@ -87,7 +87,7 @@ async function addNewPurchase(orderList,finalCost,paymentType,discount,customerI
         product_id: item.id,
         warehouse_id: item.stock?.[0]?.warehouse?.id,
         quantity: item.quantity,
-        price: item.checkPrice ? item.bulkPrice :item.price,
+        price: item.checkPrice ? item.bulkPrice :item.buyPrice,
         checkPrice:item.checkPrice 
        }
     ))
@@ -102,7 +102,7 @@ async function addNewPurchase(orderList,finalCost,paymentType,discount,customerI
 
 
     try {
-        let response = await fetch(`http://localhost:3000/purchase/addfull`, {
+        let response = await fetch(`http://localhost:3000/return/addfull`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -130,8 +130,8 @@ async function addNewPurchase(orderList,finalCost,paymentType,discount,customerI
 
 
 
-async function addNewPayment(purchaseId,method,amount) {
-    console.log(purchaseId);
+async function addNewPayment(returnId,method,amount) {
+    console.log(returnId);
     
 
     try {
@@ -141,7 +141,7 @@ async function addNewPayment(purchaseId,method,amount) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                purchase_id:purchaseId,                
+                return_id:returnId,                
                 method,
                 amount                               
             })
@@ -167,4 +167,4 @@ async function addNewPayment(purchaseId,method,amount) {
 
 
 
-export {getAllProductPaginationSearch,addNewPurchase,getAllPurchaseListPaginationSearch,getAllCustomersForSale,addNewPayment}
+export {getAllProductPaginationSearch,addNewReturn,getAllReturnsListPaginationSearch,getAllCustomersForSale,addNewPayment}

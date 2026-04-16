@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Col, ListGroup,Row ,Button,Modal,Form} from "react-bootstrap"
-import { addNewPayment } from "./PurchaseApi";
+import { addNewPayment } from "./ReturnApi";
 
 
 function SaleDetailScreen(props){

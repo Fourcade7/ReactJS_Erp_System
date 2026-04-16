@@ -13,6 +13,7 @@ import PurchaseScreen from '../purchase/PurchaseContent';
 import SaleScreen from '../sale/SaleContent';
 
 import { useState } from 'react';
+import ReturnScreen from '../return/ReturnContent';
 
 function LeftTab() {
 
@@ -110,6 +111,10 @@ function LeftTab() {
 
             <Tab.Pane eventKey="teenth">
               <SaleScreen></SaleScreen>
+            </Tab.Pane>
+
+            <Tab.Pane eventKey="elevn">
+              <ReturnScreen></ReturnScreen>
             </Tab.Pane>
           </Tab.Content>
         </Col>

@@ -15,11 +15,11 @@ import { useEffect, useState } from 'react';
 
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
-import { SaleProductListGroup } from './PurchaseProductListContent';
-import { addNewPurchase,  getAllCustomersForSale } from './PurchaseApi';
-import { SaleListGroup } from './PurchaseListContent';
+import { SaleProductListGroup } from './ReturnProductListContent';
+import {   addNewReturn,  getAllCustomersForSale } from './ReturnApi';
+import { SaleListGroup } from './ReturnListContent';
 import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
-import { SaleDetailScreen } from './PurchaseDetail';
+import { SaleDetailScreen } from './ReturnDetail';
 
 
 
@@ -134,7 +134,7 @@ function CustomerList(props) {
 
 function OrderListGroup(props) {
 
-  
+  const [showBulkPrice, setShowBulkPrice] = useState(false);
 
 
   const handleDelete = (id) => {
@@ -272,11 +272,11 @@ function OrderListGroup(props) {
             </div>
 
             <div className='d-flex flex-column me-1'>
-            <small className='ms-0 m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.price.toLocaleString("uz")} So'm </small>            
+            <small className='ms-0 m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.buyPrice.toLocaleString("uz")} So'm </small>            
             {product.checkPrice && 
             <small className='ms-0 m-0 p-0 bg-warning-subtle px-2 rounded mt-1 text-nowrap'>{product.bulkPrice.toLocaleString("uz")} So'm </small>            
             }
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-1 text-nowrap'>{(product.quantity* (product.checkPrice ? product.bulkPrice:product.price)).toLocaleString("uz")} So'm</small>
+            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-1 text-nowrap'>{(product.quantity* (product.checkPrice ? product.bulkPrice:product.buyPrice)).toLocaleString("uz")} So'm</small>
             
             </div>
 
@@ -308,7 +308,7 @@ function OrderListGroup(props) {
 
 
 
-function PurchaseAdd(props) {
+function ReturnAdd(props) {
 
     const [userId, setUserId] = useState(localStorage.getItem("userid") || 1);
     const [open, setOpen] = useState(false);
@@ -336,7 +336,7 @@ function PurchaseAdd(props) {
 
 
   let totalCost = props.orderList?.reduce(
-    (sum, item) => sum + (item.checkPrice ? item.bulkPrice: item.price) * item.quantity,
+    (sum, item) => sum + (item.checkPrice ? item.bulkPrice: item.buyPrice) * item.quantity,
     0
   );
 
@@ -379,7 +379,7 @@ function PurchaseAdd(props) {
           psetShow(true)
           setShowDanger(false)
           setShowSuccess(false);
-          const res = await addNewPurchase(props.orderList,(paymentType === "В долг" ? 0:finalCost),paymentType,discountAmount,customerId,userId);
+          const res = await addNewReturn(props.orderList,(paymentType === "В долг" ? 0:finalCost),paymentType,discountAmount,customerId,userId);
      
           const result = await res.json();
           if(!res.ok){
@@ -419,7 +419,7 @@ function PurchaseAdd(props) {
       <Form className="mt-0">
       <small>Продажа</small>
       <div className='d-grid my-2'>
-        <Button variant='outline-info' onClick={() => setOpen(!open)}>
+        <Button variant='outline-warning' onClick={() => setOpen(!open)}>
         Дополнительные функции
       </Button>
       </div>
@@ -478,7 +478,7 @@ function PurchaseAdd(props) {
         }}
 
         disabled={finalCost<=0 && paymentType !== "В долг"}
-        className={`mt-auto p-4 w-100 ${paymentType === "В долг" ? "btn-danger":"btn-info"}`} >
+        className={`mt-auto p-4 w-100 ${paymentType === "В долг" ? "btn-danger":"btn-warning"}`} >
           <h4 className="m-0 p-0">
             Итого: {finalCost.toLocaleString("uz")} UZS
           </h4>
@@ -488,7 +488,7 @@ function PurchaseAdd(props) {
     </div>
   );
 }
-function PurchaseTab() {
+function ReturnTab() {
 
 
    const [orderList,setOrderList] = useState([]); 
@@ -504,17 +504,17 @@ function PurchaseTab() {
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
-      <Tab eventKey="home" title="☰ Список приходов">
+      <Tab eventKey="home" title="☰ Список возвратов">
          <SaleListGroup activeTab={activeTab} setSelectedSale={setSelectedSale} setActiveTab={setActiveTab}></SaleListGroup> 
       </Tab>
       
-      <Tab eventKey="sale" title="✙ Добавить новый приход">
+      <Tab eventKey="sale" title="✙ Добавить новый возврат">
         <div className='d-flex  justify-content-center'>
          <Row className="w-100">
               
               
               <Col xs={12} md={3} className="mb-3">
-                <PurchaseAdd orderList={orderList} />
+                <ReturnAdd orderList={orderList} />
               </Col>
 
                <Col xs={12} md={5} className="mb-3">
@@ -538,7 +538,7 @@ function PurchaseTab() {
       </Tab>
 
       {activeTab==="sale_detail" && 
-       <Tab eventKey="sale_detail" title="ℹ️ Детали прихода">
+       <Tab eventKey="sale_detail" title="ℹ️ Детали возврата">
          <SaleDetailScreen selectedSale={selectedSale} setActiveTab={setActiveTab} setSelectedSale={setSelectedSale}></SaleDetailScreen>
       </Tab>
       }
@@ -552,10 +552,10 @@ function PurchaseTab() {
 
 
 
-function PurchaseScreen() {
+function ReturnScreen() {
   return (
    <div>
-    <PurchaseTab></PurchaseTab>
+    <ReturnTab></ReturnTab>
    
    </div>
    
@@ -565,4 +565,4 @@ function PurchaseScreen() {
 
 
 
-export default PurchaseScreen;
+export default ReturnScreen;

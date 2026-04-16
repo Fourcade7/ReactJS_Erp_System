@@ -4,7 +4,7 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "r
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {   getAllProductPaginationSearch } from "./PurchaseApi";
+import {   getAllProductPaginationSearch } from "./ReturnApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
@@ -195,7 +195,7 @@ function SaleProductListGroup(props) {
             </div>
              
             <div className='d-flex flex-column ms-2'>
-            <small className='ms-0 m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.price.toLocaleString("uz")} So'm</small>            
+            <small className='ms-0 m-0 p-0 bg-primary-subtle px-2 rounded mt-1 text-nowrap'>{product.buyPrice.toLocaleString("uz")} So'm</small>            
               
             <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-1 text-nowrap'>{product.category.name}</small>
             
