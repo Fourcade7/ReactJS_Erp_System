@@ -53,10 +53,10 @@ function PaymentListGroup(props) {
         const paymentListPag= await getAllPaymentListPaginationSearch(active,10,debouncedSearch);
        
         
-        console.log("productListPag.stock");
-        console.log(paymentListPag.stock);
+        //console.log("productListPag.stock");
+        //console.log(paymentListPag.stock);
         setPageCount(paymentListPag.meta.totalPages);
-        console.log(active);
+        //console.log(active);
         setPaymentList(paymentListPag.data)
         
         

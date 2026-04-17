@@ -59,10 +59,10 @@ function SaleProductListGroup(props) {
         const productListPag= await getAllProductPaginationSearch(active,20,debouncedSearch);
        
         
-        console.log("productListPag.stock");
-        console.log(productListPag.stock);
+        //console.log("productListPag.stock");
+        //console.log(productListPag.stock);
         setPageCount(productListPag.meta.totalPages);
-        console.log(active);
+        //console.log(active);
         setProductList(productListPag.data)
         setShowLoad(false)
         

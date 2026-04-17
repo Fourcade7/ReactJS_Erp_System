@@ -9,13 +9,13 @@ async function getAllSaleListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/sale/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/sale/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
 
         const result = await response.json();
-        //console.log(result);
+        console.log(result);
         
         return result;
 
@@ -32,13 +32,13 @@ async function getAllProductPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
 
         const result = await response.json();
-        //console.log(result);
+        console.log(result);
         
         return result;
 
@@ -60,7 +60,7 @@ async function getAllCustomersForSale(search) {
 
     try {
         const response = await fetch(
-            `http://109.196.103.18:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${search}`,
+            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${search}`,
             {
                 method: "GET"
             }
@@ -102,7 +102,7 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
 
 
     try {
-        let response = await fetch(`http://109.196.103.18:3000/sale/addfull`, {
+        let response = await fetch(`http://localhost:3000/sale/addfull`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -140,7 +140,7 @@ async function addNewPayment(saleId,method,amount) {
 
 
     try {
-        let response = await fetch(`http://109.196.103.18:3000/payment/add`, {
+        let response = await fetch(`http://localhost:3000/payment/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

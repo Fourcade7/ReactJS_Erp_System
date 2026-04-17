@@ -74,10 +74,10 @@ function ProductListGroup(props) {
         const wareHouseListResult = await getAllWareHouse();
         setWareHouseList(wareHouseListResult)
         
-        console.log("productListPag.stock");
-        console.log(productListPag.stock);
+        //console.log("productListPag.stock");
+        //console.log(productListPag.stock);
         setPageCount(productListPag.meta.totalPages);
-        console.log(active);
+        //console.log(active);
         setProductList(productListPag.data)
         setShowLoad(false)
         

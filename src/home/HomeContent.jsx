@@ -4,10 +4,15 @@ import {BarChartEdited, ChartLinearEdited} from "./statistics/ChartsContent";
 import Card from 'react-bootstrap/Card';
 import { Col, Row ,Tab,Tabs,ListGroup,ListGroupItem,Button} from "react-bootstrap";
 
+import { useState,useEffect } from "react";
+import { getAllSaleMonth, getAllSaleToday, getAllSaleWeek } from "./statistics/HomeApi";
 
+function CardScreen(props){
 
-function CardScreen(){
-
+  
+  const todaySaleSum = props.todaySaleList.reduce((sum,item)=> sum+item.total,0)
+  const weekSaleSum = props.weekSaleList.reduce((sum,item)=> sum+item.total,0)
+  const monthSaleSum = props.monthSaleList.reduce((sum,item)=> sum+item.total,0)
 
   return(
     <div>
@@ -16,7 +21,7 @@ function CardScreen(){
         <Card>
       <Card.Body>
         <Card.Title>
-          <h1 className="fw-bold text-success">176.000</h1>
+          <h3 className="fw-bold text-success"> {todaySaleSum.toLocaleString("uz")} So'm</h3>
         </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
         <Card.Text>
@@ -31,7 +36,7 @@ function CardScreen(){
         <Card>
       <Card.Body>
         <Card.Title>
-          <h1 className="fw-bold">213.000</h1>
+          <h3 className="fw-bold">{weekSaleSum.toLocaleString("uz")} So'm</h3>
         </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
         <Card.Text>
@@ -46,7 +51,7 @@ function CardScreen(){
         <Card>
       <Card.Body>
         <Card.Title>
-          <h1 className="fw-bold">417.000</h1>
+          <h3 className="fw-bold">{monthSaleSum.toLocaleString("uz")} So'm</h3>
         </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
         <Card.Text>
@@ -61,7 +66,7 @@ function CardScreen(){
         <Card>
       <Card.Body>
         <Card.Title>
-          <h1 className="fw-bold text-danger">18.000</h1>
+          <h3 className="fw-bold text-danger">18.000 So'm</h3>
         </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
         <Card.Text>
@@ -80,79 +85,6 @@ function CardScreen(){
 
 }
 
-function CardScreen2(){
-
-
-  return(
-    <div>
-      <Row className="g-2">
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h1 className="fw-bold text-success">176.000</h1>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-          Сумма сегодняшних продаж
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h1 className="fw-bold">213.000</h1>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-          Еженедельная сумма продаж
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h1 className="fw-bold">417.000</h1>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-         Ежемесячная сумма продаж
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h1 className="fw-bold text-danger">18.000</h1>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-          Сумма продажи долгов
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-      </Row>
-
-
-
-    </div>  
-  )
-
-}
 
 function CustomerListGroup() {
   const users = [
@@ -215,70 +147,68 @@ function CustomerListGroup() {
   );
 }
 
-function CardImage(){
-  return(
-    <Card>
-        <Card.Img variant="top" className="object-fit-cover" height={200} src="https://static.vecteezy.com/system/resources/previews/032/498/283/non_2x/abstract-spiral-dark-blue-background-free-vector.jpg" />
-        <Card.Body>
-          <Card.Text>
-            Some quick example text to build on the card title and make up the
-            bulk of the card's content.
-          </Card.Text>
-        </Card.Body>
-      </Card>
-  )
-}
-
-function HomeTab() {
-  return (
-    <Tabs
-      defaultActiveKey="profile"
-      id="fill-tab-example"
-      className="mb-3 mt-3"
-      //fill
-      variant='underline' //pills //tabs //underline
-      //style={{fontSize:"12px"}}
-    >
-      <Tab eventKey="home" title="Список остатков">
-         
-      </Tab>
-      <Tab eventKey="profile" title="Добавить новый остаток">
-        <div className='d-flex align-items-center justify-content-center'>
-        <Col xs={4}>
-        
-        </Col>
-        </div>
-      </Tab>
-      {/* <Tab eventKey="longer-tab" title="Loooonger Tab">
-        Tab content for Loooonger Tab
-      </Tab>
-      <Tab eventKey="contact" title="Contact" disabled>
-        Tab content for Contact
-      </Tab> */}
-    </Tabs>
-  );
-}
-
 
 function HomeScreen(){
+
+  const monthName = new Date().toLocaleString("ru-RU", {
+    month: "long",
+  });
+  const [todaySaleList,setTodaySaleList] = useState([]);
+  const [weekSaleList,setWeekSaleList] = useState([]);
+  const [monthSaleList,setMonthSaleList] = useState([]);
+  
+     useEffect(()=>{
+      const handleSalesRange = async ()=>{
+      try{
+  
+        const resToday = await getAllSaleToday();
+        const resWeek = await getAllSaleWeek();
+        const resMonth = await getAllSaleMonth();
+  
+        if(!resToday.ok){
+          console.log(resToday);
+          
+        }else{
+         
+          const resultToday = await resToday.json();
+          const resultWeek = await resWeek.json();
+          const resultMonth = await resMonth.json();
+        
+          setTodaySaleList(resultToday)
+          setWeekSaleList(resultWeek); 
+          setMonthSaleList(resultMonth);      
+          
+        }
+      }catch(error){
+        console.log(error.message);      
+      }
+     };
+     handleSalesRange()
+     },[])
+
+
+
+
     return(
-        <div className="">
-          <CardScreen></CardScreen>
+        <div className="d-flex flex-column  ">
+          <CardScreen todaySaleList={todaySaleList} weekSaleList={weekSaleList} monthSaleList={monthSaleList}></CardScreen>
           <br />
+          <small className="mx-auto">{monthName}</small>
           <Row  className="g-2">
+             <Col className="col-12 col-lg-8 col-md-12">
+            <ChartLinearEdited monthSaleList={monthSaleList}></ChartLinearEdited>
+            </Col>
             <Col className="col-12 col-lg-4 col-md-12">
-            <BarChartEdited></BarChartEdited>
+            <BarChartEdited weekSaleList={weekSaleList}></BarChartEdited>
             </Col>
-            <Col className="col-12 col-lg-8 col-md-12">
-            <ChartLinearEdited></ChartLinearEdited>
-            </Col>
+           
             
           </Row>
           <br />
 
         <h6>Список должников</h6>
         <br />
-        <CustomerListGroup></CustomerListGroup>
+        {/* <CustomerListGroup></CustomerListGroup> */}
           
           
          

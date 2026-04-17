@@ -52,7 +52,29 @@ const data = [
 ];
 // #endregion
 
-function BarChartEdited() {
+function BarChartEditedold(props) {
+  const buildWeeklyChart = (sales) => {
+  const week = [
+    { name: 'Пн', pv: 0 },
+    { name: 'Вт', pv: 0 },
+    { name: 'Ср', pv: 0 },
+    { name: 'Чт', pv: 0 },
+    { name: 'Пт', pv: 0 },
+    { name: 'Сб', pv: 0 },
+    { name: 'Вс', pv: 0 },
+  ];
+
+  sales.forEach((sale) => {
+    const date = new Date(sale.date);
+    const day = date.getDay(); // 0=Sun ... 6=Sat
+
+    const index = day === 0 ? 6 : day - 1;
+
+    week[index].pv += Number(sale.totalPrice);
+  });
+
+  return week;
+};
   return (
     <div style={{ width: '100%' }}>
       <ResponsiveContainer width="100%" height={200}>
@@ -96,46 +118,97 @@ function BarChartEdited() {
   );
 }
 
-function ChartLinearEdited() {
+function BarChartEdited(props) {
+
+  const week = [
+    { name: 'Пн', pv: 0 },
+    { name: 'Вт', pv: 0 },
+    { name: 'Ср', pv: 0 },
+    { name: 'Чт', pv: 0 },
+    { name: 'Пт', pv: 0 },
+    { name: 'Сб', pv: 0 },
+    { name: 'Вс', pv: 0 },
+  ];
+
+  props.weekSaleList.forEach((sale) => {
+    const date = new Date(sale.date);
+    const day = date.getDay(); // 0=Sun ... 6=Sat
+
+    const index = day === 0 ? 6 : day - 1;
+
+    week[index].pv += Number(sale.total || 0);
+  });
+
   return (
-    <div className='' style={{ width: '100%' }}>
+    <div style={{ width: '100%' }}>
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart
-          data={data2}
-          margin={{
-            top: 5,
-            right: 0,
-            left: 0,
-            bottom: 5,
-          }}
-        >
+        <BarChart data={week}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-          dataKey="name"
-          tick={{ fontSize: 10 }} 
-          />
-          
-           <YAxis 
-            tick={{ fontSize: 10 }} 
-          />
 
-          <Tooltip 
-            contentStyle={{ fontSize: '10px' }}
-            labelStyle={{ fontSize: '10px' }}
-          />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+          {/* <YAxis tick={{ fontSize: 10 }} /> */}
 
-          <Legend 
-            wrapperStyle={{ fontSize: '10px' }}
+          <Tooltip
+            formatter={(value) => value.toLocaleString("uz")}
           />
+          <YAxis
+          tick={{ fontSize: 10 }}
+            tickFormatter={(value) => value.toLocaleString("uz")}
+          />
+          <Legend />
 
-          <Line type="monotone" dataKey="uv" stroke="blue" />
-          {/* <Line type="monotone" dataKey="uv" stroke="black" /> */}
-        </LineChart>
+          <Bar dataKey="pv" fill="#0b4bedff" />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
+function ChartLinearEdited(props) {
 
+  const month = Array.from({ length: 31 }, (_, i) => ({
+    name: String(i + 1),
+    uv: 0,
+  }));
+
+  const monthName = new Date().toLocaleString("ru-RU", {
+    month: "long",
+  });
+
+  props.monthSaleList.forEach((sale) => {
+    const date = new Date(sale.date);
+    const day = date.getDate(); // 1–31
+
+    month[day - 1].uv += Number(sale.total || 0);
+  });
+
+  return (
+    <div className='bg-primaryx d-flex flex-column' style={{ width: '100%' }}>
+       
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={month}>
+          <CartesianGrid strokeDashar ray="3 3" />
+
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+          <YAxis
+              tick={{ fontSize: 10 }}
+              tickFormatter={(value) => value.toLocaleString("uz")}
+            />
+
+         <Tooltip
+          contentStyle={{ fontSize: '10px' }}
+          labelStyle={{ fontSize: '10px' }}
+          formatter={(value) => value.toLocaleString("uz")}
+          />
+
+          <Legend wrapperStyle={{ fontSize: '10px' }} />
+
+          <Line type="monotone" dataKey="uv" stroke="blue" />
+        </LineChart>
+      </ResponsiveContainer>
+     
+    </div>
+  );
+}
 
 
 

@@ -88,7 +88,7 @@ function CustomerList(props) {
         try {
             const customerListPag = await getAllCustomersForSale(debouncedSearch);
 
-            console.log(customerListPag);
+            //console.log(customerListPag);
 
             setCustomerList(customerListPag.data);
             

@@ -9,7 +9,7 @@ async function getAllPaymentListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/payment/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/payment/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });

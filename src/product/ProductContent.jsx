@@ -62,11 +62,11 @@ function ProductAdd(props){
         console.log(res);
         
       }else{
-        console.log(res);
+        //console.log(res);
         const result = await res.json();
-        console.log(result);
+        //console.log(result);
         
-        console.log("wlist");
+        //console.log("wlist");
         setCategoryList(result)       
         
       }
@@ -248,7 +248,7 @@ function ProductAdd(props){
 
 function ProductTab() {
 
-   const [activeTab,setActiveTab] =useState("home")
+   const [activeTab,setActiveTab] =useState("add_new")
   return (
     <Tabs
       activeKey={activeTab}
@@ -262,7 +262,7 @@ function ProductTab() {
       <Tab eventKey="home" title="Список продуктов">
          <ProductListGroup activeTab={activeTab}></ProductListGroup>
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый продукт">
+      <Tab eventKey="add_new" title="Добавить новый продукт">
         <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <ProductAdd

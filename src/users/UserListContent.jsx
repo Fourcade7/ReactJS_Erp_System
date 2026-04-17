@@ -89,9 +89,9 @@ function UserListGroup(props) {
         //setShowLoad(true)
         const userListPag= await getAllUsersPaginationSearch(active,10,debouncedSearch);
         
-        console.log(userListPag);
+        //console.log(userListPag);
         setPageCount(userListPag.meta.totalPages);
-        console.log(active);
+        //console.log(active);
         setUserList(userListPag.data)
         setShowLoad(false)  
         

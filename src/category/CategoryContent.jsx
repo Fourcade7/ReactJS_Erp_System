@@ -54,11 +54,11 @@ function WarehouseListGroup(props) {
         console.log(res);
         
       }else{
-        console.log(res);
+        //console.log(res);
         const result = await res.json();
-        console.log(result);
+        //console.log(result);
         
-        console.log("wlist");
+        //console.log("wlist");
         setCategoryList(result)       
         
       }
