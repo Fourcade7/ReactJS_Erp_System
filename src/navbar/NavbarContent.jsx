@@ -7,7 +7,7 @@ import logoblack from "../assets/logoblack.png"
 
 function NavbarScreen() {
   return (
-    <Navbar expand="lg" className="bg-body-tertiary sticky-top">
+    <Navbar expand="lg" className="bg-body-tertiary sticky-top" style={{ zIndex: 1030 }}>
       <Container fluid>
         {/* <img src={logoblack} width={40} height={40} alt="" /> */}
         <Nav.Link href="#link" className='ms-3'>  🆔 Главная страница</Nav.Link>

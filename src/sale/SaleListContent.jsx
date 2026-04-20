@@ -4,12 +4,158 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "r
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {  getAllSaleListPaginationSearch } from "./SaleApi";
+import {  getAllSaleDebtList, getAllSaleListPaginationSearch } from "./SaleApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
 
 
+
+
+
+
+function SaleListGroupForHome2(props) {
+ 
+ 
+  const [showResAlert, setShowResAlert] = useState(false);
+
+ 
+ 
+
+  //const [reload, setReload] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+
+
+  const [saleList,setSaleList] = useState([]); 
+  const [pageCount,setPageCount] = useState(0);
+
+   
+  const [active, setActive] = useState(1);
+
+
+//   useEffect(() => {
+//   const handler = setTimeout(() => {
+//     setDebouncedSearch(searchTerm);
+//     setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytarish
+//   }, 500); // 500ms kutish
+
+//   return () => {
+//     clearTimeout(handler); // Agar foydalanuvchi yana yozsa, eski taymerni o'chiradi
+//   };
+// }, [searchTerm]);
+
+  
+
+  useEffect(()=>{
+    async function loadAllSalePag() {
+      try{
+        //setShowLoad(true)
+        const saleListPag= await getAllSaleDebtList();
+       
+        
+        // console.log("productListPag.stock");
+        // console.log(saleListPag.stock);
+        // setPageCount(saleListPag.meta.totalPages);
+        // console.log(active);
+        setSaleList(saleListPag)
+        
+        
+        
+      }catch(error){
+          console.log(error.message);
+         
+      }
+    }
+
+    
+      if (props.activeTab === "home") {
+        loadAllSalePag();
+      }
+      
+  },[props.activeTab])  
+
+
+
+  //Pagination
+
+  
+
+  // let items = [];
+
+  // for (let number = 1; number <= pageCount; number++) {
+  //   items.push(
+  //     <Pagination.Item
+  //       key={number}
+  //       active={number === active}
+  //       onClick={() => setActive(number)} // 🔥 click handler
+  //     >
+  //       {number}
+  //     </Pagination.Item>
+  //   );
+  // }
+
+
+
+
+  return (
+    <div>
+     
+        <ListGroup as="ol"  className="rounded overflow-hiddenx">
+      {saleList.map((sale,index) => (
+        <ListGroup.Item
+          key={sale.id}
+          as="li"
+          className="d-flex "
+          onClick={()=>{
+            console.log(sale);
+            props.setSelectedSale(sale);
+            props.setActiveTab("sale_detail")            
+            
+          }}
+        >
+          <div className='d-flex flex-row w-100'>
+            <div className='d-flex'>
+              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
+              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'>#️⃣ Продажа id: {sale.id}</small>
+             
+            </div>
+            <div className='d-flex ms-auto'>
+              
+            
+            
+             {sale.discount > 0 &&
+              <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>💸 Скидка {sale.discount.toLocaleString("uz")} So'm</small>
+             }
+
+             {sale.total!==(sale.payments.reduce((sum,item) => sum+item.amount,0 )+sale.discount) &&
+              <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>🟥 В долг</small>
+             }
+            
+            
+            
+           
+            
+            <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>💵 {sale.payments.reduce((sum,item) => sum+item.amount,0 ).toLocaleString("uz")} So'm</small>
+            
+           
+            <small className='ms-2 m-0 p-0 bg-primary-subtlex px-2 rounded mt-0 text-nowrap'>🕗 { new Date( sale.date).toLocaleString("UZ") }</small>
+            
+            </div>
+          </div>
+          
+          
+                </ListGroup.Item>
+              ))}
+      </ListGroup>
+
+       
+
+
+    </div>
+  );
+}
 
 
 function SaleListGroup(props) {
@@ -165,4 +311,4 @@ function SaleListGroup(props) {
 }
 
 
-export {SaleListGroup}
+export {SaleListGroup,SaleListGroupForHome2}

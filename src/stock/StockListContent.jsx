@@ -1,5 +1,5 @@
 
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "react-bootstrap";
+import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, OverlayTrigger,Tooltip} from "react-bootstrap";
 
 import { useEffect, useState,useRef } from "react";
 
@@ -22,11 +22,6 @@ function StockListGroup(props) {
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
   const [showResAlert, setShowResAlert] = useState(false);
 
-  const [name,setName]=useState("");
-  const [barCode,setBarcode]=useState("");
-  const [price,setPrice]=useState("");
-  const [bulkPrice,setBulkPrice]=useState("");
-  const [buyPrice,setBuyPrice]=useState("");
 
   const [showStockAlert, setShowStockAlert] = useState(false);
   const [quantity,setQuantity]=useState("");
@@ -146,13 +141,27 @@ function StockListGroup(props) {
             </div>
             <div className='d-flex ms-auto'>
               
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.username}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.surname}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.user?.email}</small>
+           
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.product.barCode}</small>
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.warehouse.name}</small>
-            <small className={`ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ${stock.quantity <10 ? "text-danger": null}`}>{stock.quantity} {stock.product.unit}</small>
-            
+             <OverlayTrigger
+              key={"top"}
+              placement={"top"}
+              overlay={
+                <Tooltip id={`tooltip-${"top"}`}>
+                  <div>
+                     <small className=''>{stock.user?.username} {stock.user?.surname}</small>
+                   
+                    <br />
+                    <small className=''>{stock.user?.email}</small>
+                   
+                  </div>
+                </Tooltip>
+              }
+            >
+              <small className={`ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ${stock.quantity <10 ? "text-danger": null}`}>{stock.quantity} {stock.product.unit}</small>
+
+            </OverlayTrigger>
            
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
             

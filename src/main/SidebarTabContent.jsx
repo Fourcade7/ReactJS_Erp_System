@@ -10,7 +10,7 @@ import CategoryScreen from '../category/CategoryContent';
 import ProductScreen from '../product/ProductContent';
 import StockScreen from '../stock/StockContent';
 import PurchaseScreen from '../purchase/PurchaseContent';
-import SaleScreen from '../sale/SaleContent';
+import {SaleScreen} from '../sale/SaleContent';
 
 import { useState } from 'react';
 import ReturnScreen from '../return/ReturnContent';
@@ -22,7 +22,8 @@ function LeftTab() {
     return localStorage.getItem("activeTab") || "first";
   });
   return (
-    <Tab.Container className="" id="left-tabs-example" 
+    <div >
+       <Tab.Container   id="left-tabs-example" 
     activeKey={activeTab}
     onSelect={(k) => {
       setActiveTab(k)
@@ -124,6 +125,8 @@ function LeftTab() {
         </Col>
       </Row>
     </Tab.Container>
+    </div>
+   
   );
 }
 

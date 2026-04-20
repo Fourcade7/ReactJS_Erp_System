@@ -10,7 +10,7 @@ function MainScreen(){
         <div className="">
             <NavbarScreen></NavbarScreen>
             
-            <LeftTab></LeftTab>
+            <LeftTab ></LeftTab>
         </div>
     )
 

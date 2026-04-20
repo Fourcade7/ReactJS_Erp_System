@@ -17,7 +17,7 @@ import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { SaleProductListGroup } from './SaleProductListContent';
 import { addNewSale, getAllCustomersForSale } from './SaleApi';
-import { SaleListGroup } from './SaleListContent';
+import { SaleListGroup, SaleListGroupForHome2 } from './SaleListContent';
 import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
 import { SaleDetailScreen } from './SaleDetail';
 
@@ -499,6 +499,38 @@ function SaleAdd(props) {
     </div>
   );
 }
+
+function SaleTabForHome(props) {
+
+
+  
+   const [activeTab,setActiveTab] =useState("home")
+   const [selectedSale,setSelectedSale] =useState(null)
+  return (
+    <Tabs
+      activeKey={activeTab}
+      onSelect={(k) => setActiveTab(k)}
+      id="fill-tab-example"
+      className="mb-3 "
+      //fill
+      variant='underline' //pills //tabs //underline
+      //style={{fontSize:"12px"}}
+    >
+      <Tab eventKey="home" title="☰ Список продаж с задолженностью">
+         <SaleListGroupForHome2 allSaleDebtList={props.allSaleDebtList} activeTab={activeTab} setSelectedSale={setSelectedSale} setActiveTab={setActiveTab}></SaleListGroupForHome2> 
+      </Tab>
+      
+
+      {activeTab==="sale_detail" && 
+       <Tab eventKey="sale_detail" title="ℹ️ Детали продажа">
+         <SaleDetailScreen selectedSale={selectedSale} setActiveTab={setActiveTab} setSelectedSale={setSelectedSale}></SaleDetailScreen>
+      </Tab>
+      }
+      
+    </Tabs>
+  );
+}
+
 function SaleTab() {
 
 
@@ -569,4 +601,4 @@ function SaleScreen() {
 }
 
 
-export default SaleScreen;
+export {SaleScreen,SaleTabForHome};

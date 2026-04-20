@@ -1,5 +1,5 @@
 
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "react-bootstrap";
+import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col,OverlayTrigger,Tooltip} from "react-bootstrap";
 
 import { useEffect, useState,useRef } from "react";
 
@@ -149,13 +149,25 @@ function ProductListGroup(props) {
               
             <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.barCode}</small>
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.category.name}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.price} So'm</small>
-            <Col className="col-auto">
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.bulkPrice} So'm</small>
-            </Col>
-            <Col>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.buyPrice} So'm</small>
-            </Col>
+           
+           
+
+            <OverlayTrigger
+              key={"top"}
+              placement={"top"}
+              overlay={
+                <Tooltip id={`tooltip-${"top"}`}>
+                  <div>
+                    <small className=''>{product.price} So'm</small>
+                    <br />
+                    <small className=''>{product.bulkPrice} So'm</small>
+                    
+                  </div>
+                </Tooltip>
+              }
+            >
+              <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.buyPrice} So'm</small>
+            </OverlayTrigger>
 
              <Col>
             <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{`${product.stock[0]?.quantity !==undefined ? totalStock :"Новый"}` }</small>
