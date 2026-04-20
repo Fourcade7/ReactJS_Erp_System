@@ -7,6 +7,7 @@ import { Col, Row ,Tab,Tabs,ListGroup,ListGroupItem,Button} from "react-bootstra
 import { useState,useEffect } from "react";
 import { getAllSaleDebt, getAllSaleMonth, getAllSaleToday, getAllSaleWeek } from "./statistics/HomeApi";
 import { SaleTabForHome } from "../sale/SaleContent";
+import { useNavigate } from "react-router-dom";
 
 function CardScreen(props){
 
@@ -92,6 +93,8 @@ function CardScreen(props){
 
 
 function HomeScreen(){
+  
+
 
   const monthName = new Date().toLocaleString("ru-RU", {
     month: "long",
