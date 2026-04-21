@@ -18,8 +18,24 @@ import PaymentScreen from '../payment/PaymentContent';
 
 function LeftTab() {
 
- const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem("activeTab") || "first";
+  // const [activeTab, setActiveTab] = useState(() => {
+  //   if(localStorage.getItem("role")==="User"){
+  //    return  localStorage.getItem("activeTab") || "teenth"
+  //   }else{
+  //    return  localStorage.getItem("activeTab") || "first"
+  //   }
+      
+  // });
+
+    const [activeTab, setActiveTab] = useState(() => {
+    const role = localStorage.getItem("role");
+    const savedTab = localStorage.getItem("activeTab");
+
+    if (role === "User") {
+      return savedTab && savedTab !== "first" ? savedTab : "teenth";
+    }
+
+    return savedTab || "first";
   });
   return (
     <div >
