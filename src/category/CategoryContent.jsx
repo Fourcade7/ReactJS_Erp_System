@@ -110,19 +110,20 @@ function WarehouseListGroup(props) {
               align="end" 
               //popperConfig={{ strategy: 'fixed' }}
               //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
+              
             >
               <Dropdown.Item onClick={() => { 
                  setShowEdit(true);
                  setCid(category.id);
                  setCname(category.name);
                  
-                }}>
+                }} disabled={localStorage.getItem("role")==="User"}>
                 Изменить
               </Dropdown.Item>
               <Dropdown.Item onClick={() => { 
                 setShowDel(true); 
                 setCid(category.id);
-                 }}>
+                 }} disabled={localStorage.getItem("role")==="User"}>
                 Удалить
               </Dropdown.Item>
             </Dropdown.Menu>
@@ -418,7 +419,7 @@ function CategoryTab() {
       <Tab eventKey="home" title="Список категории">
          <WarehouseListGroup activeTab={activeTab}></WarehouseListGroup>
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый категория">
+      <Tab eventKey="profile" title="Добавить новый категория" disabled={localStorage.getItem("role")==="User"}>
         <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <CategoryAdd tabChange={(tname)=>{

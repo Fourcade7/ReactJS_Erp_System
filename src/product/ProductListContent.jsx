@@ -194,7 +194,7 @@ function ProductListGroup(props) {
               //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
             >
               
-              <Dropdown.Item  disabled={product.stock && product.stock.length > 0} onClick={() => { setShowStockAlert(true); setPid(product.id); }}>
+              <Dropdown.Item  disabled={(product.stock && product.stock.length > 0) || localStorage.getItem("role")==="User"} onClick={() => { setShowStockAlert(true); setPid(product.id); }}>
                 Добавить начальный остаток
               </Dropdown.Item>
               <Dropdown.Item onClick={() => { 
@@ -208,10 +208,10 @@ function ProductListGroup(props) {
                  //setPassword(user.password);
 
                 
-                }}>
+                }} disabled={localStorage.getItem("role")==="User"}>
                 Изменить
               </Dropdown.Item>
-              <Dropdown.Item onClick={() => { setShowDel(true); setPid(product.id); }}>
+              <Dropdown.Item onClick={() => { setShowDel(true); setPid(product.id); }} disabled={localStorage.getItem("role")==="User"}>
                 Удалить
               </Dropdown.Item>
             </Dropdown.Menu>

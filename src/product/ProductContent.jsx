@@ -248,7 +248,7 @@ function ProductAdd(props){
 
 function ProductTab() {
 
-   const [activeTab,setActiveTab] =useState("add_new")
+   const [activeTab,setActiveTab] =useState("home")
   return (
     <Tabs
       activeKey={activeTab}
@@ -262,7 +262,7 @@ function ProductTab() {
       <Tab eventKey="home" title="Список продуктов">
          <ProductListGroup activeTab={activeTab}></ProductListGroup>
       </Tab>
-      <Tab eventKey="add_new" title="Добавить новый продукт">
+      <Tab eventKey="add_new" title="Добавить новый продукт" disabled={localStorage.getItem("role")==="User"}>
         <div className='d-flex align-items-center justify-content-start'>
         <Col xs={4}>
         <ProductAdd
