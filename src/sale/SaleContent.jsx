@@ -9,9 +9,9 @@ import Tabs from 'react-bootstrap/Tabs';
 import Form from 'react-bootstrap/Form';
 import { Link } from "react-router-dom";
 
-import eyewhite from "../assets/eye.png"
+import qrcode from "../assets/qrcode.png"
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -20,6 +20,7 @@ import { addNewSale, getAllCustomersForSale } from './SaleApi';
 import { SaleListGroup, SaleListGroupForHome2 } from './SaleListContent';
 import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
 import { SaleDetailScreen } from './SaleDetail';
+import { useReactToPrint } from 'react-to-print';
 
 
 
@@ -310,6 +311,8 @@ function OrderListGroup(props) {
 
 function SaleAdd(props) {
 
+    const componentRef  = useRef(null)
+
     const [userId, setUserId] = useState(localStorage.getItem("userid") || 1);
     const [open, setOpen] = useState(false);
     const [customerId, setCustomerId] = useState(1);
@@ -393,7 +396,10 @@ function SaleAdd(props) {
             psetShow(false)
             const timer = setTimeout(() => {
               setShowSuccess(false);
-               window.location.reload(); 
+               //window.location.reload(); 
+               handlePrint();
+               ///window.location.reload(); 
+               
             }, 3000);
             
             return () => clearTimeout(timer); 
@@ -410,6 +416,15 @@ function SaleAdd(props) {
         
         }
     }
+
+
+
+  const handlePrint = useReactToPrint({
+    contentRef:componentRef,
+    onAfterPrint: async () => {
+    window.location.reload();  // bazadan qayta o‘qish
+  },
+  });
 
 
 
@@ -484,7 +499,8 @@ function SaleAdd(props) {
         <Button
         onClick={()=>{
           //console.log(items);
-          handleSale()
+          handleSale();
+          
           
         }}
 
@@ -495,9 +511,86 @@ function SaleAdd(props) {
           </h4>
         </Button>
 
+
+        <div ref={componentRef} className="print-area my-3 ms-1 me-4">
+          <CheckScreen orderList = {props.orderList} discountAmount={discountAmount} finalCost={finalCost}></CheckScreen>
+      </div>
+
       </Form>
     </div>
   );
+}
+
+
+function CheckScreen(props){
+  return(
+    <div className="" style={{  fontFamily: "monospace", fontSize: "12px" }}>
+
+              {/* Header */}
+              <div className="text-center mb-2">
+                <h6 className="m-0 fw-bold">CHEK</h6>
+                <small>{new Date().toLocaleString("uz")}</small>
+              </div>
+
+              <hr className="my-1" />
+
+              {/* Items */}
+              <div className="d-flex flex-column gap-1">
+                {props.orderList.map((item, index) => (
+                  <div key={index}>
+                    <div className="d-flex justify-content-between">
+                      <small className="fw-semibold">
+                        {item.name}
+                      </small>
+
+                      <small className='fw-bold'>
+                        {item.quantity} {item.unit}
+                      </small>
+                    </div>
+
+                    <div className="d-flex justify-content-between">
+                      <small className='fw-bold'>
+                        {(item.checkPrice ? item.bulkPrice : item.buyPrice).toLocaleString("uz")} So'm
+                      </small>
+
+                      <small className='fw-bold'>
+                        {(item.quantity * (item.checkPrice ? item.bulkPrice : item.buyPrice)).toLocaleString("uz")} So'm
+                      </small>
+                    </div>
+
+                    <hr className="my-1" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Summary */}
+              <div className="mt-2">
+                <div className="d-flex justify-content-between">
+                  <small>Скидка:</small>
+                  <small>{props.discountAmount.toLocaleString("uz")} So'm</small>
+                </div>
+
+                <div className="d-flex justify-content-between fw-bold">
+                  <small>Итого:</small>
+                  <small>{props.finalCost.toLocaleString("uz")} So'm</small>
+                </div>
+              </div>
+
+              <hr className="my-2" />
+              <div className='text-center'>
+               
+              </div>
+              
+
+              {/* Footer */}
+              <div className="text-center mt-2">
+                <small style={{ fontSize: "10px" }}>
+                  by <b>ID GROUP</b> team
+                </small>
+              </div>
+
+            </div>
+  )
 }
 
 function SaleTabForHome(props) {

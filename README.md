@@ -67,6 +67,10 @@
                         cp -r dist/* /var/www/myapp/
 
 
+
+                        npm install react-to-print
+
+
                         //update site
                         git pull
                         npm run build
@@ -75,6 +79,7 @@
                         sudo systemctl restart apache2
 
                         localhost
+                        109.196.103.18
 
 
 
