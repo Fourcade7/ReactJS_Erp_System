@@ -12,6 +12,7 @@ import ellipsis from "../assets/ellipsis.png"
 
 
 
+
 function SaleProductListGroup(props) {
  
   
@@ -58,13 +59,17 @@ function SaleProductListGroup(props) {
         setShowLoad(true)
         const productListPag= await getAllProductPaginationSearch(active,20,debouncedSearch);
        
-        
-        //console.log("productListPag.stock");
-        //console.log(productListPag.stock);
         setPageCount(productListPag.meta.totalPages);
-        //console.log(active);
-        setProductList(productListPag.data)
+        
+        setProductList(productListPag.data);
         setShowLoad(false)
+
+        console.log("productList.length");
+        console.log(productListPag.data.length);
+        if (productListPag.data.length === 1) {
+          addProductToOrder(productListPag.data[0]);
+        }
+        
         
         
       }catch(error){
@@ -106,6 +111,44 @@ function SaleProductListGroup(props) {
   }
 
 
+  function addProductToOrder(product) {
+          const stockQty = product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
+
+          if (stockQty <= 0) {
+            console.log("Stock yo'q");
+            return;
+          }
+
+          props.setOrderList(prev => {
+            const exists = prev.find(item => item.id === product.id);
+
+            if (exists) {
+              return prev.map(item => {
+                if (item.id === product.id) {
+                  if (item.quantity >= stockQty) {
+                    console.log("Stock yetarli emas");
+                    return item;
+                  }
+
+                  return {
+                    ...item,
+                    quantity: item.quantity + 1
+                  };
+                }
+                return item;
+              });
+            }
+
+            return [
+              ...prev,
+              {
+                ...product,
+                quantity: 1,
+                checkPrice: false
+              }
+            ];
+          });
+  }
 
 
   return (
@@ -131,47 +174,8 @@ function SaleProductListGroup(props) {
           as="li"
           className={`d-flex ${index % 2 === 1 ? "bg-light" : "bg-dark-subtle "} p-2`}
           onClick={() => {
-                props.setOrderList(prev => {
-                  const exists = prev.find(item => item.id === product.id);
-
-                  //const stockQty = product.stock?.[0]?.quantity || 0;
-                   const stockQty = product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
-
-                  if (exists) {
-                    return prev.map(item => {
-                      if (item.id === product.id) {
-
-                        // ❗ LIMIT CHECK
-                        if (item.quantity >= stockQty) {
-                          console.log("Stock yetarli emas");
-                          return item; // oshirmaydi
-                        }
-
-                        return {
-                          ...item,
-                          quantity: item.quantity + 1
-                        };
-                      }
-                      return item;
-                    });
-                  }
-
-                  // ❗ yangi qo‘shishda ham tekshir
-                  if (stockQty <= 0) {
-                    console.log("Stock yo‘q");
-                    return prev;
-                  }
-
-                  return [
-                    ...prev,
-                    {
-                      ...product,
-                      quantity: 1,
-                      checkPrice:false
-                    }
-                  ];
-           });
-}}
+                addProductToOrder(product)
+          }}
           
         >
           <div className='d-flex flex-row w-100 '>
