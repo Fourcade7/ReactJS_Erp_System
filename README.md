@@ -74,7 +74,7 @@
                         sudo cp -r dist/* /var/www/html/
                         sudo systemctl restart apache2
 
-                        109.196.103.18
+                        localhost
 
 
 

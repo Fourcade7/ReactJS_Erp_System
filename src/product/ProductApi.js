@@ -40,6 +40,46 @@ async function updateProduct(
   }
 }
 
+async function updateProductWImage(
+  id,
+  name,
+  barCode,
+  price,
+  bulkPrice,
+  buyPrice,
+  image,
+  categoryId,
+  unit
+) {
+  try {
+    const formData = new FormData();
+
+    if (name) formData.append("name", name);
+    if (barCode) formData.append("barCode", barCode);
+    if (price) formData.append("price", price);
+    if (bulkPrice) formData.append("bulkPrice", bulkPrice);
+    if (buyPrice) formData.append("buyPrice", buyPrice);
+    if (categoryId) formData.append("categoryId", categoryId);
+    if (unit) formData.append("unit", unit);
+
+    
+    if (image) {
+      formData.append("image", image);
+    }
+
+    const response = await fetch( `http://109.196.103.18:3000/product/update/${id}`,
+      {
+        method: "PATCH",
+        body: formData, 
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 
 
 
@@ -174,4 +214,4 @@ async function addStock(productId,warehouseId,userId,quantity) {
     }
 }
 
-export {getAllProductPaginationSearch,addProduct,deleteProduct,updateProduct,getAllWareHouse,addStock}
+export {getAllProductPaginationSearch,addProduct,deleteProduct,updateProduct,getAllWareHouse,addStock,updateProductWImage}

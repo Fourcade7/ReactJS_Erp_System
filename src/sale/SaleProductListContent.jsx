@@ -1,12 +1,12 @@
 
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col} from "react-bootstrap";
+import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col,OverlayTrigger,Tooltip} from "react-bootstrap";
 
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
 import {   getAllProductPaginationSearch } from "./SaleApi";
 
-import ellipsis from "../assets/ellipsis.png"
+import placeholderImage from "../assets/placeholder.jpg"
 //import "./customer.css"
 
 
@@ -22,7 +22,6 @@ function SaleProductListGroup(props) {
   const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
   const [showResAlert, setShowResAlert] = useState(false);
 
-  
   
  
 
@@ -68,6 +67,7 @@ function SaleProductListGroup(props) {
         console.log(productListPag.data.length);
         if (productListPag.data.length === 1) {
           addProductToOrder(productListPag.data[0]);
+          setSearchTerm("")
         }
         
         
@@ -179,10 +179,25 @@ function SaleProductListGroup(props) {
           
         >
           <div className='d-flex flex-row w-100 '>
-            <div>
+            <div className="d-flex flex-column align-items-center jusfity-content-center">
                 <small className={`m-0 p-0 py-1 px-2 rounded mt-0 ${index % 2 === 1 ? "bg-dark-subtle" : "bg-light"}`}>{product.id}</small>
+                 <OverlayTrigger
+              key={"top"}
+              placement={"left"}
+              overlay={
+                <Tooltip   id={`tooltip-${"top"}`} style={{ backgroundColor: "transparent", opacity: 1 }}>
+                  <div className="mt-1">
+                  <img className="rounded object-fit-cover" src={product.imgUrl ? product.imgUrl : placeholderImage} width={200} height={200}></img>
+
+                  </div>
+                </Tooltip>
+              }
+            >
+              <img className="mt-1 rounded object-fit-cover" src={product.imgUrl ? product.imgUrl : placeholderImage} width={30} height={30}></img>
+            </OverlayTrigger>
             </div>
             <div className='d-flex flex-column'>
+           
             <h6 className='ms-2 m-0 p-0 text-wrap'>{product.name}</h6>              
               
             <div>

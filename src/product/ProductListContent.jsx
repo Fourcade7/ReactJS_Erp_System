@@ -4,10 +4,12 @@ import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col,OverlayT
 import { useEffect, useState,useRef } from "react";
 
 import Pagination from 'react-bootstrap/Pagination';
-import {   addStock, deleteProduct, getAllProductPaginationSearch, getAllWareHouse, updateProduct } from "./ProductApi";
+import {   addStock, deleteProduct, getAllProductPaginationSearch, getAllWareHouse, updateProduct, updateProductWImage } from "./ProductApi";
 
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
+import placeholderImage from "../assets/placeholder.jpg"
+
 
 
 
@@ -142,6 +144,20 @@ function ProductListGroup(props) {
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{product.id}</small>
+              <OverlayTrigger
+              key={"top"}
+              placement={"left"}
+              overlay={
+                <Tooltip id={`tooltip-${"top"}`}>
+                  <div className="m-0 p-0">
+                   <img className="rounded object-fit-cover" src={product.imgUrl ? product.imgUrl : placeholderImage} width={200} height={200}></img>
+
+                  </div>
+                </Tooltip>
+              }
+            >
+              <img className="me-2 rounded object-fit-cover" src={product.imgUrl ? product.imgUrl : placeholderImage} width={30} height={30}></img>
+            </OverlayTrigger>
               <h6 className='m-0 p-0'>{product.name}</h6>
               <h6 className='ms-2 m-0 p-0'>{product.surname}</h6>
             </div>
@@ -266,6 +282,11 @@ function ProductListGroup(props) {
                         onChange={(e)=>{setBuyPrice(e.target.value)}}
                         />
 
+                          <Form.Group controlId="formFile" className="mt-2">
+                            <small className="">Выберите изображение</small>
+                            <Form.Control className="mt-2" type="file" ref={fileInputRef} />
+                        </Form.Group>
+
                        
                 </Modal.Body>
                 <Modal.Footer>
@@ -281,7 +302,7 @@ function ProductListGroup(props) {
                  setShowEdit(false)                 
                  setShowLoad(true)
                  setShowLoadTitle("Загрузка...")
-                 const res = await updateProduct(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice))
+                 const res = await updateProductWImage(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice),fileInputRef.current?.files?.[0])
                  const data= await res.json();
                  setShowLoad(false);
                  
@@ -297,7 +318,7 @@ function ProductListGroup(props) {
                 
                 setShowRes(true);
                 const timer = setTimeout(() => {
-                  setShowRes(false);
+                  //setShowRes(false);
 
                 }, 1000);
                 return () => clearTimeout(timer);
