@@ -9,7 +9,7 @@ import Tabs from 'react-bootstrap/Tabs';
 import Form from 'react-bootstrap/Form';
 import { Link } from "react-router-dom";
 
-import qrcode from "../assets/qrcode.png"
+import logobgtransparent from "../assets/logobgtransparent.png"
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -577,13 +577,14 @@ function CheckScreen(props){
               </div>
 
               <hr className="my-2" />
-              <div className='text-center'>
-               
+              <div className='text-center mt-3'>
+               <img src={logobgtransparent} className='object-fit-fill' width={50} height={50} alt="" />
               </div>
+              
               
 
               {/* Footer */}
-              <div className="text-center mt-2">
+              <div className="text-center">
                 <small style={{ fontSize: "10px" }}>
                   by <b>ID GROUP</b> team
                 </small>
