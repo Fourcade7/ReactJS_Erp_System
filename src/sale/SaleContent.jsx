@@ -431,7 +431,10 @@ function SaleAdd(props) {
   });
 
   const handlePrintDraft = useReactToPrint({
-    contentRef:componentRef,   
+    contentRef:componentRef,  
+    onAfterPrint: async () => {
+   setPrintType("Чек");  // bazadan qayta o‘qish
+  }
   });
 
 
