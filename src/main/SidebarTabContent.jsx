@@ -93,6 +93,11 @@ function LeftTab() {
             <Nav.Item>
               <Nav.Link eventKey="twelw" disabled={localStorage.getItem("role")==="User"}>💵 Платеж</Nav.Link>
             </Nav.Item>
+
+             <Nav.Item>
+              <Nav.Link eventKey="integration" disabled={localStorage.getItem("role")==="User"} >🔗 Интеграция</Nav.Link>
+            </Nav.Item>
+
           </Nav>
         </Col>
         <Col sm={10} className='mt-2'>

@@ -426,6 +426,10 @@ function SaleAdd(props) {
   },
   });
 
+  const handlePrintDraft = useReactToPrint({
+    contentRef:componentRef,   
+  });
+
 
 
 
@@ -440,7 +444,14 @@ function SaleAdd(props) {
       </div>
 
         <Collapse in={open}>
-          <div className="my-2 p-2 bg-light">
+          <div className="my-2 bg-light">
+            <div>
+              <Button variant='outline-primary w-100' onClick={() => {
+                  handlePrintDraft();
+              }}>
+              🖨️ Печать черновика
+              </Button>
+            </div>
             <small>Скидка</small>
             <Form.Group className="my-2">
               <Form.Control 
@@ -512,7 +523,7 @@ function SaleAdd(props) {
         </Button>
 
 
-        <div ref={componentRef} className="print-area my-3 ms-1 me-4">
+      <div ref={componentRef} className="print-area my-3 ms-1 me-4">
           <CheckScreen orderList = {props.orderList} discountAmount={discountAmount} finalCost={finalCost}></CheckScreen>
       </div>
 
