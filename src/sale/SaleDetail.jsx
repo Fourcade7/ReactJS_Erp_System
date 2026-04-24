@@ -55,7 +55,7 @@ function SaleDetailScreen(props){
                         props.selectedSale?.items.map((item,index) => {
 
                             return <>
-                                <ListGroup.Item>{index+1}:📦 {item.product.name} <small className="ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap">{item.warehouse?.name}</small>   {item.quantity}x 💵 {item.price.toLocaleString("uz")} So'm  {item.checkPrice ? "🫂 Оптом цена" :""}</ListGroup.Item>
+                                <ListGroup.Item>{index+1}:📦 {item.product.name} <small className="ms-2 m-0 p-0 bg-success-subtleч px-2 rounded mt-0 text-nowrap">🏭 {item.warehouse.name}</small>   {item.quantity}x 💵 {item.price.toLocaleString("uz")} So'm  {item.checkPrice ? "🫂 Оптом цена" :""}</ListGroup.Item>
 
                                 </> 
                         })

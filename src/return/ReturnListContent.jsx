@@ -122,7 +122,7 @@ function SaleListGroup(props) {
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'>#️⃣ Приход id: {sale.id}</small>
+              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'>#️⃣ Возврат id: {sale.id}</small>
              
             </div>
             <div className='d-flex ms-auto'>

@@ -4,7 +4,7 @@ import { Col, ListGroup,Row ,Button,Modal,Form} from "react-bootstrap"
 import { addNewPayment } from "./ReturnApi";
 
 
-function SaleDetailScreen(props){
+function ReturnDetailScreen(props){
 
     const [showDebtEdit, setShowDebtEdit] = useState(false);
     const [debtAmount,setDebtAmount]=useState("");
@@ -27,7 +27,7 @@ function SaleDetailScreen(props){
         <div>
             <div className="d-flex">
                 <h6 className="m-0 p-0 bg-dark-subtlex px-2 py-1 rounded m-0">
-                #️⃣ Продажа id: {props.selectedSale?.id}
+                #️⃣ Возврат id: {props.selectedSale?.id}
                 </h6>
             </div>
 
@@ -151,4 +151,4 @@ function SaleDetailScreen(props){
 
 
 
-export {SaleDetailScreen}
+export {ReturnDetailScreen}

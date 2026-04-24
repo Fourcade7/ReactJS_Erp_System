@@ -27,7 +27,7 @@ function SaleDetailScreen(props){
         <div>
             <div className="d-flex">
                 <h6 className="m-0 p-0 bg-dark-subtlex px-2 py-1 rounded m-0">
-                #️⃣ Продажа id: {props.selectedSale?.id}
+                #️⃣ Приход id: {props.selectedSale?.id}
                 </h6>
             </div>
 

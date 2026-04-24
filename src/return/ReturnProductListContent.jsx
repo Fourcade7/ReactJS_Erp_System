@@ -121,8 +121,9 @@ function SaleProductListGroup(props) {
   <ListGroup as="ol"  className="rounded overflow-auto" style={{ maxHeight: '60vh' }}>
      
       { productList &&  
-       //.filter(p =>(p.stock.length>0))
-      productList.map((product,index) => {
+        productList 
+       .filter(p =>(p.stock?.[0]?.id))
+       .map((product,index) => {
 
         const totalStock = product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
         
@@ -142,10 +143,10 @@ function SaleProductListGroup(props) {
                       if (item.id === product.id) {
 
                         // ❗ LIMIT CHECK
-                        if (item.quantity >= stockQty) {
-                          console.log("Stock yetarli emas");
-                          return item; // oshirmaydi
-                        }
+                        // if (item.quantity >= stockQty) {
+                        //   console.log("Stock yetarli emas");
+                        //   return item; // oshirmaydi
+                        // }
 
                         return {
                           ...item,
@@ -157,10 +158,10 @@ function SaleProductListGroup(props) {
                   }
 
                   // ❗ yangi qo‘shishda ham tekshir
-                  if (stockQty <= 0) {
-                    console.log("Stock yo‘q");
-                    return prev;
-                  }
+                  // if (stockQty <= 0) {
+                  //   console.log("Stock yo‘q");
+                  //   return prev;
+                  // }
 
                   return [
                     ...prev,
