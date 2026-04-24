@@ -529,7 +529,7 @@ function SaleAdd(props) {
 
 
       <div ref={componentRef} className="print-area my-3 ms-1 me-4">
-          <CheckScreen orderList = {props.orderList} discountAmount={discountAmount} finalCost={finalCost}></CheckScreen>
+          <CheckScreen orderList = {props.orderList} discountAmount={discountAmount} finalCost={finalCost} printType={printType}></CheckScreen>
       </div>
 
       </Form>
@@ -544,7 +544,7 @@ function CheckScreen(props){
 
               {/* Header */}
               <div className="text-center mb-2">
-                <h6 className="m-0 fw-bold">{printType}</h6>
+                <h6 className="m-0 fw-bold">{props.printType}</h6>
                 <small>{new Date().toLocaleString("uz")}</small>
               </div>
 
