@@ -9,6 +9,7 @@ import {   addStock, deleteProduct, getAllProductPaginationSearch, getAllWareHou
 import ellipsis from "../assets/ellipsis.png"
 //import "./customer.css"
 import placeholderImage from "../assets/placeholder.jpg"
+import CustomPaginationScreen from "../utils/CustomPaginationContent";
 
 
 
@@ -244,7 +245,12 @@ function ProductListGroup(props) {
       </ListGroup>
 
        <div className="mt-4">
-         <Pagination>{items}</Pagination>
+         {/* <Pagination>{items}</Pagination> */}
+          <CustomPaginationScreen
+          active={active}
+          pageCount={pageCount}
+          setActive={setActive}
+         ></CustomPaginationScreen>
               
        </div>
 

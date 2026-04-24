@@ -7,6 +7,7 @@ import Pagination from 'react-bootstrap/Pagination';
 import {   getAllProductPaginationSearch } from "./SaleApi";
 
 import placeholderImage from "../assets/placeholder.jpg"
+import CustomPaginationScreen from "../utils/CustomPaginationContent";
 //import "./customer.css"
 
 
@@ -227,7 +228,12 @@ function SaleProductListGroup(props) {
       }   )}
     </ListGroup>
        <div className="mt-4">
-         <Pagination>{items}</Pagination>
+         {/* <Pagination>{items}</Pagination> */}
+          <CustomPaginationScreen
+          active={active}
+          pageCount={pageCount}
+          setActive={setActive}
+         ></CustomPaginationScreen>
               
        </div>
 

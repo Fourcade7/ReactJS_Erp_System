@@ -7,6 +7,7 @@ import Pagination from 'react-bootstrap/Pagination';
 import {   addStock, deleteStock,  getAllStockPaginationSearch, getAllWareHouse, updateStock } from "./StockApi";
 
 import ellipsis from "../assets/ellipsis.png"
+import CustomPaginationScreen from "../utils/CustomPaginationContent";
 //import "./customer.css"
 
 
@@ -216,7 +217,12 @@ function StockListGroup(props) {
       </ListGroup>
 
        <div className="mt-4">
-         <Pagination>{items}</Pagination>
+         {/* <Pagination>{items}</Pagination> */}
+          <CustomPaginationScreen
+          active={active}
+          pageCount={pageCount}
+          setActive={setActive}
+         ></CustomPaginationScreen>
               
        </div>
 
