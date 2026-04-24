@@ -317,6 +317,9 @@ function SaleAdd(props) {
     const [open, setOpen] = useState(false);
     const [customerId, setCustomerId] = useState(1);
 
+    const [printType, setPrintType] = useState("Чек");
+
+
     const [paymentType, setPaymentType] = useState("Наличные");
     const [discountType, setDiscountType] = useState("sum");
     const [discountSum, setDiscountSum] = useState(0);
@@ -397,6 +400,7 @@ function SaleAdd(props) {
             const timer = setTimeout(() => {
               setShowSuccess(false);
                //window.location.reload(); 
+               setPrintType("Чек");
                handlePrint();
                ///window.location.reload(); 
                
@@ -447,6 +451,7 @@ function SaleAdd(props) {
           <div className="my-2 bg-light">
             <div>
               <Button variant='outline-primary w-100' onClick={() => {
+                  setPrintType("Черновика");
                   handlePrintDraft();
               }}>
               🖨️ Печать черновика
@@ -539,7 +544,7 @@ function CheckScreen(props){
 
               {/* Header */}
               <div className="text-center mb-2">
-                <h6 className="m-0 fw-bold">CHEK</h6>
+                <h6 className="m-0 fw-bold">{printType}</h6>
                 <small>{new Date().toLocaleString("uz")}</small>
               </div>
 
