@@ -62,7 +62,7 @@ function WelcomeScreen(){
     const userId = localStorage.getItem("userid");
 
     if (!userId) {
-      //navigate("/login");
+      //navigate("/login");//
     }else{
       navigate("/home");
     }
