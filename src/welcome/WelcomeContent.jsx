@@ -7,6 +7,113 @@ import { NavbarScreenFourAuth } from "../navbar/NavbarContent";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
+function FooterScreen() {
+    return (
+        <div>
+            <div className="container">
+                <footer className="py-5">
+                    <div className="row">
+
+                        <div className="col-6 col-md-2 mb-3">
+                            <h5>Section</h5>
+                            <ul className="nav flex-column">
+                                <li className="nav-item mb-2">
+                                    <a href="#" className="nav-link p-0 text-body-secondary">
+                                        Home
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className="col-md-5 offset-md-1 mb-3">
+                            <form>
+                                <h5>Subscribe</h5>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Email address"
+                                />
+                                <button className="btn btn-primary mt-2">
+                                    Subscribe
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </footer>
+            </div>
+        </div>
+    );
+}
+
+
+
+
+function Features(){
+    return(
+        <div>
+             <div class="container px-4 py-5">
+        <h2 class="pb-2 border-bottom">Features with title</h2>
+        <div
+          class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5"
+        >
+          <div class="col d-flex flex-column align-items-start gap-2">
+            <h2 class="fw-bold text-body-emphasis">
+              Left-aligned title explaining these awesome features
+            </h2>
+            <p class="text-body-secondary">
+              Paragraph of text beneath the heading to explain the heading.
+              We'll add onto it with another sentence and probably just keep
+              going until we run out of words.
+            </p>
+            <a href="#" class="btn btn-primary btn-lg">Primary button</a>
+          </div>
+          <div class="col">
+            <div class="row row-cols-1 row-cols-sm-2 g-4">
+              <div class="col d-flex flex-column gap-2">
+                <i class="bi bi-gear-wide-connected fs-1"></i>
+                <h4 class="fw-semibold mb-0 text-body-emphasis">
+                  Featured title
+                </h4>
+                <p class="text-body-secondary">
+                  Paragraph of text beneath the heading to explain the heading.
+                </p>
+              </div>
+              <div class="col d-flex flex-column gap-2">
+                <i class="bi bi-bag-check fs-1"></i>
+                <h4 class="fw-semibold mb-0 text-body-emphasis">
+                  Featured title
+                </h4>
+                <p class="text-body-secondary">
+                  Paragraph of text beneath the heading to explain the heading.
+                </p>
+              </div>
+              <div class="col d-flex flex-column gap-2">
+                <i class="bi bi-people fs-1"></i>
+                <h4 class="fw-semibold mb-0 text-body-emphasis">
+                  Featured title
+                </h4>
+                <p class="text-body-secondary">
+                  Paragraph of text beneath the heading to explain the heading.
+                </p>
+              </div>
+              <div class="col d-flex flex-column gap-2">
+                <i class="bi bi-cash-coin fs-1"></i>
+                <h4 class="fw-semibold mb-0 text-body-emphasis">
+                  Featured title
+                </h4>
+                <p class="text-body-secondary">
+                  Paragraph of text beneath the heading to explain the heading.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div>
+    )
+}
+
 
 function HeroScreen() {
   return (
@@ -71,6 +178,8 @@ function WelcomeScreen(){
         <div>
             <NavbarScreenFourAuth></NavbarScreenFourAuth>
             <HeroScreen></HeroScreen>
+            <Features></Features>
+            <FooterScreen></FooterScreen>
             
         </div>
     )
