@@ -15,7 +15,7 @@ function SaleDetailScreen(props){
     )
 
     const paymentIcons = {
-    "Наличные": "💵",
+    "Наличные": <i class="bi bi-cash mx-2"></i>,
     "Банковская карта": "🏦",
     "В долг": "🟥",
     "Click": "💳",
@@ -27,7 +27,7 @@ function SaleDetailScreen(props){
         <div>
             <div className="d-flex">
                 <h6 className="m-0 p-0 bg-dark-subtlex px-2 py-1 rounded m-0">
-                #️⃣ Продажа id: {props.selectedSale?.id}
+                <i class="bi bi-bag-check"></i> Продажа id: {props.selectedSale?.id}
                 </h6>
             </div>
 
@@ -35,15 +35,15 @@ function SaleDetailScreen(props){
                 <Col>
                  <ListGroup>
                     <small className="my-2">Владелец</small>
-                    <ListGroup.Item>Имя: 👨🏻‍💻 {props.selectedSale?.user.username} {props.selectedSale?.user.surname} </ListGroup.Item>
-                    <ListGroup.Item>Email: ✉️ {props.selectedSale?.user.email} </ListGroup.Item>
-                    <ListGroup.Item>Телефон номер: 📱 {props.selectedSale?.user.phone}</ListGroup.Item>
-                    <ListGroup.Item>Дата и время: 🕗 {new Date(props.selectedSale?.date).toLocaleString("uz")}</ListGroup.Item>                    
+                    <ListGroup.Item>Имя: <i class="bi bi-person"></i> {props.selectedSale?.user.username} {props.selectedSale?.user.surname} </ListGroup.Item>
+                    <ListGroup.Item>Email: <i class="bi bi-envelope-at"></i> {props.selectedSale?.user.email} </ListGroup.Item>
+                    <ListGroup.Item>Телефон номер: <i class="bi bi-telephone"></i> {props.selectedSale?.user.phone}</ListGroup.Item>
+                    <ListGroup.Item>Дата и время: <i class="bi bi-calendar4-week me-2"><i class="bi bi-clock ms-2"></i> </i> {new Date(props.selectedSale?.date).toLocaleString("uz")}</ListGroup.Item>                    
                </ListGroup>
                 <ListGroup className="mt-2">
                     <small className="my-2">Клиент</small>
-                    <ListGroup.Item>Имя: 🙎🏻‍♂️ {props.selectedSale?.customer.username} {props.selectedSale?.customer.surname} </ListGroup.Item>
-                    <ListGroup.Item>Телефон номер: 📱 {props.selectedSale?.user.phone}</ListGroup.Item>
+                    <ListGroup.Item>Имя:  <i class="bi bi-person"></i> {props.selectedSale?.customer.username} {props.selectedSale?.customer.surname} </ListGroup.Item>
+                    <ListGroup.Item>Телефон номер: <i class="bi bi-telephone"></i> {props.selectedSale?.user.phone}</ListGroup.Item>
                                
                </ListGroup>
                 </Col>
@@ -55,7 +55,7 @@ function SaleDetailScreen(props){
                         props.selectedSale?.items.map((item,index) => {
 
                             return <>
-                                <ListGroup.Item>{index+1}:📦 {item.product.name} <small className="ms-2 m-0 p-0 bg-success-subtleч px-2 rounded mt-0 text-nowrap">🏭 {item.warehouse.name}</small>   {item.quantity}x 💵 {item.price.toLocaleString("uz")} So'm  {item.checkPrice ? "🫂 Оптом цена" :""}</ListGroup.Item>
+                                <ListGroup.Item>{index+1}:<i class="bi bi-box-seam ms-1 me-1"></i> {item.product.name} <small className="ms-2 m-0 p-0 bg-success-subtleч px-2 rounded mt-0 text-nowrap"><i class="bi bi-ui-checks-grid"></i> {item.warehouse?.name}</small>   {item.quantity}x <i class="bi bi-cash mx-2"></i> {item.price.toLocaleString("uz")} So'm  {item.checkPrice ? "🫂 Оптом цена" :""}</ListGroup.Item>
 
                                 </> 
                         })
@@ -69,13 +69,13 @@ function SaleDetailScreen(props){
 
                             return (<>                                                          
                                 {/* <ListGroup.Item className={`${item.method==="В долг" ? "bg-danger": ""}`}>Способ оплаты: {item.method}  </ListGroup.Item>  */}
-                                <ListGroup.Item className={`${item.method==="В долг" ? "bg-danger text-white": ""}`} ><div className="d-flex justify-content-center align-items-center">Оплачено: 💸 {item.amount.toLocaleString("uz")} So'm  Способ оплаты: {paymentIcons[item.method.trim()]} {item.method}  <small className="ms-auto">🕗 {new Date(item.date).toLocaleString("uz")}</small></div></ListGroup.Item>                                 
+                                <ListGroup.Item className={`${item.method==="В долг" ? "bg-danger text-white": ""}`} ><div className="d-flex justify-content-center align-items-center">Оплачено: <i class="bi bi-cash mx-2"></i> {item.amount.toLocaleString("uz")} So'm  Способ оплаты: {paymentIcons[item.method.trim()]} {item.method}  <small className="ms-auto"><i class="bi bi-clock mx-1"></i> {new Date(item.date).toLocaleString("uz")}</small></div></ListGroup.Item>                                 
                                </>  
                                )
                         })
                     } 
-                    <ListGroup.Item>Скидка: 💸{props.selectedSale.discount.toLocaleString("uz")}  So'm </ListGroup.Item>                   
-                    <ListGroup.Item className={`${props.selectedSale.total<=totalPayed+props.selectedSale.discount ? "bg-primary text-white": "bg-danger text-white"}`}>Общая стоимость продажи: 💵 {props.selectedSale.total.toLocaleString("uz")} So'm  </ListGroup.Item>                   
+                    <ListGroup.Item>Скидка: <i class="bi bi-cash mx-2"></i>{props.selectedSale.discount.toLocaleString("uz")}  So'm </ListGroup.Item>                   
+                    <ListGroup.Item className={`${props.selectedSale.total<=totalPayed+props.selectedSale.discount ? "bg-primary text-white": "bg-danger text-white"}`}>Общая стоимость продажи: <i class="bi bi-cash mx-1"></i> {props.selectedSale.total.toLocaleString("uz")} So'm  </ListGroup.Item>                   
                </ListGroup>
                
                {props.selectedSale.total>totalPayed+props.selectedSale.discount &&

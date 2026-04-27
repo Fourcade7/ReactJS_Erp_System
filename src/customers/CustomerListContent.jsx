@@ -166,10 +166,10 @@ function CustomerListGroup(props) {
 
                 
                 }}>
-                Изменить
+                 <i class="bi bi-pencil-fill me-2"></i> Изменить
               </Dropdown.Item>
               <Dropdown.Item onClick={() => { setShowDel(true); setUid(customer.id); }}>
-                Удалить
+                <i class="bi bi-trash3 me-2"></i> Удалить
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>

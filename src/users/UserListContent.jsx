@@ -38,6 +38,7 @@ function PaginationExample() {
 
 
 
+
 function UserListGroup(props) {
  
   const [showEdit, setShowEdit] = useState(false);
@@ -161,7 +162,7 @@ function UserListGroup(props) {
               
             <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
             <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{user.role}</small>
+            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'> {user.role}</small>
             <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
             
              new Date( user.createdAt).toLocaleString("UZ")
@@ -194,10 +195,10 @@ function UserListGroup(props) {
 
                 
                 }}>
-                Изменить
+                <i class="bi bi-pencil-fill me-2"></i>  Изменить
               </Dropdown.Item>
               <Dropdown.Item onClick={() => { setShowDel(true); setUid(user.id); }}>
-                Удалить
+               <i class="bi bi-trash3 me-2"></i> Удалить
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>

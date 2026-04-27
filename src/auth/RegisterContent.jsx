@@ -242,7 +242,7 @@ function RegisterFormforTab(props) {
             props.handleRegister(e,username,surname,phone,login,password)
           }}
         >
-          Сохранить
+         <i class="bi bi-floppy"></i> Сохранить
         </Button>     
         </Col>
     

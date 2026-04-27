@@ -15,6 +15,7 @@ import {SaleScreen} from '../sale/SaleContent';
 import { useState } from 'react';
 import ReturnScreen from '../return/ReturnContent';
 import PaymentScreen from '../payment/PaymentContent';
+import { IntegrationScreen } from '../integration/IntegrationContent';
 
 function LeftTab() {
 
@@ -50,52 +51,59 @@ function LeftTab() {
     >
       <Row>
         <Col sm={2} className='border-endx bg-body-tertiaryx ps-4' >
-          <Nav variant="pills" className="flex-column mt-2 bg-body-tertiaryx">
+          <Nav 
+          variant="pills" 
+          className="flex-column mt-2 bg-body-tertiaryx"
+          // style={{
+          //     "--bs-nav-pills-link-active-bg": "#5b605eff",
+          //     "--bs-nav-pills-link-active-color": "#fff",
+          //   }}
+          >
             <Nav.Item variant="secondary">
-              <Nav.Link eventKey="first"disabled={localStorage.getItem("role")==="User"}>🖥 Главная страница</Nav.Link>
+              <Nav.Link  eventKey="first"disabled={localStorage.getItem("role")==="User"}><i class="bi bi-pc-display-horizontal"></i> Главная страница</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="second" disabled={localStorage.getItem("role")==="User"}>👨‍👦 Сотрудники</Nav.Link>
+              <Nav.Link eventKey="second" disabled={localStorage.getItem("role")==="User"}><i class="bi bi-person-video2"></i> Сотрудники</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="thrid" disabled={localStorage.getItem("role")==="User"} >👨‍👦‍👦 Клиенты</Nav.Link>
+              <Nav.Link eventKey="thrid" disabled={localStorage.getItem("role")==="User"} ><i class="bi bi-people"></i> Клиенты</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="fourth" disabled={localStorage.getItem("role")==="User"}> 🏭 Склад</Nav.Link>
+              <Nav.Link eventKey="fourth" disabled={localStorage.getItem("role")==="User"}> <i class="bi bi-ui-checks-grid"></i> Склад</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="fifth" >🏷️ Категория</Nav.Link>
+              <Nav.Link eventKey="fifth" ><i class="bi bi-tags"></i> Категория</Nav.Link>
             </Nav.Item>
             
 
              <Nav.Item>
-              <Nav.Link eventKey="seventh" >📦 Продукты</Nav.Link>
+              <Nav.Link eventKey="seventh" ><i class="bi bi-box-seam"></i> Продукты</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="eighth" disabled={localStorage.getItem("role")==="User"}>🔢 Остатки</Nav.Link>
+              <Nav.Link eventKey="eighth" disabled={localStorage.getItem("role")==="User"}><i class="bi bi-123"></i> Остатки</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="nineth" disabled={localStorage.getItem("role")==="User"} >⬇️ Приход</Nav.Link>
+              <Nav.Link eventKey="nineth" disabled={localStorage.getItem("role")==="User"} ><i class="bi bi-arrow-down-left"></i> Приход</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="teenth" >🛍️ Продажа</Nav.Link>
+              <Nav.Link eventKey="teenth" ><i class="bi bi-bag-check"></i> Продажа</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="elevn" >↩️ Возврат</Nav.Link>
+              <Nav.Link eventKey="elevn" ><i class="bi bi-arrow-return-right"></i> Возврат</Nav.Link>
             </Nav.Item>
 
             <Nav.Item>
-              <Nav.Link eventKey="twelw" disabled={localStorage.getItem("role")==="User"}>💵 Платеж</Nav.Link>
+              <Nav.Link eventKey="twelw" disabled={localStorage.getItem("role")==="User"}><i class="bi bi-cash"></i> Платеж</Nav.Link>
             </Nav.Item>
 
              <Nav.Item>
-              <Nav.Link eventKey="integration" disabled={localStorage.getItem("role")==="User"} >🔗 Интеграция</Nav.Link>
+              <Nav.Link eventKey="integration" disabled={localStorage.getItem("role")==="User"} ><i class="bi bi-gear-wide-connected"></i> Интеграция</Nav.Link>
             </Nav.Item>
 
           </Nav>
@@ -141,6 +149,10 @@ function LeftTab() {
             </Tab.Pane>
             <Tab.Pane eventKey="twelw">
               <PaymentScreen></PaymentScreen>
+            </Tab.Pane>
+
+            <Tab.Pane eventKey="integration">
+              <IntegrationScreen></IntegrationScreen>
             </Tab.Pane>
           </Tab.Content>
         </Col>

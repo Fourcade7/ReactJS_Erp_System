@@ -317,7 +317,7 @@ function SaleAdd(props) {
     const [open, setOpen] = useState(false);
     const [customerId, setCustomerId] = useState(1);
 
-    const [printType, setPrintType] = useState("Чек");
+    const [printType, setPrintType] = useState(null);
 
 
     const [paymentType, setPaymentType] = useState("Наличные");
@@ -401,7 +401,7 @@ function SaleAdd(props) {
               setShowSuccess(false);
                //window.location.reload(); 
                setPrintType("Чек");
-               handlePrint();
+               //handlePrint();
                ///window.location.reload(); 
                
             }, 3000);
@@ -433,9 +433,21 @@ function SaleAdd(props) {
   const handlePrintDraft = useReactToPrint({
     contentRef:componentRef,  
     onAfterPrint: async () => {
-   setPrintType("Чек");  // bazadan qayta o‘qish
+      
   }
   });
+
+
+  useEffect(()=>{
+    if(printType==="Черновик"){
+      handlePrintDraft();
+      setPrintType(null);
+    }
+    if(printType==="Чек"){
+      handlePrint();
+      setPrintType(null);
+    }
+  },[printType])
 
 
 
@@ -454,8 +466,8 @@ function SaleAdd(props) {
           <div className="my-2 bg-light">
             <div>
               <Button variant='outline-primary w-100' onClick={() => {
-                  setPrintType("Черновика");
-                  handlePrintDraft();
+                  setPrintType("Черновик");
+                  //handlePrintDraft();
               }}>
               🖨️ Печать черновика
               </Button>
@@ -519,7 +531,7 @@ function SaleAdd(props) {
         onClick={()=>{
           //console.log(items);
           handleSale();
-          
+         
           
         }}
 
@@ -635,7 +647,10 @@ function SaleTabForHome(props) {
       
 
       {activeTab==="sale_detail" && 
-       <Tab eventKey="sale_detail" title="ℹ️ Детали продажа">
+       <Tab eventKey="sale_detail" title={<>
+       <i class="bi bi-info-square me-2"></i>
+       Детали продажа
+       </>}>
          <SaleDetailScreen selectedSale={selectedSale} setActiveTab={setActiveTab} setSelectedSale={setSelectedSale}></SaleDetailScreen>
       </Tab>
       }
@@ -689,7 +704,10 @@ function SaleTab() {
       </Tab>
 
       {activeTab==="sale_detail" && 
-       <Tab eventKey="sale_detail" title="ℹ️ Детали продажа">
+       <Tab eventKey="sale_detail" title={<>
+       <i class="bi bi-info-square me-2"></i>
+       Детали продажа
+       </>}>
          <SaleDetailScreen selectedSale={selectedSale} setActiveTab={setActiveTab} setSelectedSale={setSelectedSale}></SaleDetailScreen>
       </Tab>
       }

@@ -42,10 +42,21 @@ function UserTabs() {
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
-      <Tab eventKey="home" title="Список сотрудников">
+      <Tab eventKey="home" title={
+         <>
+          <i className="bi bi-person-lines-fill me-2"></i>
+          Список сотрудников
+        </>
+      }>
          <UserListGroup activeTab={activeTab}></UserListGroup>
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый сотрудник">
+      <Tab eventKey="profile" title={
+        <>
+        <i class="bi bi-person-add me-2"></i>
+         Добавить новый сотрудник
+        </>
+        
+        }>
         <div className='d-flex align-items-center justify-content-start'>
         <Col>
         <RegisterScreenforTab tabChange={(tabName)=>{

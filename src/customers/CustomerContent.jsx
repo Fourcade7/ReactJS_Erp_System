@@ -69,7 +69,7 @@ function CustomerForm(props) {
             props.handleRegister(e,username,surname,phone)
           }}
         >
-          Сохранить
+         <i class="bi bi-floppy"></i> Сохранить
         </Button>     
         </Col>
     
@@ -173,11 +173,19 @@ function CustomerTabs() {
       variant='underline' //pills //tabs //underline
       //style={{fontSize:"12px"}}
     >
-      <Tab eventKey="home" title="Список клиентов">
+      <Tab eventKey="home" title={<>
+          <i className="bi bi-person-lines-fill me-2"></i>
+          Список клиентов
+        </>}>
         
          <CustomerListGroup activeTab={activeTab}></CustomerListGroup>
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый клиент">
+      <Tab eventKey="profile" title={
+        <>
+        <i class="bi bi-person-add me-2"></i>
+        Добавить новый клиент
+        </>
+      }>
         <div className='d-flex align-items-center justify-content-start'>
         <Col>
         {/* <RegisterScreenforTab tabChange={(tabName)=>{

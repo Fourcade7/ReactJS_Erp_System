@@ -269,7 +269,7 @@ function SaleListGroup(props) {
           <div className='d-flex flex-row w-100'>
             <div className='d-flex'>
               <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'>#️⃣ Продажа id: {sale.id}</small>
+              <small className='me-2 m-0 p-0 bg-dark-subtlex px-2 rounded mt-0'><i class="bi bi-bag-check"></i> Продажа id: {sale.id}</small>
              
             </div>
             <div className='d-flex ms-auto'>
@@ -277,21 +277,21 @@ function SaleListGroup(props) {
             
             
              {sale.discount > 0 &&
-              <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>💸 Скидка {sale.discount.toLocaleString("uz")} So'm</small>
+              <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'><i class="bi bi-cash text-success me-2"></i> Скидка {sale.discount.toLocaleString("uz")} So'm</small>
              }
 
              {sale.total!==(sale.payments.reduce((sum,item) => sum+item.amount,0 )+sale.discount) &&
-              <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>🟥 В долг</small>
+              <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'><i class="bi bi-cash-stack text-danger me-2"></i> В долг</small>
              }
             
             
             
            
             
-            <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'>💵 {sale.payments.reduce((sum,item) => sum+item.amount,0 ).toLocaleString("uz")} So'm</small>
+            <small className='ms-2 m-0 p-0 bg-success-subtlex px-2 rounded mt-0 text-nowrap'><i class="bi bi-cash text-success me-2"></i> {sale.payments.reduce((sum,item) => sum+item.amount,0 ).toLocaleString("uz")} So'm</small>
             
            
-            <small className='ms-2 m-0 p-0 bg-primary-subtlex px-2 rounded mt-0 text-nowrap'>🕗 { new Date( sale.date).toLocaleString("UZ") }</small>
+            <small className='ms-2 m-0 p-0 bg-primary-subtlex px-2 rounded mt-0 text-nowrap'><i class="bi bi-calendar4-week me-2"><i class="bi bi-clock ms-2"></i> </i> { new Date( sale.date).toLocaleString("UZ") }</small>
             
             </div>
           </div>
