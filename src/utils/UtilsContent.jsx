@@ -1,75 +1,43 @@
+import { useEffect, useState } from 'react'
+import { Alert, Collapse, ProgressBar, Spinner } from '../ui'
 
-import { useEffect,useState } from "react";
-import { Alert,Collapse,Spinner,ProgressBar } from "react-bootstrap";
-
-
-function AlertDismissibleDanger(props) {
-  const [show, setShow] = useState(false);
+/** Ochilish animatsiyasi bilan chiqadigan, yopish mumkin boʻlgan ogohlantirish. */
+function DismissibleAlert({ variant, alertMsg }) {
+  const [show, setShow] = useState(false)
 
   useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
+    const timer = setTimeout(() => setShow(true), 120)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
     <Collapse in={show}>
-      <div> 
-        <Alert  variant="danger"  onClose={() => setShow(false)} dismissible >
-          <small>{props.alertMsg}</small>
+      <div className="pb-3">
+        <Alert variant={variant} dismissible onClose={() => setShow(false)}>
+          {alertMsg}
         </Alert>
       </div>
     </Collapse>
-  );
+  )
 }
 
-function ProgressDismissible() {
- 
-  return (
-   
-    
-      <div className="d-flex flex-column"> 
-        <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-        <ProgressBar  className="my-3" animated variant="primary" now={100} />
-      </div>
-   
-  );
+function AlertDismissibleDanger(props) {
+  return <DismissibleAlert variant="danger" alertMsg={props.alertMsg} />
 }
 
 function AlertDismissibleSuccess(props) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    // Sahifa yuklangandan 500ms o'tgach animatsiya boshlanadi
-    const timer = setTimeout(() => {
-      setShow(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    /* 
-      Muhim: Collapse ichida bitta o'rab turuvchi <div> bo'lishi shart!
-      Aks holda animatsiya (collapse effekti) ishlamaydi.
-    */
-    <Collapse in={show}>
-      <div> 
-        <Alert  variant="success"  onClose={() => setShow(false)} dismissible >
-          <small>{props.alertMsg}</small>
-        </Alert>
-      </div>
-    </Collapse>
-  );
+  return <DismissibleAlert variant="success" alertMsg={props.alertMsg} />
 }
 
+/** Soʻrov bajarilayotganini bildiruvchi indikator. */
+function ProgressDismissible({ label = 'Пожалуйста, подождите' }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-3">
+      <Spinner size="md" />
+      <p className="text-xs text-subtle">{label}</p>
+      <ProgressBar animated className="w-full" />
+    </div>
+  )
+}
 
-
-export {AlertDismissibleDanger,AlertDismissibleSuccess,ProgressDismissible}
+export { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible }

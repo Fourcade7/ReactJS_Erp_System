@@ -1,111 +1,290 @@
+@import 'tailwindcss';
+
+/* Dark mode `class` strategiyasi orqali boshqariladi (html.dark). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Dizayn tokenlari — bitta manba. Yorugʻ rejim :root da, qorongʻi rejim .dark da.
+   Barcha komponentlar faqat shu semantik nomlardan foydalanadi.
+--------------------------------------------------------------------------- */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --app-bg: oklch(0.985 0.002 265);
+  --app-bg-accent: oklch(0.967 0.006 265);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.975 0.003 265);
+  --surface-3: oklch(0.955 0.005 265);
+  --border: oklch(0.917 0.005 265);
+  --border-strong: oklch(0.86 0.007 265);
+  --fg: oklch(0.21 0.014 265);
+  --fg-muted: oklch(0.52 0.012 265);
+  --fg-subtle: oklch(0.645 0.012 265);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --primary: oklch(0.55 0.21 273);
+  --primary-hover: oklch(0.49 0.21 273);
+  --primary-fg: oklch(1 0 0);
+  --primary-soft: oklch(0.955 0.025 273);
+  --primary-soft-fg: oklch(0.45 0.19 273);
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --success: oklch(0.6 0.15 155);
+  --success-soft: oklch(0.955 0.04 155);
+  --success-soft-fg: oklch(0.44 0.13 155);
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+  --warning: oklch(0.72 0.16 72);
+  --warning-soft: oklch(0.96 0.05 82);
+  --warning-soft-fg: oklch(0.5 0.13 62);
+
+  --danger: oklch(0.585 0.215 20);
+  --danger-hover: oklch(0.52 0.215 20);
+  --danger-soft: oklch(0.955 0.03 20);
+  --danger-soft-fg: oklch(0.48 0.19 20);
+
+  --info: oklch(0.62 0.15 230);
+  --info-soft: oklch(0.955 0.03 230);
+  --info-soft-fg: oklch(0.45 0.13 230);
+
+  --ring: oklch(0.55 0.21 273 / 0.35);
+  --overlay: oklch(0.21 0.014 265 / 0.45);
+
+  --shadow-color: 265 20% 40%;
+}
+
+.dark {
+  --app-bg: oklch(0.165 0.008 265);
+  --app-bg-accent: oklch(0.185 0.01 265);
+  --surface: oklch(0.205 0.011 265);
+  --surface-2: oklch(0.235 0.012 265);
+  --surface-3: oklch(0.27 0.013 265);
+  --border: oklch(0.29 0.013 265);
+  --border-strong: oklch(0.36 0.015 265);
+  --fg: oklch(0.965 0.003 265);
+  --fg-muted: oklch(0.72 0.014 265);
+  --fg-subtle: oklch(0.6 0.014 265);
+
+  --primary: oklch(0.65 0.19 273);
+  --primary-hover: oklch(0.71 0.18 273);
+  --primary-fg: oklch(0.15 0.02 273);
+  --primary-soft: oklch(0.65 0.19 273 / 0.16);
+  --primary-soft-fg: oklch(0.8 0.12 273);
+
+  --success: oklch(0.7 0.15 155);
+  --success-soft: oklch(0.7 0.15 155 / 0.16);
+  --success-soft-fg: oklch(0.82 0.13 155);
+
+  --warning: oklch(0.78 0.15 72);
+  --warning-soft: oklch(0.78 0.15 72 / 0.16);
+  --warning-soft-fg: oklch(0.86 0.12 82);
+
+  --danger: oklch(0.65 0.2 20);
+  --danger-hover: oklch(0.7 0.2 20);
+  --danger-soft: oklch(0.65 0.2 20 / 0.16);
+  --danger-soft-fg: oklch(0.8 0.14 20);
+
+  --info: oklch(0.7 0.14 230);
+  --info-soft: oklch(0.7 0.14 230 / 0.16);
+  --info-soft-fg: oklch(0.83 0.11 230);
+
+  --ring: oklch(0.65 0.19 273 / 0.45);
+  --overlay: oklch(0.12 0.01 265 / 0.65);
+
+  --shadow-color: 265 40% 2%;
+}
+
+/* ---------------------------------------------------------------------------
+   Tokenlarni Tailwind utilitalariga bogʻlash: bg-surface, text-muted, border-line …
+--------------------------------------------------------------------------- */
+@theme inline {
+  --color-app: var(--app-bg);
+  --color-app-accent: var(--app-bg-accent);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-subtle: var(--fg-subtle);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-fg: var(--primary-soft-fg);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-fg: var(--success-soft-fg);
+
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-fg: var(--warning-soft-fg);
+
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-fg: var(--danger-soft-fg);
+
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-fg: var(--info-soft-fg);
+
+  --color-overlay: var(--overlay);
+
+  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  --radius-card: 0.875rem;
+
+  --shadow-soft: 0 1px 2px hsl(var(--shadow-color) / 0.06), 0 1px 3px hsl(var(--shadow-color) / 0.05);
+  --shadow-raised: 0 2px 4px hsl(var(--shadow-color) / 0.06), 0 8px 20px -6px hsl(var(--shadow-color) / 0.12);
+  --shadow-pop: 0 4px 8px hsl(var(--shadow-color) / 0.07), 0 16px 40px -10px hsl(var(--shadow-color) / 0.2);
+
+  --animate-fade-in: fade-in 0.18s ease-out;
+  --animate-pop-in: pop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-slide-up: slide-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-indeterminate: indeterminate 1.15s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+}
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(260%);
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+/* ---------------------------------------------------------------------------
+   Asosiy qatlam
+--------------------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: var(--border);
   }
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    /* Kichikroq, zich UI — 14px asos oʻlchov. */
+    font-size: 14px;
+    line-height: 1.55;
+    font-family: var(--font-sans);
+    color: var(--fg);
+    background-color: var(--app-bg);
+    background-image: radial-gradient(900px 420px at 12% -8%, var(--primary-soft), transparent 60%),
+      radial-gradient(760px 380px at 96% 2%, var(--info-soft), transparent 62%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis-weight: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--fg);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  /* Fokus halqasi butun ilova boʻylab bir xil. */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--primary-soft);
+    color: var(--primary-soft-fg);
+  }
+
+  /* Ingichka, tizimga mos skrollbar. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--fg-subtle);
+    background-clip: content-box;
+  }
+
+  /* Raqamli maydonlardagi oʻq tugmalarini olib tashlash. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+@layer utilities {
+  /* Sonlar ustunlari tik turishi uchun. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+  /* Chop etishda faqat mazmun qolsin. */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
   }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }

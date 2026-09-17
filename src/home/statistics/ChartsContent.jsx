@@ -1,215 +1,159 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ComposedChart, Bar, BarChart } from 'recharts';
-import { RechartsDevtools } from '@recharts/devtools';
+import { useMemo } from 'react'
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { useTheme } from '../../theme/ThemeProvider'
 
+const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-import { ResponsiveContainer } from 'recharts';
+/**
+ * Grafiklar uchun rang to'plami. Recharts SVG atributlariga haqiqiy rang
+ * qiymatini talab qiladi, shuning uchun tokenlar temaga qarab shu yerda tanlanadi.
+ */
+function useChartTheme() {
+  const { resolvedTheme } = useTheme()
 
-
-
-
-const data2 = [
-  { name: '1', uv: 1200, pv: 2400, amt: 800 },
-  { name: '2', uv: 1800, pv: 2100, amt: 900 },
-  { name: '3', uv: 900,  pv: 1700, amt: 700 },
-  { name: '4', uv: 2200, pv: 2600, amt: 1000 },
-  { name: '5', uv: 3000, pv: 3200, amt: 1200 },
-  { name: '6', uv: 2500, pv: 2800, amt: 1100 },
-  { name: '7', uv: 2700, pv: 3000, amt: 1300 },
-  { name: '8', uv: 1500, pv: 2000, amt: 1900 },
-  { name: '9', uv: 1700, pv: 2100, amt: 1950 },
-  { name: '10', uv: 3200, pv: 3500, amt: 1400 },
-  { name: '11', uv: 2900, pv: 3300, amt: 1200 },
-  { name: '12', uv: 2100, pv: 2600, amt: 1000 },
-  { name: '13', uv: 1800, pv: 2400, amt: 900 },
-  { name: '14', uv: 2600, pv: 3000, amt: 1300 },
-  { name: '15', uv: 3400, pv: 3700, amt: 1500 },
-  { name: '16', uv: 3100, pv: 3500, amt: 1400 },
-  { name: '17', uv: 2800, pv: 3200, amt: 1300 },
-  { name: '18', uv: 2300, pv: 22700, amt: 112100 },
-  { name: '19', uv: 2000, pv: 2500, amt: 1000 },
-  { name: '20', uv: 2700, pv: 3100, amt: 1200 },
-  { name: '21', uv: 3500, pv: 3800, amt: 1500 },
-  { name: '22', uv: 3300, pv: 3600, amt: 1400 },
-  { name: '23', uv: 3000, pv: 3400, amt: 1300 },
-  { name: '24', uv: 2600, pv: 3000, amt: 1200 },
-  { name: '25', uv: 2200, pv: 2700, amt: 1100 },
-  { name: '26', uv: 2400, pv: 2900, amt: 1150 },
-  { name: '27', uv: 2800, pv: 3200, amt: 1300 },
-  { name: '28', uv: 3100, pv: 3500, amt: 1400 },
-  { name: '29', uv: 2900, pv: 3300, amt: 1350 },
-  { name: '30', uv: 2700, pv: 3100, amt: 1250 },
-  { name: '31', uv: 2600, pv: 3000, amt: 1200 },
-];
-
-const data = [
-  { name: 'Пн', uv: 4000,  pv: 2400,  amt: 2400 },
-  { name: 'Вт', uv: 3000,  pv: 1398,  amt: 2210 },
-  { name: 'Ср', uv: 79000, pv: 79800, amt: 2290 },
-  { name: 'Чт', uv: 2780,  pv: 3908,  amt: 2000 },
-  { name: 'Пт', uv: 0,     pv: 4800,  amt: 2181 },
-  { name: 'Сб', uv: 2390,  pv: 3800,  amt: 2500 },
-  { name: 'Вс', uv: 3490,  pv: 4300,  amt: 2100 },
-];
-// #endregion
-
-function BarChartEditedold(props) {
-  const buildWeeklyChart = (sales) => {
-  const week = [
-    { name: 'Пн', pv: 0 },
-    { name: 'Вт', pv: 0 },
-    { name: 'Ср', pv: 0 },
-    { name: 'Чт', pv: 0 },
-    { name: 'Пт', pv: 0 },
-    { name: 'Сб', pv: 0 },
-    { name: 'Вс', pv: 0 },
-  ];
-
-  sales.forEach((sale) => {
-    const date = new Date(sale.date);
-    const day = date.getDay(); // 0=Sun ... 6=Sat
-
-    const index = day === 0 ? 6 : day - 1;
-
-    week[index].pv += Number(sale.totalPrice);
-  });
-
-  return week;
-};
-  return (
-    <div style={{ width: '100%' }}>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart
-          data={data}
-          margin={{
-            top: 5,
-            right: 0,
-            left: 0,
-            bottom: 5,
-          }}
-        >
-           <CartesianGrid strokeDasharray="3 3" />
-      {/* <XAxis dataKey="name" niceTicks="snap125" />
-      <YAxis width="auto" niceTicks="snap125" />
-      <Tooltip />
-      <Legend /> */}
-
-      <XAxis 
-          dataKey="name"
-          tick={{ fontSize: 10 }} 
-          />
-          
-           <YAxis 
-            tick={{ fontSize: 10 }} 
-          />
-
-          <Tooltip 
-            contentStyle={{ fontSize: '10px' }}
-            labelStyle={{ fontSize: '10px' }}
-          />
-
-          <Legend 
-            wrapperStyle={{ fontSize: '10px' }}
-          />
-      <Bar dataKey="pv" stackId="a" fill="#0b4bedff" background />
-      
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
+  return useMemo(() => {
+    const dark = resolvedTheme === 'dark'
+    return {
+      accent: dark ? 'oklch(0.7 0.17 273)' : 'oklch(0.55 0.21 273)',
+      accent2: dark ? 'oklch(0.72 0.13 230)' : 'oklch(0.62 0.15 230)',
+      grid: dark ? 'oklch(0.32 0.013 265)' : 'oklch(0.917 0.005 265)',
+      axis: dark ? 'oklch(0.62 0.014 265)' : 'oklch(0.58 0.012 265)',
+      surface: dark ? 'oklch(0.205 0.011 265)' : 'oklch(1 0 0)',
+      border: dark ? 'oklch(0.32 0.013 265)' : 'oklch(0.917 0.005 265)',
+      fg: dark ? 'oklch(0.965 0.003 265)' : 'oklch(0.21 0.014 265)',
+    }
+  }, [resolvedTheme])
 }
 
-function BarChartEdited(props) {
+const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
 
-  const week = [
-    { name: 'Пн', pv: 0 },
-    { name: 'Вт', pv: 0 },
-    { name: 'Ср', pv: 0 },
-    { name: 'Чт', pv: 0 },
-    { name: 'Пт', pv: 0 },
-    { name: 'Сб', pv: 0 },
-    { name: 'Вс', pv: 0 },
-  ];
+/** Qisqartirilgan oʻq belgilari: 1 200 000 → 1.2M. */
+const compact = (value) => {
+  const n = Number(value) || 0
+  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (Math.abs(n) >= 1_000) return `${Math.round(n / 1_000)}K`
+  return String(n)
+}
 
-  props.weekSaleList.forEach((sale) => {
-    const date = new Date(sale.date);
-    const day = date.getDay(); // 0=Sun ... 6=Sat
+function ChartTooltip({ active, payload, label, unit }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-xl border border-line bg-surface px-3 py-2 shadow-pop">
+      <p className="text-[11px] font-medium text-subtle">
+        {unit} {label}
+      </p>
+      <p className="mt-0.5 text-[13px] font-semibold tabular-nums text-fg">
+        {money(payload[0].value)}
+      </p>
+    </div>
+  )
+}
 
-    const index = day === 0 ? 6 : day - 1;
+/** Haftalik savdo — kunlar kesimida ustunli diagramma. */
+function BarChartEdited({ weekSaleList = [] }) {
+  const c = useChartTheme()
 
-    week[index].pv += Number(sale.total || 0);
-  });
+  const week = useMemo(() => {
+    const rows = WEEK_DAYS.map((name) => ({ name, pv: 0 }))
+    weekSaleList.forEach((sale) => {
+      const day = new Date(sale.date).getDay() // 0 = Якшанба
+      rows[day === 0 ? 6 : day - 1].pv += Number(sale.total || 0)
+    })
+    return rows
+  }, [weekSaleList])
 
   return (
-    <div style={{ width: '100%' }}>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={week}>
-          <CartesianGrid strokeDasharray="3 3" />
-
-          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-          {/* <YAxis tick={{ fontSize: 10 }} /> */}
-
+    <div className="h-52 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={week} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={c.grid} vertical={false} />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 10, fill: c.axis }}
+            tickLine={false}
+            axisLine={{ stroke: c.grid }}
+          />
+          <YAxis
+            tick={{ fontSize: 10, fill: c.axis }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={compact}
+          />
           <Tooltip
-            formatter={(value) => value.toLocaleString("uz")}
+            cursor={{ fill: c.accent, fillOpacity: 0.08 }}
+            content={<ChartTooltip unit="" />}
           />
-          <YAxis
-          tick={{ fontSize: 10 }}
-            tickFormatter={(value) => value.toLocaleString("uz")}
-          />
-          <Legend />
-
-          <Bar dataKey="pv" fill="#0b4bedff" />
+          <Bar dataKey="pv" fill={c.accent} radius={[6, 6, 0, 0]} maxBarSize={28} />
         </BarChart>
       </ResponsiveContainer>
     </div>
-  );
+  )
 }
-function ChartLinearEdited(props) {
 
-  const month = Array.from({ length: 31 }, (_, i) => ({
-    name: String(i + 1),
-    uv: 0,
-  }));
+/** Oylik savdo — kunma-kun maydonli grafik. */
+function ChartLinearEdited({ monthSaleList = [] }) {
+  const c = useChartTheme()
 
-  const monthName = new Date().toLocaleString("ru-RU", {
-    month: "long",
-  });
-
-  props.monthSaleList.forEach((sale) => {
-    const date = new Date(sale.date);
-    const day = date.getDate(); // 1–31
-
-    month[day - 1].uv += Number(sale.total || 0);
-  });
+  const month = useMemo(() => {
+    const rows = Array.from({ length: 31 }, (_, i) => ({ name: String(i + 1), uv: 0 }))
+    monthSaleList.forEach((sale) => {
+      const day = new Date(sale.date).getDate()
+      if (day >= 1 && day <= 31) rows[day - 1].uv += Number(sale.total || 0)
+    })
+    return rows
+  }, [monthSaleList])
 
   return (
-    <div className='bg-primaryx d-flex flex-column' style={{ width: '100%' }}>
-       
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={month}>
-          <CartesianGrid strokeDashar ray="3 3" />
-
-          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-          <YAxis
-              tick={{ fontSize: 10 }}
-              tickFormatter={(value) => value.toLocaleString("uz")}
-            />
-
-         <Tooltip
-          contentStyle={{ fontSize: '10px' }}
-          labelStyle={{ fontSize: '10px' }}
-          formatter={(value) => value.toLocaleString("uz")}
+    <div className="h-52 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={month} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+          <defs>
+            <linearGradient id="saleGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={c.accent} stopOpacity={0.28} />
+              <stop offset="100%" stopColor={c.accent} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke={c.grid} vertical={false} />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 10, fill: c.axis }}
+            tickLine={false}
+            axisLine={{ stroke: c.grid }}
+            interval={2}
           />
-
-          <Legend wrapperStyle={{ fontSize: '10px' }} />
-
-          <Line type="monotone" dataKey="uv" stroke="blue" />
-        </LineChart>
+          <YAxis
+            tick={{ fontSize: 10, fill: c.axis }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={compact}
+          />
+          <Tooltip
+            cursor={{ stroke: c.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
+            content={<ChartTooltip unit="День" />}
+          />
+          <Area
+            type="monotone"
+            dataKey="uv"
+            stroke={c.accent}
+            strokeWidth={2}
+            fill="url(#saleGradient)"
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 2, stroke: c.surface }}
+          />
+        </AreaChart>
       </ResponsiveContainer>
-     
     </div>
-  );
+  )
 }
 
-
-
-export  {BarChartEdited , ChartLinearEdited};
+export { BarChartEdited, ChartLinearEdited }

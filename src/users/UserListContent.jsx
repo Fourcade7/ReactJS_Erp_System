@@ -1,429 +1,313 @@
-
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar} from "react-bootstrap";
-
-import { useEffect, useState,useRef } from "react";
-
-import Pagination from 'react-bootstrap/Pagination';
-import { deleteUser, getAllUsersPagination, getAllUsersPaginationSearch, updateUser } from "./UserApi";
-
-import ellipsis from "../assets/ellipsis.png"
-import CustomPaginationScreen from "../utils/CustomPaginationContent";
-
-
-function PaginationExample() {
-  const [active, setActive] = useState(1);
-
-  let items = [];
-
-  for (let number = 1; number <= 5; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-  return (
-    <div className="mt-4">
-      <Pagination>{items}</Pagination>
-      <br />
-      <p>Active page: {active}</p>
-    </div>
-  );
-}
-
-
-
+import { useEffect, useState } from 'react'
+import {
+  CalendarClock,
+  Mail,
+  MoreHorizontal,
+  Pencil,
+  Phone,
+  Save,
+  ShieldCheck,
+  Trash2,
+  UserRound,
+} from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Dropdown,
+  EmptyState,
+  Form,
+  ListGroup,
+  Modal,
+  SearchField,
+} from '../ui'
+import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import { deleteUser, getAllUsersPaginationSearch, updateUser } from './UserApi'
 
 function UserListGroup(props) {
- 
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDel, setShowDel] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
-  const [showRes, setShowRes] = useState(false);
-  const [showResTitle, setShowResTitle] = useState("Success");
-  const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
-  const [showResAlert, setShowResAlert] = useState(false);
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDel, setShowDel] = useState(false)
+  const [showLoad, setShowLoad] = useState(false)
+  const [showRes, setShowRes] = useState(false)
+  const [showResTitle, setShowResTitle] = useState('Success')
+  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showResAlert, setShowResAlert] = useState(false)
 
-  const [userName,setUserName]=useState("");
-  const [surName,setSurname]=useState("");
-  const [phone,setPhone]=useState("");
-  const [email,setEmail]=useState("");
-  const [role,setRole]=useState("");
-  const [password,setPassword]=useState("");
+  const [userName, setUserName] = useState('')
+  const [surName, setSurname] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState('')
+  const [password, setPassword] = useState('')
 
-  //const [reload, setReload] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
+  const [uid, setUid] = useState(-1)
 
-  const fileInputRef=useRef(null);
-  const [uid, setUid] = useState(-1);
-
-
-  const [userList,setUserList] = useState([]);
-  const [pageCount,setPageCount] = useState(0);
-  
-
-  const [active, setActive] = useState(1);
-
+  const [userList, setUserList] = useState([])
+  const [pageCount, setPageCount] = useState(0)
+  const [active, setActive] = useState(1)
 
   useEffect(() => {
-  const handler = setTimeout(() => {
-    setDebouncedSearch(searchTerm);
-    setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytarish
-  }, 500); // 500ms kutish
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setActive(1)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [searchTerm])
 
-  return () => {
-    clearTimeout(handler); // Agar foydalanuvchi yana yozsa, eski taymerni o'chiradi
-  };
-}, [searchTerm]);
-
-  
-
-  useEffect(()=>{
+  useEffect(() => {
     async function loadAllUserPag() {
-      try{
-        //setShowLoad(true)
-        const userListPag= await getAllUsersPaginationSearch(active,10,debouncedSearch);
-        
-        //console.log(userListPag);
-        setPageCount(userListPag.meta.totalPages);
-        //console.log(active);
+      try {
+        const userListPag = await getAllUsersPaginationSearch(active, 10, debouncedSearch)
+        setPageCount(userListPag.meta.totalPages)
         setUserList(userListPag.data)
-        setShowLoad(false)  
-        
-        
-      }catch(error){
-          console.log(error.message);
-          setShowLoad(false)
-          
+        setShowLoad(false)
+      } catch (error) {
+        console.log(error.message)
+        setShowLoad(false)
       }
     }
 
-    
-      if (props.activeTab === "home") {
-        loadAllUserPag();
-      }
-      
-  },[active,showResAlert,props.activeTab,debouncedSearch])  
-
-
-
-  //Pagination
-
-  
-
-  let items = [];
-
-  for (let number = 1; number <= pageCount; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-
-
+    if (props.activeTab === 'home') loadAllUserPag()
+  }, [active, showResAlert, props.activeTab, debouncedSearch])
 
   return (
-    <div>
-       <Form.Control className="mb-2" type="text" placeholder="Поиск..." 
+    <div className="flex flex-col gap-3">
+      <SearchField
         value={searchTerm}
         onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
+          setSearchTerm(e.target.value)
+          setActive(1)
         }}
-       />
-        <ListGroup as="ol"  className="rounded overflow-hiddenx">
-      {userList.map((user,index) => (
-        <ListGroup.Item
-          key={user.id}
-          as="li"
-          className="d-flex "
-        >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{user.id}</small>
-              <h6 className='m-0 p-0'>{user.username}</h6>
-              <h6 className='ms-2 m-0 p-0'>{user.surname}</h6>
-            </div>
-            <div className='d-flex ms-auto'>
-              
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{user.phone}</small>
-            <small className='ms-2 m-0 p-0 bg-warning-subtle px-2 rounded mt-0'>{user.email}</small>
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'> {user.role}</small>
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
-            
-             new Date( user.createdAt).toLocaleString("UZ")
-            }</small>
-            
-            </div>
-          </div>
-          <div className='d-flex ms-3'>
-          
-           <Dropdown>
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
-              Опции  
-            </Dropdown.Toggle>
+        onClear={() => setSearchTerm('')}
+        placeholder="Поиск сотрудника..."
+      />
 
-            <Dropdown.Menu 
-              className="my-dropdown" 
-              align="end" 
-              //popperConfig={{ strategy: 'fixed' }}
-              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
-            >
-              <Dropdown.Item onClick={() => { 
-                setShowEdit(true);
-                 setUid(user.id);
-                 setUserName(user.username);
-                 setSurname(user.surname);
-                 setPhone(user.phone);
-                 setEmail(user.email);
-                 setRole(user.role);
-                 //setPassword(user.password);
+      {userList.length === 0 ? (
+        <EmptyState
+          icon={UserRound}
+          title="Сотрудники не найдены"
+          description="Измените условия поиска или добавьте сотрудника на соседней вкладке."
+        />
+      ) : (
+        <ListGroup as="ol">
+          {userList.map((user, index) => (
+            <ListGroup.Item key={user.id} as="li">
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
+                {index + 1}
+              </span>
 
-                
-                }}>
-                <i class="bi bi-pencil-fill me-2"></i>  Изменить
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => { setShowDel(true); setUid(user.id); }}>
-               <i class="bi bi-trash3 me-2"></i> Удалить
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-fg">
+                  {user.username} {user.surname}
+                </p>
+                <p className="truncate text-[11px] text-subtle">ID: {user.id}</p>
+              </div>
 
-          
+              <Badge bg="success" className="hidden md:inline-flex">
+                <Phone />
+                {user.phone}
+              </Badge>
+              <Badge bg="warning" className="hidden lg:inline-flex">
+                <Mail />
+                {user.email}
+              </Badge>
+              <Badge bg={user.role === 'Admin' ? 'primary' : 'neutral'}>
+                <ShieldCheck />
+                {user.role}
+              </Badge>
+              <Badge className="hidden xl:inline-flex">
+                <CalendarClock />
+                {new Date(user.createdAt).toLocaleString('UZ')}
+              </Badge>
 
-            {/* <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button> */}
-          </div>
-          
-                </ListGroup.Item>
-              ))}
-      </ListGroup>
-
-       <div className="mt-4">
-         {/* <Pagination>{items}</Pagination> */}
-         <CustomPaginationScreen
-          active={active}
-          pageCount={pageCount}
-          setActive={setActive}
-         ></CustomPaginationScreen>
-              
-       </div>
-
-
-
-            {
-            //Edit
-            }
-            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Редактировать</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Название категории</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={userName}
-                        onChange={(e)=>{setUserName(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите фамилия"
-                        value={surName}
-                        onChange={(e)=>{setSurname(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите телефон номер"
-                        value={phone}
-                        onChange={(e)=>{setPhone(e.target.value)}}
-                        />
-
-                        <Form.Control className="mt-2" type="text" placeholder="Введите адрес электронной почты"
-                        value={email}
-                        onChange={(e)=>{setEmail(e.target.value)}}
-                        />
-
-                    <Dropdown className="my-2">
-                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
-                      
-                        <Form.Control className='me- me-2' value={role}  type="text" placeholder="Имя контрагент или Номер телефона" />
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu align="end" className="mt-1 w-100">
-                        
-                            <Dropdown.Item
-                              
-                              onClick={() => {setRole("User")}}
-                            >
-                              User
-                            </Dropdown.Item>
-
-                            <Dropdown.Item
-                              
-                              onClick={() => {setRole("Admin")}}
-                            >
-                              Admin
-                            </Dropdown.Item>
-                          
-                        </Dropdown.Menu>
-                      </Dropdown>
-                         <Form.Control className="mt-2" type="text" placeholder="Введите пароль"
-                        value={password}
-                        onChange={(e)=>{setPassword(e.target.value)}}
-                        />
-                    
-                      {/* <Form.Group controlId="formFile" className="mt-3">
-                          <small>Выберите изображение</small>
-                          <Form.Control type="file" ref={fileInputRef} />
-                      </Form.Group> */}
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowEdit(false)}>
-                   Отмена
-                </Button>
-                <Button variant="warning" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await updateUser(uid,userName,surName,phone,email,role,password)
-                 const data= await res.json();
-                 setShowLoad(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Сотрудник успешно обновлён")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
+              <Dropdown>
+                <Dropdown.Toggle
+                  as="div"
+                  className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
                 >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            {
-            //delete
-            }
+                  <MoreHorizontal className="size-4" />
+                </Dropdown.Toggle>
+                <Dropdown.Menu align="end">
+                  <Dropdown.Item
+                    onClick={() => {
+                      setShowEdit(true)
+                      setUid(user.id)
+                      setUserName(user.username)
+                      setSurname(user.surname)
+                      setPhone(user.phone)
+                      setEmail(user.email)
+                      setRole(user.role)
+                    }}
+                  >
+                    <Pencil /> Изменить
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    variant="danger"
+                    onClick={() => {
+                      setShowDel(true)
+                      setUid(user.id)
+                    }}
+                  >
+                    <Trash2 /> Удалить
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      )}
 
-            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Удалить</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDel(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" 
-                        onClick={ async ()=>{
-                          setShowResAlert(false)
-                          setShowLoadTitle("Загрузка...")
-                          setShowDel(false);
-                          setShowLoad(true);                         
-                          
-                          const res = await deleteUser(uid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
+      <div className="flex justify-center pt-1">
+        <CustomPaginationScreen active={active} pageCount={pageCount} setActive={setActive} />
+      </div>
 
-                          if(!res.ok){
-                              setShowResAlert(false)
-                          }else{
-                              setShowResAlert(true)
-                          }
-                           setTimeout(() => {
-                            console.log("log");
-                            setShowDel(false);
-                          }, 500);   
-                          
-                          setTimeout(() => {
-                            console.log("log");
-                            setShowLoadTitle("Почти готово")
-                          }, 1000);   
-                          
-                          
+      {/* Изменить */}
+      <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Редактировать сотрудника</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Form.Group controlId="editUserName">
+              <Form.Label>Имя</Form.Label>
+              <Form.Control
+                placeholder="Введите имя"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group controlId="editUserSurname">
+              <Form.Label>Фамилия</Form.Label>
+              <Form.Control
+                placeholder="Введите фамилию"
+                value={surName}
+                onChange={(e) => setSurname(e.target.value)}
+              />
+            </Form.Group>
+          </div>
+          <Form.Group controlId="editUserPhone">
+            <Form.Label>Телефон</Form.Label>
+            <Form.Control
+              type="tel"
+              placeholder="Введите номер телефона"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="editUserEmail">
+            <Form.Label>Электронная почта</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Введите адрес электронной почты"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Form.Group>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Form.Group controlId="editUserRole">
+              <Form.Label>Роль</Form.Label>
+              <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="" disabled>
+                  Выберите роль
+                </option>
+                <option value="User">User</option>
+                <option value="Admin">Admin</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId="editUserPassword">
+              <Form.Label>Новый пароль</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Введите пароль"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Form.Group>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="warning"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowEdit(false)
+              setShowLoad(true)
+              setShowLoadTitle('Загрузка...')
 
-                           setTimeout(() => {
-                            setShowLoad(false);
-                            setShowResTitle(deleteResponse.message)
-                            setShowRes(true);
-                          }, 2000);
-                          
-                          //window.location.reload();
-                        }
-                }>
-                    Удалить
-                </Button>
-                </Modal.Footer>
-            </Modal>
+              const res = await updateUser(uid, userName, surName, phone, email, role, password)
+              const data = await res.json()
+              setShowLoad(false)
 
-            {
-             //Loading
-            }
+              if (!res.ok) {
+                setShowResAlert(false)
+                setShowResTitle(data.message)
+              } else {
+                setShowResAlert(true)
+                setShowResTitle('Сотрудник успешно обновлён')
+              }
 
-            <Modal show={showLoad} onHide={() => setShowLoad(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>{showLoadTitle}</Modal.Title>
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-                          <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
-                          <ProgressBar  className="my-3" animated variant="primary" now={100} />
-                          
-                        </div>
+              setShowRes(true)
+              const timer = setTimeout(() => setShowRes(false), 1000)
+              return () => clearTimeout(timer)
+            }}
+          >
+            <Save />
+            Сохранить
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-                        
-            </Modal>
+      {/* Удалить */}
+      <Modal show={showDel} onHide={() => setShowDel(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Удалить</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowLoadTitle('Загрузка...')
+              setShowDel(false)
+              setShowLoad(true)
 
-            {
-             //Success
-            }
+              const res = await deleteUser(uid)
+              const deleteResponse = await res.json()
+              setShowResAlert(res.ok)
 
-            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
-                        <Modal.Header closeButton>
-                      
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          
-                          <Modal.Body className={`mx-auto alert alert-${showResAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
-                          
-                          
-                        </div>
+              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => {
+                setShowLoad(false)
+                setShowResTitle(deleteResponse.message)
+                setShowRes(true)
+              }, 2000)
+            }}
+          >
+            <Trash2 />
+            Удалить
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-                        
-            </Modal>
+      <LoadingModal show={showLoad} onHide={() => setShowLoad(false)} title={showLoadTitle} />
+      <ResultModal
+        show={showRes}
+        onHide={() => setShowRes(false)}
+        success={showResAlert}
+        message={showResTitle}
+      />
     </div>
-  );
+  )
 }
 
-
-export {UserListGroup}
+export { UserListGroup }

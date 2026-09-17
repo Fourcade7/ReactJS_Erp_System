@@ -5,7 +5,7 @@ async function getAllSaleDebt(){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/sale/alldebt`,{ 
+        let response = await fetch(`http://localhost:3000/sale/alldebt`,{ 
             method:"GET"
 
         });
@@ -30,7 +30,7 @@ async function getAllSaleToday(){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/sale/alltoday`,{ 
+        let response = await fetch(`http://localhost:3000/sale/alltoday`,{ 
             method:"GET"
 
         });
@@ -54,7 +54,7 @@ async function getAllSaleWeek(){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/sale/allweek`,{ 
+        let response = await fetch(`http://localhost:3000/sale/allweek`,{ 
             method:"GET"
 
         });
@@ -77,7 +77,7 @@ async function getAllSaleMonth(){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/sale/allmonth`,{ 
+        let response = await fetch(`http://localhost:3000/sale/allmonth`,{ 
             method:"GET"
 
         });

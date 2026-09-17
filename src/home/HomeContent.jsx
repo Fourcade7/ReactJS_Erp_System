@@ -1,178 +1,158 @@
-import { NavbarScreen } from "../navbar/NavbarContent";
-import LeftTab from "../main/SidebarTabContent";
-import {BarChartEdited, ChartLinearEdited} from "./statistics/ChartsContent";
-import Card from 'react-bootstrap/Card';
-import { Col, Row ,Tab,Tabs,ListGroup,ListGroupItem,Button} from "react-bootstrap";
+import { useEffect, useState } from 'react'
+import { CalendarDays, CalendarRange, LayoutDashboard, TrendingUp, Wallet } from 'lucide-react'
+import { cn } from '../lib/cn'
+import { Card, PageHeader } from '../ui'
+import { BarChartEdited, ChartLinearEdited } from './statistics/ChartsContent'
+import {
+  getAllSaleDebt,
+  getAllSaleMonth,
+  getAllSaleToday,
+  getAllSaleWeek,
+} from './statistics/HomeApi'
+import { SaleTabForHome } from '../sale/SaleContent'
 
-import { useState,useEffect } from "react";
-import { getAllSaleDebt, getAllSaleMonth, getAllSaleToday, getAllSaleWeek } from "./statistics/HomeApi";
-import { SaleTabForHome } from "../sale/SaleContent";
-import { useNavigate } from "react-router-dom";
+const sum = (list, pick) => list.reduce((acc, item) => acc + pick(item), 0)
 
-function CardScreen(props){
+const TONES = {
+  success: 'text-success-soft-fg bg-success-soft border-success/20',
+  primary: 'text-primary-soft-fg bg-primary-soft border-primary/20',
+  info: 'text-info-soft-fg bg-info-soft border-info/20',
+  danger: 'text-danger-soft-fg bg-danger-soft border-danger/20',
+}
 
-  
-  const todaySaleSum = props.todaySaleList.reduce((sum,item)=> sum+item.total,0)
-  const weekSaleSum = props.weekSaleList.reduce((sum,item)=> sum+item.total,0)
-  const monthSaleSum = props.monthSaleList.reduce((sum,item)=> sum+item.total,0)
-  const allSaleDebtSum = props.allSaleDebtList.reduce((sum,item)=> sum+(item.total-item.totalPaid),0)
+/** Bitta koʻrsatkich kartasi. */
+function StatCard({ icon: Icon, label, value, hint, tone = 'primary' }) {
+  return (
+    <Card padded={false} hoverable className="p-4">
+      <div className="flex items-start justify-between gap-3">
+        <span
+          className={cn(
+            'inline-flex size-8 items-center justify-center rounded-lg border',
+            TONES[tone] ?? TONES.primary,
+          )}
+        >
+          <Icon className="size-4" />
+        </span>
+        <span className="text-[10px] uppercase tracking-wider text-subtle">{hint}</span>
+      </div>
 
-  return(
-    <div>
-      <Row className="g-2">
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h3 className="fw-bold text-success"> {todaySaleSum.toLocaleString("uz")} So'm</h3>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-          Сумма сегодняшних продаж
-        </Card.Text>
-        
-      </Card.Body>
+      <p className="mt-3 truncate text-lg font-semibold tracking-tight tabular-nums text-fg">
+        {value.toLocaleString('uz')}
+        <span className="ml-1 text-xs font-medium text-subtle">So&apos;m</span>
+      </p>
+      <p className="mt-0.5 text-xs text-muted">{label}</p>
     </Card>
-        </Col>
-
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h3 className="fw-bold">{weekSaleSum.toLocaleString("uz")} So'm</h3>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-          Еженедельная сумма продаж
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-          <h3 className="fw-bold">{monthSaleSum.toLocaleString("uz")} So'm</h3>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-         Ежемесячная сумма продаж
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-
-        <Col>
-        <Card>
-      <Card.Body>
-        <Card.Title>
-           <h3 className="fw-bold text-danger">{allSaleDebtSum.toLocaleString("uz")} So'm</h3>
-        </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">31/03/2026</Card.Subtitle>
-        <Card.Text>
-          Сумма продажи долгов
-        </Card.Text>
-        
-      </Card.Body>
-    </Card>
-        </Col>
-      </Row>
-
-
-
-    </div>  
   )
-
 }
 
+function HomeScreen() {
+  const today = new Date()
+  const monthName = today.toLocaleString('ru-RU', { month: 'long' })
+  const todayLabel = today.toLocaleDateString('ru-RU')
 
+  const [todaySaleList, setTodaySaleList] = useState([])
+  const [weekSaleList, setWeekSaleList] = useState([])
+  const [monthSaleList, setMonthSaleList] = useState([])
+  const [allSaleDebtList, setAllSaleDebtList] = useState([])
 
+  useEffect(() => {
+    const handleSalesRange = async () => {
+      try {
+        const resToday = await getAllSaleToday()
+        const resWeek = await getAllSaleWeek()
+        const resMonth = await getAllSaleMonth()
+        const resDebt = await getAllSaleDebt()
 
-
-function HomeScreen(){
-  
-
-
-  const monthName = new Date().toLocaleString("ru-RU", {
-    month: "long",
-  });
-  const [todaySaleList,setTodaySaleList] = useState([]);
-  const [weekSaleList,setWeekSaleList] = useState([]);
-  const [monthSaleList,setMonthSaleList] = useState([]);
-  const [allSaleDebtList,setAllSaleDebtList] = useState([]);
-  
-     useEffect(()=>{
-      const handleSalesRange = async ()=>{
-      try{
-  
-        const resToday = await getAllSaleToday();
-        const resWeek = await getAllSaleWeek();
-        const resMonth = await getAllSaleMonth();
-        const resDebt = await getAllSaleDebt();
-  
-        if(!resToday.ok){
-          console.log(resToday);
-          
-        }else{
-         
-          const resultToday = await resToday.json();
-          const resultWeek = await resWeek.json();
-          const resultMonth = await resMonth.json();
-          const resultDebtAll = await resDebt.json();
-        
-          setTodaySaleList(resultToday)
-          setWeekSaleList(resultWeek); 
-          setMonthSaleList(resultMonth); 
-          setAllSaleDebtList(resultDebtAll)     
-          
+        if (!resToday.ok) {
+          console.log(resToday)
+          return
         }
-      }catch(error){
-        console.log(error.message);      
+
+        setTodaySaleList(await resToday.json())
+        setWeekSaleList(await resWeek.json())
+        setMonthSaleList(await resMonth.json())
+        setAllSaleDebtList(await resDebt.json())
+      } catch (error) {
+        console.log(error.message)
       }
-     };
-     handleSalesRange()
-     },[])
+    }
+    handleSalesRange()
+  }, [])
 
+  const stats = [
+    {
+      icon: CalendarDays,
+      tone: 'success',
+      hint: todayLabel,
+      label: 'Сумма сегодняшних продаж',
+      value: sum(todaySaleList, (i) => i.total),
+    },
+    {
+      icon: CalendarRange,
+      tone: 'primary',
+      hint: 'Неделя',
+      label: 'Еженедельная сумма продаж',
+      value: sum(weekSaleList, (i) => i.total),
+    },
+    {
+      icon: TrendingUp,
+      tone: 'info',
+      hint: monthName,
+      label: 'Ежемесячная сумма продаж',
+      value: sum(monthSaleList, (i) => i.total),
+    },
+    {
+      icon: Wallet,
+      tone: 'danger',
+      hint: 'Долг',
+      label: 'Сумма продажи долгов',
+      value: sum(allSaleDebtList, (i) => i.total - i.totalPaid),
+    },
+  ]
 
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Главная страница"
+        description="Сводка продаж и задолженности по компании"
+      />
 
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((stat) => (
+          <StatCard key={stat.label} {...stat} />
+        ))}
+      </div>
 
-    return(
-        <div className="d-flex flex-column  ">
-          <CardScreen todaySaleList={todaySaleList} weekSaleList={weekSaleList} monthSaleList={monthSaleList} allSaleDebtList={allSaleDebtList}></CardScreen>
-          <br />
-          <small className="mx-auto">{monthName}</small>
-          <Row  className="g-2">
-             <Col className="col-12 col-lg-8 col-md-12">
-            <ChartLinearEdited monthSaleList={monthSaleList}></ChartLinearEdited>
-            </Col>
-            <Col className="col-12 col-lg-4 col-md-12">
-            <BarChartEdited weekSaleList={weekSaleList}></BarChartEdited>
-            </Col>
-           
-            
-          </Row>
-       
+      <div className="grid gap-3 lg:grid-cols-3">
+        <Card padded={false} className="lg:col-span-2">
+          <Card.Header>
+            <div>
+              <Card.Title>Продажи за месяц</Card.Title>
+              <Card.Subtitle className="mt-0.5 capitalize">{monthName}</Card.Subtitle>
+            </div>
+          </Card.Header>
+          <Card.Body className="pl-1 pr-3">
+            <ChartLinearEdited monthSaleList={monthSaleList} />
+          </Card.Body>
+        </Card>
 
-       
-        <br />
-        {/* <CustomerListGroup></CustomerListGroup> */}
-          
-          {/* <SaleListGroupForHome allSaleDebtList={allSaleDebtList}></SaleListGroupForHome> */}
-         
-          <SaleTabForHome></SaleTabForHome>
+        <Card padded={false}>
+          <Card.Header>
+            <div>
+              <Card.Title>Продажи за неделю</Card.Title>
+              <Card.Subtitle className="mt-0.5">По дням недели</Card.Subtitle>
+            </div>
+          </Card.Header>
+          <Card.Body className="pl-1 pr-3">
+            <BarChartEdited weekSaleList={weekSaleList} />
+          </Card.Body>
+        </Card>
+      </div>
 
-          <br />
-          <br />
-         
-        </div>
-    )
-
+      <SaleTabForHome />
+    </div>
+  )
 }
 
-
-
-export default HomeScreen;
-
+export default HomeScreen

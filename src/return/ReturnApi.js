@@ -9,7 +9,7 @@ async function getAllReturnsListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/return/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/return/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
@@ -32,7 +32,7 @@ async function getAllProductPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
@@ -60,7 +60,7 @@ async function getAllCustomersForSale(search) {
 
     try {
         const response = await fetch(
-            `http://109.196.103.18:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${search}`,
+            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${search}`,
             {
                 method: "GET"
             }
@@ -102,7 +102,7 @@ async function addNewReturn(orderList,finalCost,paymentType,discount,customerId,
 
 
     try {
-        let response = await fetch(`http://109.196.103.18:3000/return/addfull`, {
+        let response = await fetch(`http://localhost:3000/return/addfull`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -135,7 +135,7 @@ async function addNewPayment(returnId,method,amount) {
     
 
     try {
-        let response = await fetch(`http://109.196.103.18:3000/payment/add`, {
+        let response = await fetch(`http://localhost:3000/payment/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

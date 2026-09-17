@@ -79,7 +79,7 @@
                         sudo systemctl restart apache2
 
                         localhost
-                        109.196.103.18
+                        localhost
 
 
 

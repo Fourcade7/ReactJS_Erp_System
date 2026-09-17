@@ -1,531 +1,463 @@
+import { useEffect, useRef, useState } from 'react'
+import {
+  Barcode,
+  CalendarClock,
+  MoreHorizontal,
+  Package,
+  PackagePlus,
+  Pencil,
+  Save,
+  Tag,
+  Trash2,
+} from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Dropdown,
+  EmptyState,
+  Form,
+  ListGroup,
+  Modal,
+  OverlayTrigger,
+  SearchField,
+  Tooltip,
+} from '../ui'
+import {
+  addStock,
+  deleteProduct,
+  getAllProductPaginationSearch,
+  getAllWareHouse,
+  updateProductWImage,
+} from './ProductApi'
+import placeholderImage from '../assets/placeholder.jpg'
+import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { LoadingModal, ResultModal } from '../utils/StatusModals'
 
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, Col,OverlayTrigger,Tooltip} from "react-bootstrap";
-
-import { useEffect, useState,useRef } from "react";
-
-import Pagination from 'react-bootstrap/Pagination';
-import {   addStock, deleteProduct, getAllProductPaginationSearch, getAllWareHouse, updateProduct, updateProductWImage } from "./ProductApi";
-
-import ellipsis from "../assets/ellipsis.png"
-//import "./customer.css"
-import placeholderImage from "../assets/placeholder.jpg"
-import CustomPaginationScreen from "../utils/CustomPaginationContent";
-
-
-
-
+const money = (v) => `${Number(v || 0).toLocaleString('uz')} So'm`
 
 function ProductListGroup(props) {
- 
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDel, setShowDel] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
-  const [showRes, setShowRes] = useState(false);
-  const [showResTitle, setShowResTitle] = useState("Success");
-  const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
-  const [showResAlert, setShowResAlert] = useState(false);
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDel, setShowDel] = useState(false)
+  const [showLoad, setShowLoad] = useState(false)
+  const [showRes, setShowRes] = useState(false)
+  const [showResTitle, setShowResTitle] = useState('Success')
+  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showResAlert, setShowResAlert] = useState(false)
 
-  const [name,setName]=useState("");
-  const [barCode,setBarcode]=useState("");
-  const [price,setPrice]=useState("");
-  const [bulkPrice,setBulkPrice]=useState("");
-  const [buyPrice,setBuyPrice]=useState("");
+  const [name, setName] = useState('')
+  const [barCode, setBarcode] = useState('')
+  const [price, setPrice] = useState('')
+  const [bulkPrice, setBulkPrice] = useState('')
+  const [buyPrice, setBuyPrice] = useState('')
 
-  const [showStockAlert, setShowStockAlert] = useState(false);
-  const [quantity,setQuantity]=useState("");
-  
- 
+  const [showStockAlert, setShowStockAlert] = useState(false)
+  const [quantity, setQuantity] = useState('')
 
-  //const [reload, setReload] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
+  const fileInputRef = useRef(null)
+  const [pid, setPid] = useState(-1)
 
-  const fileInputRef=useRef(null);
-  const [pid, setPid] = useState(-1);
+  const [productList, setProductList] = useState([])
+  const [pageCount, setPageCount] = useState(0)
 
+  const [wareHouseList, setWareHouseList] = useState([])
+  const [wareHouseId, setWareHouseId] = useState(-1)
 
-  const [productList,setProductList] = useState([]); 
-  const [pageCount,setPageCount] = useState(0);
+  const [active, setActive] = useState(1)
 
-   const [wareHouseList,setWareHouseList] = useState([]);
-   const [wareHouseName,setWareHouseName] = useState("");
-   const [wareHouseId,setWareHouseId] = useState(-1);
-  
-
-  const [active, setActive] = useState(1);
-
+  const isUser = localStorage.getItem('role') === 'User'
 
   useEffect(() => {
-  const handler = setTimeout(() => {
-    setDebouncedSearch(searchTerm);
-    setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytarish
-  }, 500); // 500ms kutish
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setActive(1)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [searchTerm])
 
-  return () => {
-    clearTimeout(handler); // Agar foydalanuvchi yana yozsa, eski taymerni o'chiradi
-  };
-}, [searchTerm]);
-
-  
-
-  useEffect(()=>{
-    async function loadAllUserPag() {
-      try{
-        //setShowLoad(true)
-        const productListPag= await getAllProductPaginationSearch(active,10,debouncedSearch);
-        const wareHouseListResult = await getAllWareHouse();
+  useEffect(() => {
+    async function loadAllProductPag() {
+      try {
+        const productListPag = await getAllProductPaginationSearch(active, 10, debouncedSearch)
+        const wareHouseListResult = await getAllWareHouse()
         setWareHouseList(wareHouseListResult)
-        
-        //console.log("productListPag.stock");
-        //console.log(productListPag.stock);
-        setPageCount(productListPag.meta.totalPages);
-        //console.log(active);
+        setPageCount(productListPag.meta.totalPages)
         setProductList(productListPag.data)
         setShowLoad(false)
-        
-        
-      }catch(error){
-          console.log(error.message);
-          setShowLoad(false)
-          
+      } catch (error) {
+        console.log(error.message)
+        setShowLoad(false)
       }
     }
 
-    
-      if (props.activeTab === "home") {
-        loadAllUserPag();
-      }
-      
-  },[active,showResAlert,props.activeTab,debouncedSearch])  
-
-
-
-  //Pagination
-
-  
-
-  let items = [];
-
-  for (let number = 1; number <= pageCount; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-
-
+    if (props.activeTab === 'home') loadAllProductPag()
+  }, [active, showResAlert, props.activeTab, debouncedSearch])
 
   return (
-    <div>
-       <Form.Control className="mb-2" type="text" placeholder="Поиск..." 
+    <div className="flex flex-col gap-3">
+      <SearchField
         value={searchTerm}
         onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
+          setSearchTerm(e.target.value)
+          setActive(1)
         }}
-       />
-        <ListGroup as="ol"  className="rounded overflow-hiddenx">
-      {productList.map((product,index) => {
+        onClear={() => setSearchTerm('')}
+        placeholder="Поиск по названию или штрихкоду..."
+      />
 
+      {productList.length === 0 ? (
+        <EmptyState
+          icon={Package}
+          title="Продукты не найдены"
+          description="Измените условия поиска или добавьте новый продукт."
+        />
+      ) : (
+        <ListGroup as="ol">
+          {productList.map((product, index) => {
+            const totalStock = product.stock?.reduce((sum, s) => sum + s.quantity, 0)
+            const isNew = product.stock?.[0]?.quantity === undefined
+            const image = product.imgUrl ? product.imgUrl : placeholderImage
 
-        const totalStock = product.stock?.reduce((sum, s) => sum + s.quantity, 0);
-       return  <ListGroup.Item
-          key={product.id}
-          as="li"
-          className="d-flex "
-        >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{product.id}</small>
-              <OverlayTrigger
-              key={"top"}
-              placement={"left"}
-              overlay={
-                <Tooltip id={`tooltip-${"top"}`}>
-                  <div className="m-0 p-0">
-                   <img className="rounded object-fit-cover" src={product.imgUrl ? product.imgUrl : placeholderImage} width={200} height={200}></img>
+            return (
+              <ListGroup.Item key={product.id} as="li">
+                <span className="hidden size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle sm:inline-flex">
+                  {index + 1}
+                </span>
 
-                  </div>
-                </Tooltip>
-              }
-            >
-              <img className="me-2 rounded object-fit-cover" src={product.imgUrl ? product.imgUrl : placeholderImage} width={30} height={30}></img>
-            </OverlayTrigger>
-              <h6 className='m-0 p-0'>{product.name}</h6>
-              <h6 className='ms-2 m-0 p-0'>{product.surname}</h6>
-            </div>
-            <div className='d-flex ms-auto'>
-              
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.barCode}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{product.category.name}</small>
-           
-           
-
-            <OverlayTrigger
-              key={"top"}
-              placement={"top"}
-              overlay={
-                <Tooltip id={`tooltip-${"top"}`}>
-                  <div>
-                    <small className=''>{product.price} So'm</small>
-                    <br />
-                    <small className=''>{product.bulkPrice} So'm</small>
-                    
-                  </div>
-                </Tooltip>
-              }
-            >
-              <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{product.buyPrice} So'm</small>
-            </OverlayTrigger>
-
-             <Col>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 text-nowrap'>{`${product.stock[0]?.quantity !==undefined ? totalStock :"Новый"}` }</small>
-            </Col>
-           
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0 text-nowrap'>{
-            
-             new Date( product.date).toLocaleString("UZ")
-            }</small>
-            
-            </div>
-          </div>
-          <div className='d-flex ms-3'>
-          
-           <Dropdown>
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
-              Опции  
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu 
-              className="my-dropdown" 
-              align="end" 
-              //popperConfig={{ strategy: 'fixed' }}
-              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
-            >
-              
-              <Dropdown.Item  disabled={(product.stock && product.stock.length > 0) || localStorage.getItem("role")==="User"} onClick={() => { setShowStockAlert(true); setPid(product.id); }}>
-                Добавить начальный остаток
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => { 
-                 setShowEdit(true);
-                 setPid(product.id);
-                 setName(product.name);
-                 setBarcode(product.barCode);
-                 setPrice(product.price);
-                 setBulkPrice(product.bulkPrice);
-                 setBuyPrice(product.buyPrice);
-                 //setPassword(user.password);
-
-                
-                }} disabled={localStorage.getItem("role")==="User"}>
-                Изменить
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => { setShowDel(true); setPid(product.id); }} disabled={localStorage.getItem("role")==="User"}>
-                Удалить
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-
-          
-
-            {/* <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button> */}
-          </div>
-          
-                </ListGroup.Item>
-            })}
-      </ListGroup>
-
-       <div className="mt-4">
-         {/* <Pagination>{items}</Pagination> */}
-          <CustomPaginationScreen
-          active={active}
-          pageCount={pageCount}
-          setActive={setActive}
-         ></CustomPaginationScreen>
-              
-       </div>
-
-
-
-           {
-            //Edit
-            }
-            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Редактировать</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Название продукт</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={name}
-                        onChange={(e)=>{setName(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите штрих код"
-                        value={barCode}
-                        onChange={(e)=>{setBarcode(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите сумма"
-                        value={price}
-                        onChange={(e)=>{setPrice(e.target.value)}}
-                        />
-
-                        <Form.Control className="mt-2" type="text" placeholder="Введите оптом сумма"
-                        value={bulkPrice}
-                        onChange={(e)=>{setBulkPrice(e.target.value)}}
-                        />
-
-                        <Form.Control className="mt-2" type="text" placeholder="Введите продажа сумма"
-                        value={buyPrice}
-                        onChange={(e)=>{setBuyPrice(e.target.value)}}
-                        />
-
-                          <Form.Group controlId="formFile" className="mt-2">
-                            <small className="">Выберите изображение</small>
-                            <Form.Control className="mt-2" type="file" ref={fileInputRef} />
-                        </Form.Group>
-
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowEdit(false)}>
-                   Отмена
-                </Button>
-                <Button variant="warning" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await updateProductWImage(pid,name,barCode,Number(price),Number(bulkPrice),Number(buyPrice),fileInputRef.current?.files?.[0])
-                 const data= await res.json();
-                 setShowLoad(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Сотрудник успешно обновлён")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  //setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
+                <OverlayTrigger
+                  placement="right"
+                  overlay={
+                    <Tooltip className="p-1">
+                      <img
+                        src={image}
+                        alt={product.name}
+                        width={200}
+                        height={200}
+                        className="size-[200px] rounded-lg object-cover"
+                      />
+                    </Tooltip>
+                  }
                 >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
+                  <img
+                    src={image}
+                    alt=""
+                    width={36}
+                    height={36}
+                    tabIndex={0}
+                    className="size-9 shrink-0 rounded-lg border border-line object-cover"
+                  />
+                </OverlayTrigger>
 
-            {
-            //Stock add
-            }
-            <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Добавить начальный остаток</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Остаток</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите остаток"
-                        value={quantity}
-                        onChange={(e)=>{setQuantity(e.target.value)}}
-                        />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-fg">{product.name}</p>
+                  <p className="flex items-center gap-1 truncate font-mono text-[11px] text-subtle">
+                    <Barcode className="size-3" />
+                    {product.barCode}
+                  </p>
+                </div>
 
-                        <Dropdown className="my-2">
-                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
-                      
-                        <Form.Control className='me- me-2' value={wareHouseName}   type="text" placeholder="Выберите Склад" />
-                        </Dropdown.Toggle>
+                <Badge bg="primary" className="hidden lg:inline-flex">
+                  <Tag />
+                  {product.category.name}
+                </Badge>
 
-                        <Dropdown.Menu align="end" className="mt-1 w-100">
-                        
-                           {wareHouseList && 
-                           
-                           wareHouseList.map(wareHouse => (
-
-                            <div>
-                               <Dropdown.Item
-                              
-                              onClick={() => {
-                                  setWareHouseName(wareHouse.name)
-                                  setWareHouseId(wareHouse.id)
-
-                              }}
-                            >
-                              {wareHouse.name}
-                            </Dropdown.Item>
-
-                            
-                            </div>
-                           ))
-                           
-                           }
-                          
-                        </Dropdown.Menu>
-                      </Dropdown>
-                        
-
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowStockAlert(false)}>
-                   Отмена
-                </Button>
-                <Button variant="primary" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await addStock(pid,wareHouseId,Number(localStorage.getItem("userid")),Number(quantity))
-                 const data= await res.json();
-                 setShowLoad(false);
-                 setShowStockAlert(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Остаток успешно добавлен")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
+                <OverlayTrigger
+                  placement="top"
+                  overlay={
+                    <Tooltip>
+                      <div className="grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 tabular-nums">
+                        <span className="text-subtle">Цена</span>
+                        <span className="text-right font-medium">{money(product.price)}</span>
+                        <span className="text-subtle">Оптом</span>
+                        <span className="text-right font-medium">{money(product.bulkPrice)}</span>
+                      </div>
+                    </Tooltip>
+                  }
                 >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            {
-            //delete
-            }
+                  <span
+                    tabIndex={0}
+                    className="hidden text-[13px] font-semibold tabular-nums text-fg sm:inline"
+                  >
+                    {money(product.buyPrice)}
+                  </span>
+                </OverlayTrigger>
 
-            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Удалить</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDel(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" 
-                        onClick={ async ()=>{
-                          setShowResAlert(false)
-                          setShowLoadTitle("Загрузка...")
-                          setShowDel(false);
-                          setShowLoad(true);                         
-                          
-                          const res = await deleteProduct(pid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
+                <Badge bg={isNew ? 'warning' : 'success'} className="tabular-nums">
+                  {isNew ? 'Новый' : totalStock}
+                </Badge>
 
-                          if(!res.ok){
-                              setShowResAlert(false)
-                          }else{
-                              setShowResAlert(true)
-                          }
-                           setTimeout(() => {
-                            console.log("log");
-                            setShowDel(false);
-                          }, 500);   
-                          
-                          setTimeout(() => {
-                            console.log("log");
-                            setShowLoadTitle("Почти готово")
-                          }, 1000);   
-                          
-                          
+                <Badge className="hidden xl:inline-flex">
+                  <CalendarClock />
+                  {new Date(product.date).toLocaleString('UZ')}
+                </Badge>
 
-                           setTimeout(() => {
-                            setShowLoad(false);
-                            setShowResTitle(deleteResponse.message)
-                            setShowRes(true);
-                          }, 2000);
-                          
-                          //window.location.reload();
-                        }
-                }>
-                    Удалить
-                </Button>
-                </Modal.Footer>
-            </Modal>
+                <Dropdown>
+                  <Dropdown.Toggle
+                    as="div"
+                    className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="end" className="min-w-56">
+                    <Dropdown.Item
+                      disabled={(product.stock && product.stock.length > 0) || isUser}
+                      onClick={() => {
+                        setShowStockAlert(true)
+                        setPid(product.id)
+                      }}
+                    >
+                      <PackagePlus /> Добавить начальный остаток
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      disabled={isUser}
+                      onClick={() => {
+                        setShowEdit(true)
+                        setPid(product.id)
+                        setName(product.name)
+                        setBarcode(product.barCode)
+                        setPrice(product.price)
+                        setBulkPrice(product.bulkPrice)
+                        setBuyPrice(product.buyPrice)
+                      }}
+                    >
+                      <Pencil /> Изменить
+                    </Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item
+                      variant="danger"
+                      disabled={isUser}
+                      onClick={() => {
+                        setShowDel(true)
+                        setPid(product.id)
+                      }}
+                    >
+                      <Trash2 /> Удалить
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )}
 
-            {
-             //Loading
-            }
+      <div className="flex justify-center pt-1">
+        <CustomPaginationScreen active={active} pageCount={pageCount} setActive={setActive} />
+      </div>
 
-            <Modal show={showLoad} onHide={() => setShowLoad(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>{showLoadTitle}</Modal.Title>
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-                          <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
-                          <ProgressBar  className="my-3" animated variant="primary" now={100} />
-                          
-                        </div>
+      {/* Изменить */}
+      <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Редактировать продукт</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-3">
+          <Form.Group controlId="editProductName">
+            <Form.Label>Название</Form.Label>
+            <Form.Control
+              placeholder="Введите имя"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="editProductBarcode">
+            <Form.Label>Штрихкод</Form.Label>
+            <Form.Control
+              className="font-mono"
+              placeholder="Введите штрихкод"
+              value={barCode}
+              onChange={(e) => setBarcode(e.target.value)}
+            />
+          </Form.Group>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Form.Group controlId="editProductPrice">
+              <Form.Label>Цена</Form.Label>
+              <Form.Control
+                inputMode="decimal"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group controlId="editProductBulk">
+              <Form.Label>Оптом</Form.Label>
+              <Form.Control
+                inputMode="decimal"
+                value={bulkPrice}
+                onChange={(e) => setBulkPrice(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group controlId="editProductBuy">
+              <Form.Label>Закупка</Form.Label>
+              <Form.Control
+                inputMode="decimal"
+                value={buyPrice}
+                onChange={(e) => setBuyPrice(e.target.value)}
+              />
+            </Form.Group>
+          </div>
+          <Form.Group controlId="editProductImage">
+            <Form.Label>Изображение</Form.Label>
+            <Form.Control type="file" accept="image/*" ref={fileInputRef} />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="warning"
+            onClick={async () => {
+              setShowResAlert(false)
+              const file = fileInputRef.current?.files?.[0]
+              setShowEdit(false)
+              setShowLoad(true)
+              setShowLoadTitle('Загрузка...')
 
-                        
-            </Modal>
+              const res = await updateProductWImage(
+                pid,
+                name,
+                barCode,
+                Number(price),
+                Number(bulkPrice),
+                Number(buyPrice),
+                file,
+              )
+              const data = await res.json()
+              setShowLoad(false)
 
-            {
-             //Success
-            }
+              if (!res.ok) {
+                setShowResAlert(false)
+                setShowResTitle(data.message)
+              } else {
+                setShowResAlert(true)
+                setShowResTitle('Продукт успешно обновлён')
+              }
+              setShowRes(true)
+            }}
+          >
+            <Save />
+            Сохранить
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
-                        <Modal.Header closeButton>
-                      
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          
-                          <Modal.Body className={`mx-auto alert alert-${showResAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
-                          
-                          
-                        </div>
+      {/* Начальный остаток */}
+      <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Добавить начальный остаток</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-3">
+          <Form.Group controlId="initialStockQuantity">
+            <Form.Label>Остаток</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="Введите остаток"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="initialStockWarehouse">
+            <Form.Label>Склад</Form.Label>
+            <Form.Select
+              value={wareHouseId}
+              onChange={(e) => setWareHouseId(Number(e.target.value))}
+            >
+              <option value={-1} disabled>
+                Выберите склад
+              </option>
+              {wareHouseList?.map((wareHouse) => (
+                <option key={wareHouse.id} value={wareHouse.id}>
+                  {wareHouse.name}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowStockAlert(false)}>
+            Отмена
+          </Button>
+          <Button
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowLoad(true)
+              setShowLoadTitle('Загрузка...')
 
-                        
-            </Modal>
+              const res = await addStock(
+                pid,
+                wareHouseId,
+                Number(localStorage.getItem('userid')),
+                Number(quantity),
+              )
+              const data = await res.json()
+              setShowLoad(false)
+              setShowStockAlert(false)
+
+              if (!res.ok) {
+                setShowResAlert(false)
+                setShowResTitle(data.message)
+              } else {
+                setShowResAlert(true)
+                setShowResTitle('Остаток успешно добавлен')
+              }
+
+              setShowRes(true)
+              const timer = setTimeout(() => setShowRes(false), 1000)
+              return () => clearTimeout(timer)
+            }}
+          >
+            <Save />
+            Сохранить
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Удалить */}
+      <Modal show={showDel} onHide={() => setShowDel(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Удалить</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowLoadTitle('Загрузка...')
+              setShowDel(false)
+              setShowLoad(true)
+
+              const res = await deleteProduct(pid)
+              const deleteResponse = await res.json()
+              setShowResAlert(res.ok)
+
+              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => {
+                setShowLoad(false)
+                setShowResTitle(deleteResponse.message)
+                setShowRes(true)
+              }, 2000)
+            }}
+          >
+            <Trash2 />
+            Удалить
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <LoadingModal show={showLoad} onHide={() => setShowLoad(false)} title={showLoadTitle} />
+      <ResultModal
+        show={showRes}
+        onHide={() => setShowRes(false)}
+        success={showResAlert}
+        message={showResTitle}
+      />
     </div>
-  );
+  )
 }
 
-
-export {ProductListGroup}
+export { ProductListGroup }

@@ -1,228 +1,151 @@
-import { Button,Col,Row,InputGroup,Collapse,Spinner,ProgressBar,Form} from "react-bootstrap";
-import {NavbarScreenFourAuth} from "../navbar/NavbarContent";
-import { useState,useEffect } from 'react';
-import Alert from 'react-bootstrap/Alert';
+import { useState } from 'react'
+import { Save, UserPlus, Users } from 'lucide-react'
+import { Button, Collapse, Form, PageHeader, Tab, Tabs } from '../ui'
+import {
+  AlertDismissibleDanger,
+  AlertDismissibleSuccess,
+  ProgressDismissible,
+} from '../utils/UtilsContent'
+import { CustomerListGroup } from './CustomerListContent'
+import { addCustomer } from './CustomerApi'
 
+function CustomerForm({ handleRegister, busy }) {
+  const [username, setUsername] = useState('')
+  const [surname, setSurname] = useState('')
+  const [phone, setPhone] = useState('')
 
-
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-
-
-
-import { CustomerListGroup } from './CustomerListContent';
-import { addCustomer } from "./CustomerApi";
-import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from "../utils/UtilsContent";
-
-
-
-function CustomerForm(props) {
-   const [username, setUsername] = useState("");
-   const [surname, setSurname] = useState("");
-   const [phone, setPhone] = useState("");
-   
-
-
-
-
-
+  const submit = (e) => handleRegister(e, username, surname, phone)
 
   return (
-    <Form className="mt-2">
+    <Form onSubmit={submit} className="flex flex-col gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Form.Group controlId="customerName">
+          <Form.Label>Имя</Form.Label>
+          <Form.Control
+            placeholder="Введите имя"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group controlId="customerSurname">
+          <Form.Label>Фамилия</Form.Label>
+          <Form.Control
+            placeholder="Введите фамилию"
+            value={surname}
+            onChange={(e) => setSurname(e.target.value)}
+          />
+        </Form.Group>
+      </div>
 
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-      
-        
-        <Form.Control className="" placeholder="Введите имя"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+      <Form.Group controlId="customerPhone">
+        <Form.Label>Телефон</Form.Label>
+        <Form.Control
+          type="tel"
+          placeholder="Введите номер телефона"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
         />
-        
       </Form.Group>
 
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        <Form.Control className=""  placeholder="Введите фамилия"
-        value={surname}
-        onChange={(e) => setSurname(e.target.value)}
-        />
-        
-      </Form.Group>
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-       
-        <Form.Control className="" placeholder="Введите телефон номер"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        />
-        
-      </Form.Group>
-
-
-     
-     
-     
-       
-        <Col className="d-grid">        
-        <Button variant="primary"
-          onClick={(e)=>{
-            props.handleRegister(e,username,surname,phone)
-          }}
-        >
-         <i class="bi bi-floppy"></i> Сохранить
-        </Button>     
-        </Col>
-    
-      
+      <Button type="submit" loading={busy} block>
+        {!busy && <Save />}
+        Сохранить
+      </Button>
     </Form>
-  );
+  )
 }
-function AddNewCustomer(props){
-  const [pshow, psetShow] = useState(false);
-  const [showDanger, setShowDanger] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleRegister = async (e,username,surname,phone) =>{
-      e.preventDefault();
+function AddNewCustomer(props) {
+  const [pshow, psetShow] = useState(false)
+  const [showDanger, setShowDanger] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
 
-    try{
+  const handleRegister = async (e, username, surname, phone) => {
+    e.preventDefault()
+
+    try {
       psetShow(true)
       setShowDanger(false)
-      setShowSuccess(false);
-      const res = await addCustomer(username,surname,phone)
-      const result = await res.json();
+      setShowSuccess(false)
 
-      if(!res.ok){
+      const res = await addCustomer(username, surname, phone)
+      const result = await res.json()
+
+      if (!res.ok) {
         setShowDanger(true)
         setAlertMessage(result.message)
         psetShow(false)
-       
-      }else{
-        setShowSuccess(true);
-        setAlertMessage("Успешно...");
+      } else {
+        setShowSuccess(true)
+        setAlertMessage('Успешно...')
         psetShow(false)
-        const timer = setTimeout(() => {
-        props.tabChange("home")
-        }, 2000);
-        return () => clearTimeout(timer); 
-       //props.tabChange("home")
+        const timer = setTimeout(() => props.tabChange('home'), 2000)
+        return () => clearTimeout(timer)
       }
-
-      
-      console.log(result);
-      
-    }catch(error){
+    } catch {
       setShowDanger(true)
-      setAlertMessage("Не удалось подключиться к серверу");
+      setAlertMessage('Не удалось подключиться к серверу')
       psetShow(false)
-      //props.tabChange("home")
     }
-  };
-
-
-    return(
-
-        <div>
-         
-            
-
-                 
-                <Col className="col-12 col-md-4 col-lg-4 col-sm-12">
-                  {showDanger &&
-                    <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
-                    }
-                   {showSuccess &&
-                  <AlertDismissibleSuccess alertMsg={alertMessage}></AlertDismissibleSuccess>
-                  }
-
-                   <Collapse in={pshow}>
-                    <div>
-                    {pshow && 
-                       <ProgressDismissible></ProgressDismissible>
-                     }
-                      </div>
-                     </Collapse>
-                <CustomerForm handleRegister={handleRegister}></CustomerForm>
-                </Col>
-           
-        </div>
-    )
-}
-
-
-
-
-
-
-
-
-function CustomerTabs() {
-
-
-  const [activeTab,setActiveTab] =useState("home")
+  }
 
   return (
-    <Tabs
-      //defaultActiveKey={changeTab}
-      activeKey={activeTab}
-      onSelect={(k) => setActiveTab(k)} // 🔥 qo‘shib qo‘y
-      id="fill-tab-example"
-      className="mb-3 mt-"
-      //fill
-      variant='underline' //pills //tabs //underline
-      //style={{fontSize:"12px"}}
-    >
-      <Tab eventKey="home" title={<>
-          <i className="bi bi-person-lines-fill me-2"></i>
-          Список клиентов
-        </>}>
-        
-         <CustomerListGroup activeTab={activeTab}></CustomerListGroup>
-      </Tab>
-      <Tab eventKey="profile" title={
-        <>
-        <i class="bi bi-person-add me-2"></i>
-        Добавить новый клиент
-        </>
-      }>
-        <div className='d-flex align-items-center justify-content-start'>
-        <Col>
-        {/* <RegisterScreenforTab tabChange={(tabName)=>{
-          setActiveTab(tabName)
-        }}></RegisterScreenforTab> */}
-        <AddNewCustomer 
-        tabChange={(tabName)=>{
-          setActiveTab(tabName)
-        }}
-        ></AddNewCustomer>
-        </Col>
+    <div className="max-w-md">
+      {showDanger && <AlertDismissibleDanger alertMsg={alertMessage} />}
+      {showSuccess && <AlertDismissibleSuccess alertMsg={alertMessage} />}
+      <Collapse in={pshow}>
+        <div>
+          <ProgressDismissible />
         </div>
-      </Tab>
-      {/* <Tab eventKey="longer-tab" title="Loooonger Tab">
-        Tab content for Loooonger Tab
-      </Tab>
-      <Tab eventKey="contact" title="Contact" disabled>
-        Tab content for Contact
-      </Tab> */}
-    </Tabs>
-  );
+      </Collapse>
+      <CustomerForm handleRegister={handleRegister} busy={pshow} />
+    </div>
+  )
 }
 
+function CustomerTabs() {
+  const [activeTab, setActiveTab] = useState('home')
 
-
-
-
+  return (
+    <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} variant="underline">
+      <Tab
+        eventKey="home"
+        title={
+          <>
+            <Users />
+            Список клиентов
+          </>
+        }
+      >
+        <CustomerListGroup activeTab={activeTab} />
+      </Tab>
+      <Tab
+        eventKey="profile"
+        title={
+          <>
+            <UserPlus />
+            Добавить нового клиента
+          </>
+        }
+      >
+        <AddNewCustomer tabChange={(tabName) => setActiveTab(tabName)} />
+      </Tab>
+    </Tabs>
+  )
+}
 
 function CustomerScreen() {
   return (
-   <div>
-    <CustomerTabs></CustomerTabs>
-   
-   </div>
-   
-  );
+    <div>
+      <PageHeader
+        icon={Users}
+        title="Клиенты"
+        description="База покупателей и их контактные данные"
+      />
+      <CustomerTabs />
+    </div>
+  )
 }
 
-
-export default CustomerScreen;
+export default CustomerScreen

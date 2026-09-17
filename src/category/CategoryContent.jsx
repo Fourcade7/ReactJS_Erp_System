@@ -1,457 +1,339 @@
-import Table from 'react-bootstrap/Table';
-import { Button,Col,Row,InputGroup,Collapse,Dropdown,DropdownButton,Modal,Spinner,ProgressBar} from "react-bootstrap";
+import { useEffect, useState } from 'react'
+import { CalendarClock, MoreHorizontal, Package, Plus, Save, Tags } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Collapse,
+  Dropdown,
+  EmptyState,
+  Form,
+  ListGroup,
+  Modal,
+  PageHeader,
+  Tab,
+  Tabs,
+} from '../ui'
+import {
+  AlertDismissibleDanger,
+  AlertDismissibleSuccess,
+  ProgressDismissible,
+} from '../utils/UtilsContent'
+import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import { addCategory, deleteCategory, getAllCategory, updateCategory } from './CategoryApi'
 
-import Alert from 'react-bootstrap/Alert';
-//import "./category.css"
+function CategoryList(props) {
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDel, setShowDel] = useState(false)
+  const [showLoad, setShowLoad] = useState(false)
+  const [showRes, setShowRes] = useState(false)
+  const [showResTitle, setShowResTitle] = useState('Success')
+  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showResTypeAlert, setShowResTypeAlert] = useState(false)
 
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import Form from 'react-bootstrap/Form';
-import { Link } from "react-router-dom";
+  const [cid, setCid] = useState(-1)
+  const [cName, setCname] = useState('')
 
-import eyewhite from "../assets/eye.png"
+  const [categoryList, setCategoryList] = useState([])
 
+  const isUser = localStorage.getItem('role') === 'User'
 
+  useEffect(() => {
+    const handleCategory = async () => {
+      try {
+        const res = await getAllCategory()
 
-import Badge from 'react-bootstrap/Badge';
-import ListGroup from 'react-bootstrap/ListGroup';
-import { useEffect, useState } from 'react';
-import { addCategory,getAllCategory ,deleteCategory,updateCategory } from './CategoryApi';
-import { AlertDismissibleDanger, AlertDismissibleSuccess, ProgressDismissible } from '../utils/UtilsContent';
-
-
-
-
-
-
-
-function WarehouseListGroup(props) {
-
-
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDel, setShowDel] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
-  const [showRes, setShowRes] = useState(false);
-  const [showResTitle, setShowResTitle] = useState("Success");
-  const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
-  const [showResTypeAlert, setShowResTypeAlert] = useState(false);
-
-  const [cid, setCid] = useState(-1);
-  const [cName,setCname]=useState("");
- 
-  
-
-
-  const [categoryList,setCategoryList] = useState([]);
-
-   useEffect(()=>{
-    const handleWareHouse = async ()=>{
-    try{
-
-      const res = await getAllCategory();
-
-      if(!res.ok){
-        console.log(res);
-        
-      }else{
-        //console.log(res);
-        const result = await res.json();
-        //console.log(result);
-        
-        //console.log("wlist");
-        setCategoryList(result)       
-        
+        if (!res.ok) {
+          console.log(res)
+        } else {
+          setCategoryList(await res.json())
+        }
+      } catch (error) {
+        console.log(error.message)
       }
-    }catch(error){
-      console.log(error.message);      
     }
-   };
-   handleWareHouse()
-   },[props.activeTab,showResTypeAlert])
-
-
-
-
-
+    handleCategory()
+  }, [props.activeTab, showResTypeAlert])
 
   return (
-   <div>
-     <ListGroup as="ol"  className="rounded overflow-autox">
-      { categoryList &&
-        categoryList.map((category) => (
-        <ListGroup.Item
-          key={category.id}
-          as="li"
-          className="d-flex "
-        >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{category.id}</small>
-              <h6 className='m-0 p-0'>{category.name}</h6>
-              
-            </div>
-            <div className='d-flex ms-auto'>
-              
-           
-            
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ms-2'>{category.products.length}</small>
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ms-2'>{new Date(category.date).toLocaleString("uz")}</small>
-            </div>
-          </div>
-           <div className='d-flex ms-3'>
-          
-           <Dropdown>
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
-              Опции  
-            </Dropdown.Toggle>
+    <div>
+      {categoryList.length === 0 ? (
+        <EmptyState
+          icon={Tags}
+          title="Категорий пока нет"
+          description="Добавьте первую категорию на соседней вкладке, чтобы начать раскладывать товары по группам."
+        />
+      ) : (
+        <ListGroup as="ol">
+          {categoryList.map((category) => (
+            <ListGroup.Item key={category.id} as="li">
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
+                {category.id}
+              </span>
 
-            <Dropdown.Menu 
-              className="my-dropdown" 
-              align="end" 
-              //popperConfig={{ strategy: 'fixed' }}
-              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
-              
-            >
-              <Dropdown.Item onClick={() => { 
-                 setShowEdit(true);
-                 setCid(category.id);
-                 setCname(category.name);
-                 
-                }} disabled={localStorage.getItem("role")==="User"}>
-                Изменить
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => { 
-                setShowDel(true); 
-                setCid(category.id);
-                 }} disabled={localStorage.getItem("role")==="User"}>
-                Удалить
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              <span className="min-w-0 flex-1 truncate font-medium text-fg">
+                {category.name}
+              </span>
 
-          
+              <Badge bg="primary" className="hidden sm:inline-flex">
+                <Package />
+                {category.products.length}
+              </Badge>
 
-            
-          </div>
-          
-        </ListGroup.Item>
-      ))}
-    </ListGroup>
+              <Badge className="hidden md:inline-flex">
+                <CalendarClock />
+                {new Date(category.date).toLocaleString('uz')}
+              </Badge>
 
-
-
-      {
-            //Edit
-            }
-            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Редактировать</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Название категории</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={cName}
-                        onChange={(e)=>{setCname(e.target.value)}}
-                        />
-                       
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowEdit(false)}>
-                   Отмена
-                </Button>
-                <Button variant="warning" 
-                 onClick={async()=>{
-                 setShowResTypeAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await updateCategory(cid,cName)
-                 const data= await res.json();
-                 setShowLoad(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResTypeAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResTypeAlert(true)
-                  setShowResTitle("Категория успешно обновлён")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  //setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
+              <Dropdown>
+                <Dropdown.Toggle
+                  as="div"
+                  className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
                 >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            {
-            //delete
-            }
+                  <MoreHorizontal className="size-4" />
+                </Dropdown.Toggle>
 
-            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Удалить</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDel(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" 
-                        onClick={ async ()=>{
-                          setShowResTypeAlert(false)
-                          setShowLoadTitle("Загрузка...")
-                          setShowDel(false);
-                          setShowLoad(true);                         
-                          
-                          const res = await deleteCategory(cid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
-
-                          if(!res.ok){
-                              setShowResTypeAlert(false)
-                          }else{
-                              setShowResTypeAlert(true)
-                          }
-                           setTimeout(() => {
-                            console.log("log");
-                            setShowDel(false);
-                          }, 500);   
-                          
-                          setTimeout(() => {
-                            console.log("log");
-                            setShowLoadTitle("Почти готово")
-                          }, 1000);   
-                          
-                          
-
-                           setTimeout(() => {
-                            setShowLoad(false);
-                            setShowResTitle(deleteResponse.message)
-                            setShowRes(true);
-                          }, 2000);
-                          
-                          //window.location.reload();
-                        }
-                }>
+                <Dropdown.Menu align="end">
+                  <Dropdown.Item
+                    disabled={isUser}
+                    onClick={() => {
+                      setShowEdit(true)
+                      setCid(category.id)
+                      setCname(category.name)
+                    }}
+                  >
+                    Изменить
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    variant="danger"
+                    disabled={isUser}
+                    onClick={() => {
+                      setShowDel(true)
+                      setCid(category.id)
+                    }}
+                  >
                     Удалить
-                </Button>
-                </Modal.Footer>
-            </Modal>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      )}
 
-            {
-             //Loading
-            }
+      {/* Изменить */}
+      <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Редактировать</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group controlId="editCategoryName">
+            <Form.Label>Название категории</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Введите имя"
+              value={cName}
+              onChange={(e) => setCname(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="warning"
+            onClick={async () => {
+              setShowResTypeAlert(false)
+              setShowEdit(false)
+              setShowLoad(true)
+              setShowLoadTitle('Загрузка...')
 
-            <Modal show={showLoad} onHide={() => setShowLoad(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>{showLoadTitle}</Modal.Title>
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-                          <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
-                          <ProgressBar  className="my-3" animated variant="primary" now={100} />
-                          
-                        </div>
+              const res = await updateCategory(cid, cName)
+              const data = await res.json()
+              setShowLoad(false)
 
-                        
-            </Modal>
+              if (!res.ok) {
+                setShowResTypeAlert(false)
+                setShowResTitle(data.message)
+              } else {
+                setShowResTypeAlert(true)
+                setShowResTitle('Категория успешно обновлена')
+              }
 
-            {
-             //Success
-            }
+              setShowRes(true)
+            }}
+          >
+            <Save />
+            Сохранить
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
-                        <Modal.Header closeButton>
-                      
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          
-                          <Modal.Body className={`mx-auto alert alert-${showResTypeAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
-                          
-                          
-                        </div>
+      {/* Удалить */}
+      <Modal show={showDel} onHide={() => setShowDel(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Удалить</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              setShowResTypeAlert(false)
+              setShowLoadTitle('Загрузка...')
+              setShowDel(false)
+              setShowLoad(true)
 
-                        
-            </Modal>
-   </div>
-  );
+              const res = await deleteCategory(cid)
+              const deleteResponse = await res.json()
+
+              setShowResTypeAlert(res.ok)
+
+              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => {
+                setShowLoad(false)
+                setShowResTitle(deleteResponse.message)
+                setShowRes(true)
+              }, 2000)
+            }}
+          >
+            Удалить
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <LoadingModal show={showLoad} onHide={() => setShowLoad(false)} title={showLoadTitle} />
+
+      <ResultModal
+        show={showRes}
+        onHide={() => setShowRes(false)}
+        success={showResTypeAlert}
+        message={showResTitle}
+      />
+    </div>
+  )
 }
 
+function CategoryAdd(props) {
+  const [wname, setWname] = useState('')
 
+  const [pshow, psetShow] = useState(false)
+  const [showDanger, setShowDanger] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
 
-
-
-
-
-function CategoryAdd(props){
-
-  const [wname,setWname] = useState("")
-  const [weight,setWeight] = useState("")
-
-
-
-  const [pshow, psetShow] = useState(false);
-  const [showDanger, setShowDanger] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-
-   const handleWareHouse = async (name,weight)=>{
-
-    try{
+  const handleCategory = async (name) => {
+    try {
       psetShow(true)
       setShowDanger(false)
-      setShowSuccess(false);
-      const res = await addCategory(name,weight);
-      const result = await res.json();
+      setShowSuccess(false)
 
-      if(!res.ok){
+      const res = await addCategory(name, "")
+      const result = await res.json()
+
+      if (!res.ok) {
         setShowDanger(true)
         setAlertMessage(result.message)
         psetShow(false)
-       
-      }else{
-        setShowSuccess(true);
+      } else {
+        setShowSuccess(true)
         psetShow(false)
-        setAlertMessage("Успешно...");
-        const timer = setTimeout(() => {
-        props.tabChange("home")
-        }, 2000);
-        return () => clearTimeout(timer); 
-       //props.tabChange("home")
+        setAlertMessage('Успешно...')
+        const timer = setTimeout(() => props.tabChange('home'), 2000)
+        return () => clearTimeout(timer)
       }
-
-      
-      console.log(result);
-      
-    }catch(error){
+    } catch {
       setShowDanger(true)
-      setAlertMessage("Не удалось подключиться к серверу");
+      setAlertMessage('Не удалось подключиться к серверу')
       psetShow(false)
-      //props.tabChange("home")
     }
+  }
 
+  return (
+    <div className="max-w-md">
+      {showDanger && <AlertDismissibleDanger alertMsg={alertMessage} />}
+      {showSuccess && <AlertDismissibleSuccess alertMsg={alertMessage} />}
 
-   };
-
-
-
-    return(
-        <div className=''>
-           <Col className="w-100">
-                            {showDanger &&
-                              <AlertDismissibleDanger  alertMsg={alertMessage}></AlertDismissibleDanger>
-                              }
-                             {showSuccess &&
-                            <AlertDismissibleSuccess alertMsg={alertMessage}></AlertDismissibleSuccess>
-                            }
-          
-                             <Collapse in={pshow}>
-                              <div>
-                              {pshow && 
-                                 <ProgressDismissible></ProgressDismissible>
-                               }
-                                </div>
-                               </Collapse>
-                               
-                          </Col>
-            <Form className="">
-
-      <Form.Group className="mb-2" controlId="formBasicEmail">
-      
-        
-        <Form.Control className="" type="text"
-        value={wname}
-        onChange={(e) => setWname(e.target.value)}
-        placeholder="Введите имя" />
-
-      
-        
-      </Form.Group>
-
-      
-      <Col className="d-grid">        
-        <Button variant="primary" 
-        onClick={(e)=>{
-          e.preventDefault()
-          handleWareHouse(wname,weight)
-        }}>
-          Сохранить
-        </Button>     
-        </Col>
-      
-             </Form>
+      <Collapse in={pshow}>
+        <div>
+          <ProgressDismissible />
         </div>
-    )
+      </Collapse>
+
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleCategory(wname)
+        }}
+        className="flex flex-col gap-3"
+      >
+        <Form.Group controlId="newCategoryName">
+          <Form.Label>Название категории</Form.Label>
+          <Form.Control
+            type="text"
+            value={wname}
+            onChange={(e) => setWname(e.target.value)}
+            placeholder="Введите имя"
+          />
+          <Form.Text>Например: «Напитки», «Бытовая химия», «Канцелярия».</Form.Text>
+        </Form.Group>
+
+        <Button type="submit" loading={pshow} block>
+          {!pshow && <Save />}
+          Сохранить
+        </Button>
+      </Form>
+    </div>
+  )
 }
 
 function CategoryTab() {
+  const [activeTab, setActiveTab] = useState('home')
 
-  const [activeTab,setActiveTab] =useState("home")
   return (
-    <Tabs
-      //defaultActiveKey="home"
-      activeKey={activeTab}
-      onSelect={(k) => setActiveTab(k)}
-      id="fill-tab-example"
-      className="mb-3 "
-      //fill
-      variant='underline' //pills //tabs //underline
-      //style={{fontSize:"12px"}}
-    >
-      <Tab eventKey="home" title="Список категории">
-         <WarehouseListGroup activeTab={activeTab}></WarehouseListGroup>
+    <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} variant="underline">
+      <Tab
+        eventKey="home"
+        title={
+          <>
+            <Tags />
+            Список категорий
+          </>
+        }
+      >
+        <CategoryList activeTab={activeTab} />
       </Tab>
-      <Tab eventKey="profile" title="Добавить новый категория" disabled={localStorage.getItem("role")==="User"}>
-        <div className='d-flex align-items-center justify-content-start'>
-        <Col xs={4}>
-        <CategoryAdd tabChange={(tname)=>{
-          setActiveTab(tname);
-        }}></CategoryAdd>
-        </Col>
-        </div>
+
+      <Tab
+        eventKey="profile"
+        disabled={localStorage.getItem('role') === 'User'}
+        title={
+          <>
+            <Plus />
+            Добавить новую категорию
+          </>
+        }
+      >
+        <CategoryAdd tabChange={(tname) => setActiveTab(tname)} />
       </Tab>
-      {/* <Tab eventKey="longer-tab" title="Loooonger Tab">
-        Tab content for Loooonger Tab
-      </Tab>
-      <Tab eventKey="contact" title="Contact" disabled>
-        Tab content for Contact
-      </Tab> */}
     </Tabs>
-  );
+  )
 }
-
-
-
-
-
 
 function CategoryScreen() {
   return (
-   <div>
-    <CategoryTab></CategoryTab>
-   
-   </div>
-   
-  );
+    <div>
+      <PageHeader
+        icon={Tags}
+        title="Категория"
+        description="Группы товаров, по которым строится номенклатура"
+      />
+      <CategoryTab />
+    </div>
+  )
 }
 
-
-export default CategoryScreen;
+export default CategoryScreen

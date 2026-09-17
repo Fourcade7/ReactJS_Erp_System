@@ -1,363 +1,270 @@
-
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar} from "react-bootstrap";
-
-import { useEffect, useState,useRef } from "react";
-
-import Pagination from 'react-bootstrap/Pagination';
-import { deleteCustomer,  getAllCustomersPaginationSearch, updateCustomer } from "./CustomerApi";
-
-import ellipsis from "../assets/ellipsis.png"
-import CustomPaginationScreen from "../utils/CustomPaginationContent";
-//import "./customer.css"
-
-
-
+import { useEffect, useState } from 'react'
+import { CalendarClock, MoreHorizontal, Pencil, Phone, Save, Trash2, Users } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Dropdown,
+  EmptyState,
+  Form,
+  ListGroup,
+  Modal,
+  SearchField,
+} from '../ui'
+import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import {
+  deleteCustomer,
+  getAllCustomersPaginationSearch,
+  updateCustomer,
+} from './CustomerApi'
 
 function CustomerListGroup(props) {
- 
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDel, setShowDel] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
-  const [showRes, setShowRes] = useState(false);
-  const [showResTitle, setShowResTitle] = useState("Success");
-  const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
-  const [showResAlert, setShowResAlert] = useState(false);
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDel, setShowDel] = useState(false)
+  const [showLoad, setShowLoad] = useState(false)
+  const [showRes, setShowRes] = useState(false)
+  const [showResTitle, setShowResTitle] = useState('Success')
+  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showResAlert, setShowResAlert] = useState(false)
 
-  const [userName,setUserName]=useState("");
-  const [surName,setSurname]=useState("");
-  const [phone,setPhone]=useState("");
- 
+  const [userName, setUserName] = useState('')
+  const [surName, setSurname] = useState('')
+  const [phone, setPhone] = useState('')
 
-  //const [reload, setReload] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
+  const [uid, setUid] = useState(-1)
 
-  const fileInputRef=useRef(null);
-  const [uid, setUid] = useState(-1);
+  const [customerList, setCustomerList] = useState([])
+  const [pageCount, setPageCount] = useState(0)
+  const [active, setActive] = useState(1)
 
+  // Har bir belgida soʻrov ketmasligi uchun qidiruv 500 ms kechiktiriladi.
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setActive(1)
+    }, 500)
 
-  const [customerList,setCustomerList] = useState([]);
-  const [pageCount,setPageCount] = useState(0);
-  
-
-  const [active, setActive] = useState(1);
-
+    return () => clearTimeout(handler)
+  }, [searchTerm])
 
   useEffect(() => {
-  const handler = setTimeout(() => {
-    setDebouncedSearch(searchTerm);
-    setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytarish
-  }, 500); // 500ms kutish
-
-  return () => {
-    clearTimeout(handler); // Agar foydalanuvchi yana yozsa, eski taymerni o'chiradi
-  };
-}, [searchTerm]);
-
-  
-
-  useEffect(()=>{
     async function loadAllUserPag() {
-      try{
-        //setShowLoad(true)
-        const userListPag= await getAllCustomersPaginationSearch(active,10,debouncedSearch);
-        
-        //console.log(userListPag);
-        setPageCount(userListPag.meta.totalPages);
-        //console.log(active);
+      try {
+        const userListPag = await getAllCustomersPaginationSearch(active, 10, debouncedSearch)
+        setPageCount(userListPag.meta.totalPages)
         setCustomerList(userListPag.data)
         setShowLoad(false)
-        
-        
-      }catch(error){
-          console.log(error.message);
-          setShowLoad(false)
-          
+      } catch (error) {
+        console.log(error.message)
+        setShowLoad(false)
       }
     }
 
-    
-      if (props.activeTab === "home") {
-        loadAllUserPag();
-      }
-      
-  },[active,showResAlert,props.activeTab,debouncedSearch])  
-
-
-
-  //Pagination
-
-  
-
-  let items = [];
-
-  for (let number = 1; number <= pageCount; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-
-
+    if (props.activeTab === 'home') loadAllUserPag()
+  }, [active, showResAlert, props.activeTab, debouncedSearch])
 
   return (
-    <div>
-       <Form.Control className="mb-2" type="text" placeholder="Поиск..." 
+    <div className="flex flex-col gap-3">
+      <SearchField
         value={searchTerm}
         onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
+          setSearchTerm(e.target.value)
+          setActive(1)
         }}
-       />
-        <ListGroup as="ol"  className="rounded overflow-hiddenx">
-      {customerList.map((customer,index) => (
-        <ListGroup.Item
-          key={customer.id}
-          as="li"
-          className="d-flex"
-        >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{customer.id}</small>
-              <h6 className='m-0 p-0'>{customer.username}</h6>
-              <h6 className='ms-2 m-0 p-0'>{customer.surname}</h6>
-            </div>
-            <div className='d-flex ms-auto'>
-              
-            <small className='ms-0 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{customer.phone}</small>
-           
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
-            
-             new Date( customer.createdAt).toLocaleString("UZ")
-            }</small>
-            
-            </div>
-          </div>
-          <div className='d-flex ms-3'>
-          
-           <Dropdown>
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
-              Опции  
-            </Dropdown.Toggle>
+        onClear={() => setSearchTerm('')}
+        placeholder="Поиск по имени, фамилии или телефону..."
+      />
 
-            <Dropdown.Menu 
-              className="my-dropdown" 
-              align="end" 
-              //popperConfig={{ strategy: 'fixed' }}
-              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
-            >
-              <Dropdown.Item onClick={() => { 
-                setShowEdit(true);
-                 setUid(customer.id);
-                 setUserName(customer.username);
-                 setSurname(customer.surname);
-                 setPhone(customer.phone);
-                 setEmail(customer.email);
-                 setRole(customer.role);
-                 //setPassword(user.password);
+      {customerList.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="Клиенты не найдены"
+          description="Измените условия поиска или добавьте нового клиента на соседней вкладке."
+        />
+      ) : (
+        <ListGroup as="ol">
+          {customerList.map((customer, index) => (
+            <ListGroup.Item key={customer.id} as="li">
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
+                {index + 1}
+              </span>
 
-                
-                }}>
-                 <i class="bi bi-pencil-fill me-2"></i> Изменить
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => { setShowDel(true); setUid(customer.id); }}>
-                <i class="bi bi-trash3 me-2"></i> Удалить
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-fg">
+                  {customer.username} {customer.surname}
+                </p>
+                <p className="text-[11px] text-subtle">ID: {customer.id}</p>
+              </div>
 
-          
+              <Badge bg="success" className="hidden sm:inline-flex">
+                <Phone />
+                {customer.phone}
+              </Badge>
 
-            {/* <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button> */}
-          </div>
-          
-                </ListGroup.Item>
-              ))}
-      </ListGroup>
+              <Badge className="hidden lg:inline-flex">
+                <CalendarClock />
+                {new Date(customer.createdAt).toLocaleString('UZ')}
+              </Badge>
 
-       <div className="mt-4">
-         {/* <Pagination>{items}</Pagination> */}
-          <CustomPaginationScreen
-          active={active}
-          pageCount={pageCount}
-          setActive={setActive}
-         ></CustomPaginationScreen>
-              
-       </div>
-
-
-
-      {
-            //Edit
-            }
-            <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Редактировать</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Название категории</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите имя"
-                        value={userName}
-                        onChange={(e)=>{setUserName(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите фамилия"
-                        value={surName}
-                        onChange={(e)=>{setSurname(e.target.value)}}
-                        />
-                        <Form.Control className="mt-2" type="text" placeholder="Введите телефон номер"
-                        value={phone}
-                        onChange={(e)=>{setPhone(e.target.value)}}
-                        />
-
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowEdit(false)}>
-                   Отмена
-                </Button>
-                <Button variant="warning" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await updateCustomer(uid,userName,surName,phone)
-                 const data= await res.json();
-                 setShowLoad(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Сотрудник успешно обновлён")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
+              <Dropdown>
+                <Dropdown.Toggle
+                  as="div"
+                  className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
                 >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            {
-            //delete
-            }
+                  <MoreHorizontal className="size-4" />
+                </Dropdown.Toggle>
 
-            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Удалить</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDel(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" 
-                        onClick={ async ()=>{
-                          setShowResAlert(false)
-                          setShowLoadTitle("Загрузка...")
-                          setShowDel(false);
-                          setShowLoad(true);                         
-                          
-                          const res = await deleteCustomer(uid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
+                <Dropdown.Menu align="end">
+                  <Dropdown.Item
+                    onClick={() => {
+                      setShowEdit(true)
+                      setUid(customer.id)
+                      setUserName(customer.username)
+                      setSurname(customer.surname)
+                      setPhone(customer.phone)
+                    }}
+                  >
+                    <Pencil /> Изменить
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    variant="danger"
+                    onClick={() => {
+                      setShowDel(true)
+                      setUid(customer.id)
+                    }}
+                  >
+                    <Trash2 /> Удалить
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      )}
 
-                          if(!res.ok){
-                              setShowResAlert(false)
-                          }else{
-                              setShowResAlert(true)
-                          }
-                           setTimeout(() => {
-                            console.log("log");
-                            setShowDel(false);
-                          }, 500);   
-                          
-                          setTimeout(() => {
-                            console.log("log");
-                            setShowLoadTitle("Почти готово")
-                          }, 1000);   
-                          
-                          
+      <div className="flex justify-center pt-1">
+        <CustomPaginationScreen active={active} pageCount={pageCount} setActive={setActive} />
+      </div>
 
-                           setTimeout(() => {
-                            setShowLoad(false);
-                            setShowResTitle(deleteResponse.message)
-                            setShowRes(true);
-                          }, 2000);
-                          
-                          //window.location.reload();
-                        }
-                }>
-                    Удалить
-                </Button>
-                </Modal.Footer>
-            </Modal>
+      {/* Изменить */}
+      <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Редактировать клиента</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-3">
+          <Form.Group controlId="editCustomerName">
+            <Form.Label>Имя</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Введите имя"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="editCustomerSurname">
+            <Form.Label>Фамилия</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Введите фамилию"
+              value={surName}
+              onChange={(e) => setSurname(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="editCustomerPhone">
+            <Form.Label>Телефон</Form.Label>
+            <Form.Control
+              type="tel"
+              placeholder="Введите номер телефона"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="warning"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowEdit(false)
+              setShowLoad(true)
+              setShowLoadTitle('Загрузка...')
 
-            {
-             //Loading
-            }
+              const res = await updateCustomer(uid, userName, surName, phone)
+              const data = await res.json()
+              setShowLoad(false)
 
-            <Modal show={showLoad} onHide={() => setShowLoad(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>{showLoadTitle}</Modal.Title>
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-                          <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
-                          <ProgressBar  className="my-3" animated variant="primary" now={100} />
-                          
-                        </div>
+              if (!res.ok) {
+                setShowResAlert(false)
+                setShowResTitle(data.message)
+              } else {
+                setShowResAlert(true)
+                setShowResTitle('Клиент успешно обновлён')
+              }
 
-                        
-            </Modal>
+              setShowRes(true)
+              const timer = setTimeout(() => setShowRes(false), 1000)
+              return () => clearTimeout(timer)
+            }}
+          >
+            <Save />
+            Сохранить
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-            {
-             //Success
-            }
+      {/* Удалить */}
+      <Modal show={showDel} onHide={() => setShowDel(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Удалить</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowLoadTitle('Загрузка...')
+              setShowDel(false)
+              setShowLoad(true)
 
-            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
-                        <Modal.Header closeButton>
-                      
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          
-                          <Modal.Body className={`mx-auto alert alert-${showResAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
-                          
-                          
-                        </div>
+              const res = await deleteCustomer(uid)
+              const deleteResponse = await res.json()
 
-                        
-            </Modal>
+              setShowResAlert(res.ok)
+
+              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => {
+                setShowLoad(false)
+                setShowResTitle(deleteResponse.message)
+                setShowRes(true)
+              }, 2000)
+            }}
+          >
+            <Trash2 />
+            Удалить
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <LoadingModal show={showLoad} onHide={() => setShowLoad(false)} title={showLoadTitle} />
+
+      <ResultModal
+        show={showRes}
+        onHide={() => setShowRes(false)}
+        success={showResAlert}
+        message={showResTitle}
+      />
     </div>
-  );
+  )
 }
 
-
-export {CustomerListGroup}
+export { CustomerListGroup }

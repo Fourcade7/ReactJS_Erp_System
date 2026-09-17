@@ -1,191 +1,248 @@
+import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  ArrowRight,
+  Banknote,
+  BarChart3,
+  Boxes,
+  PlugZap,
+  ShieldCheck,
+  ShoppingBag,
+  Users,
+} from 'lucide-react'
+import { NavbarScreenFourAuth } from '../navbar/NavbarContent'
+import { Button, Container } from '../ui'
 
+const FEATURES = [
+  {
+    Icon: Boxes,
+    title: 'Складской учёт',
+    text: 'Остатки по складам обновляются автоматически при каждом приходе, продаже и возврате.',
+  },
+  {
+    Icon: ShoppingBag,
+    title: 'Продажи и возвраты',
+    text: 'Оформление чека, печать документа и контроль долга покупателя в одном окне.',
+  },
+  {
+    Icon: Users,
+    title: 'Клиенты и сотрудники',
+    text: 'Единая база контрагентов с ролями доступа и историей операций по каждому.',
+  },
+  {
+    Icon: Banknote,
+    title: 'Платежи',
+    text: 'Приём оплат, частичное погашение и прозрачная картина дебиторской задолженности.',
+  },
+  {
+    Icon: BarChart3,
+    title: 'Аналитика',
+    text: 'Выручка за день, неделю и месяц в наглядных графиках — без выгрузок в таблицы.',
+  },
+  {
+    Icon: PlugZap,
+    title: 'Интеграции',
+    text: 'Подключение внешних сервисов и обмен данными через открытый программный интерфейс.',
+  },
+]
 
-import bdocs from "../assets/bootstrap-docs.png"
-import { NavbarScreenFourAuth } from "../navbar/NavbarContent";
+const STATS = [
+  { value: '12+', label: 'модулей учёта' },
+  { value: '99.9%', label: 'доступность' },
+  { value: '24/7', label: 'поддержка' },
+]
 
+function Hero() {
+  return (
+    <section className="relative overflow-hidden border-b border-line">
+      <Container className="py-16 sm:py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-medium text-muted shadow-soft">
+            <ShieldCheck className="size-3.5 text-primary" />
+            Управление бизнесом в одной системе
+          </span>
 
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+          <h1 className="mt-5 text-3xl font-semibold leading-[1.15] tracking-tight text-fg sm:text-[42px]">
+            Добро пожаловать в{' '}
+            <span className="bg-gradient-to-r from-primary to-info bg-clip-text text-transparent">
+              ERP-систему
+            </span>
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-xl text-[13px] leading-relaxed text-muted sm:text-sm">
+            ERP объединяет склад, продажи, закупки, финансы и кадры в единый контур.
+            Продажа товара сразу обновляет остатки и финансовые отчёты — меньше ручной
+            работы, меньше ошибок.
+          </p>
+
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
+            <Button as={Link} to="/login" size="lg">
+              Начать работу
+              <ArrowRight />
+            </Button>
+            <Button as="a" href="#features" variant="outline-secondary" size="lg">
+              Тарифы
+            </Button>
+          </div>
+
+          <dl className="mx-auto mt-10 grid max-w-md grid-cols-3 gap-3">
+            {STATS.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-card border border-line bg-surface/70 px-3 py-3 backdrop-blur-sm"
+              >
+                <dt className="text-lg font-semibold tracking-tight text-fg">{stat.value}</dt>
+                <dd className="mt-0.5 text-[11px] text-subtle">{stat.label}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="relative mx-auto mt-12 max-w-3xl">
+          <div className="absolute inset-x-8 -bottom-4 h-16 rounded-full bg-primary/20 blur-3xl" />
+          <img
+            src="https://static.vecteezy.com/system/resources/previews/024/218/792/non_2x/erp-enterprise-resource-planning-system-illustration-with-business-integration-productivity-and-company-enhancement-in-hand-drawn-templates-vector.jpg"
+            alt="Схема работы ERP-системы"
+            width={700}
+            height={700}
+            loading="lazy"
+            className="relative w-full rounded-2xl border border-line object-cover shadow-pop"
+          />
+        </div>
+      </Container>
+    </section>
+  )
+}
+
+function Features() {
+  return (
+    <section id="features" className="border-b border-line">
+      <Container className="py-16">
+        <div className="max-w-xl">
+          <h2 className="text-xl font-semibold tracking-tight text-fg sm:text-2xl">
+            Всё, что нужно для ежедневного учёта
+          </h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted">
+            Каждый модуль работает с общими данными, поэтому отчёты сходятся без сверок
+            между отделами.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map(({ Icon, title, text }) => (
+            <article
+              key={title}
+              className="group rounded-card border border-line bg-surface p-4 shadow-soft transition-shadow duration-200 hover:shadow-raised"
+            >
+              <span className="inline-flex size-9 items-center justify-center rounded-lg border border-line bg-surface-2 text-primary transition-colors group-hover:border-primary/30 group-hover:bg-primary-soft">
+                <Icon className="size-4" />
+              </span>
+              <h3 className="mt-3 text-[13px] font-semibold text-fg">{title}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted">{text}</p>
+            </article>
+          ))}
+        </div>
+      </Container>
+    </section>
+  )
+}
 
 function FooterScreen() {
-    return (
-        <div>
-            <div className="container">
-                <footer className="py-5">
-                    <div className="row">
-
-                        <div className="col-6 col-md-2 mb-3">
-                            <h5>Section</h5>
-                            <ul className="nav flex-column">
-                                <li className="nav-item mb-2">
-                                    <a href="#" className="nav-link p-0 text-body-secondary">
-                                        Home
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="col-md-5 offset-md-1 mb-3">
-                            <form>
-                                <h5>Subscribe</h5>
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    placeholder="Email address"
-                                />
-                                <button className="btn btn-primary mt-2">
-                                    Subscribe
-                                </button>
-                            </form>
-                        </div>
-
-                    </div>
-                </footer>
-            </div>
-        </div>
-    );
-}
-
-
-
-
-function Features(){
-    return(
-        <div>
-             <div class="container px-4 py-5">
-        <h2 class="pb-2 border-bottom">Features with title</h2>
-        <div
-          class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5"
-        >
-          <div class="col d-flex flex-column align-items-start gap-2">
-            <h2 class="fw-bold text-body-emphasis">
-              Left-aligned title explaining these awesome features
-            </h2>
-            <p class="text-body-secondary">
-              Paragraph of text beneath the heading to explain the heading.
-              We'll add onto it with another sentence and probably just keep
-              going until we run out of words.
-            </p>
-            <a href="#" class="btn btn-primary btn-lg">Primary button</a>
-          </div>
-          <div class="col">
-            <div class="row row-cols-1 row-cols-sm-2 g-4">
-              <div class="col d-flex flex-column gap-2">
-                <i class="bi bi-gear-wide-connected fs-1"></i>
-                <h4 class="fw-semibold mb-0 text-body-emphasis">
-                  Featured title
-                </h4>
-                <p class="text-body-secondary">
-                  Paragraph of text beneath the heading to explain the heading.
-                </p>
-              </div>
-              <div class="col d-flex flex-column gap-2">
-                <i class="bi bi-bag-check fs-1"></i>
-                <h4 class="fw-semibold mb-0 text-body-emphasis">
-                  Featured title
-                </h4>
-                <p class="text-body-secondary">
-                  Paragraph of text beneath the heading to explain the heading.
-                </p>
-              </div>
-              <div class="col d-flex flex-column gap-2">
-                <i class="bi bi-people fs-1"></i>
-                <h4 class="fw-semibold mb-0 text-body-emphasis">
-                  Featured title
-                </h4>
-                <p class="text-body-secondary">
-                  Paragraph of text beneath the heading to explain the heading.
-                </p>
-              </div>
-              <div class="col d-flex flex-column gap-2">
-                <i class="bi bi-cash-coin fs-1"></i>
-                <h4 class="fw-semibold mb-0 text-body-emphasis">
-                  Featured title
-                </h4>
-                <p class="text-body-secondary">
-                  Paragraph of text beneath the heading to explain the heading.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-        </div>
-    )
-}
-
-
-function HeroScreen() {
   return (
-    <div>
-      <div className="px-4 pt-5 my-5 text-center border-bottom">
-        <h1 className="display-4 fw-bold text-body-emphasis">
-          Добро пожаловать в ERP-систему!
-        </h1>
-
-        <div className="col-lg-6 mx-auto">
-          <p className="lead mb-4">
-           ERP-система — это программное обеспечение, предназначенное для управления основными бизнес-процессами предприятия в единой системе.
-            Она объединяет различные отделы компании, такие как склад, продажи, закупки, финансы и кадры.
-            С помощью ERP можно автоматизировать учет товаров, денежных средств и работы сотрудников.
-            Это позволяет сократить количество ошибок и повысить эффективность работы предприятия.
-            Например, при продаже товара система автоматически обновляет остатки на складе и финансовые отчеты.
-                    </p>
-
-          <div className="d-grid gap-1 d-sm-flex justify-content-sm-center mb-5">
-            <button type="button" className="btn btn-primary btn-lg px-4 ">
-              Начать работу <i class="bi bi-arrow-right-short"></i>
-            </button>
-
-            <button type="button" className="btn btn-outline-secondary btn-lg px-4">
-              Тарифы
-            </button>
-          </div>
+    <footer>
+      <Container className="grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <p className="text-[13px] font-semibold text-fg">5858 UZ — ERP System</p>
+          <p className="mt-2 max-w-xs text-xs leading-relaxed text-subtle">
+            Учётная система для торговых и складских операций.
+          </p>
         </div>
 
-        <div className="overflow-hidden" style={{ maxHeight: "40vh" }}>
-          <div className="container px-5">
-            <img
-              src="https://static.vecteezy.com/system/resources/previews/024/218/792/non_2x/erp-enterprise-resource-planning-system-illustration-with-business-integration-productivity-and-company-enhancement-in-hand-drawn-templates-vector.jpg"
-              className="img-fluid border rounded-3 shadow-lg mb-4"
-              alt="Example image"
-              width="700"
-              height="700"
-              loading="lazy"
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
+            Разделы
+          </p>
+          <ul className="mt-3 flex flex-col gap-2 text-xs text-muted">
+            <li>
+              <Link to="/" className="transition hover:text-fg">
+                Главная
+              </Link>
+            </li>
+            <li>
+              <a href="#features" className="transition hover:text-fg">
+                Возможности
+              </a>
+            </li>
+            <li>
+              <Link to="/login" className="transition hover:text-fg">
+                Вход в систему
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
+            Компания
+          </p>
+          <ul className="mt-3 flex flex-col gap-2 text-xs text-muted">
+            <li>
+              <a href="#support" className="transition hover:text-fg">
+                Поддержка
+              </a>
+            </li>
+            <li>
+              <a href="#plans" className="transition hover:text-fg">
+                Тарифы
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <form
+          onSubmit={(e) => e.preventDefault()}
+          className="sm:col-span-2 lg:col-span-1"
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
+            Рассылка
+          </p>
+          <div className="mt-3 flex gap-2">
+            <input
+              type="email"
+              placeholder="Email адрес"
+              aria-label="Email адрес"
+              className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 text-xs text-fg outline-none transition placeholder:text-subtle focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
             />
+            <Button type="submit" size="sm">
+              Подписаться
+            </Button>
           </div>
-        </div>
-      </div>
-    </div>
-  );
+        </form>
+      </Container>
+
+      <Container className="flex flex-wrap items-center justify-between gap-2 border-t border-line py-5 text-[11px] text-subtle">
+        <span>© {new Date().getFullYear()} ID Group. Все права защищены.</span>
+        <span>Сделано для эффективного учёта</span>
+      </Container>
+    </footer>
+  )
 }
 
-
-
-function WelcomeScreen(){
-  const navigate = useNavigate();
+function WelcomeScreen() {
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const userId = localStorage.getItem("userid");
+    if (localStorage.getItem('userid')) navigate('/home')
+  }, [navigate])
 
-    if (!userId) {
-      //navigate("/login");//
-    }else{
-      navigate("/home");
-    }
-  }, [navigate]);
-    return(
-        <div>
-            <NavbarScreenFourAuth></NavbarScreenFourAuth>
-            <HeroScreen></HeroScreen>
-            <Features></Features>
-            <FooterScreen></FooterScreen>
-            
-        </div>
-    )
+  return (
+    <div className="min-h-svh">
+      <NavbarScreenFourAuth />
+      <Hero />
+      <Features />
+      <FooterScreen />
+    </div>
+  )
 }
 
-
-
-
-export {WelcomeScreen}
+export { WelcomeScreen }

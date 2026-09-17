@@ -1,423 +1,291 @@
-
-import { ListGroup,Button ,Dropdown,Modal,Form,Spinner,ProgressBar, OverlayTrigger,Tooltip} from "react-bootstrap";
-
-import { useEffect, useState,useRef } from "react";
-
-import Pagination from 'react-bootstrap/Pagination';
-import {   addStock, deleteStock,  getAllStockPaginationSearch, getAllWareHouse, updateStock } from "./StockApi";
-
-import ellipsis from "../assets/ellipsis.png"
-import CustomPaginationScreen from "../utils/CustomPaginationContent";
-//import "./customer.css"
-
-
-
+import { useEffect, useState } from 'react'
+import { Barcode, Boxes, CalendarClock, MoreHorizontal, Pencil, Save, Trash2, Warehouse } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Dropdown,
+  EmptyState,
+  Form,
+  ListGroup,
+  Modal,
+  OverlayTrigger,
+  SearchField,
+  Tooltip,
+} from '../ui'
+import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import { deleteStock, getAllStockPaginationSearch, getAllWareHouse, updateStock } from './StockApi'
 
 function StockListGroup(props) {
- 
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDel, setShowDel] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
-  const [showRes, setShowRes] = useState(false);
-  const [showResTitle, setShowResTitle] = useState("Success");
-  const [showLoadTitle, setShowLoadTitle] = useState("Загрузка...");
-  const [showResAlert, setShowResAlert] = useState(false);
+  const [showDel, setShowDel] = useState(false)
+  const [showLoad, setShowLoad] = useState(false)
+  const [showRes, setShowRes] = useState(false)
+  const [showResTitle, setShowResTitle] = useState('Success')
+  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showResAlert, setShowResAlert] = useState(false)
 
+  const [showStockAlert, setShowStockAlert] = useState(false)
+  const [quantity, setQuantity] = useState('')
 
-  const [showStockAlert, setShowStockAlert] = useState(false);
-  const [quantity,setQuantity]=useState("");
-  
- 
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
-  //const [reload, setReload] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sid, setSid] = useState(-1)
+  const [pid, setPid] = useState(-1)
 
+  const [productList, setProductList] = useState([])
+  const [pageCount, setPageCount] = useState(0)
 
-  const fileInputRef=useRef(null);
-  const [sid, setSid] = useState(-1);
-  const [pid, setPid] = useState(-1);
+  const [wareHouseList, setWareHouseList] = useState([])
+  const [wareHouseId, setWareHouseId] = useState(-1)
 
-
-  const [productList,setProductList] = useState([]); 
-  const [pageCount,setPageCount] = useState(0);
-
-   const [wareHouseList,setWareHouseList] = useState([]);
-   const [wareHouseName,setWareHouseName] = useState("");
-   const [wareHouseId,setWareHouseId] = useState(-1);
-  
-
-  const [active, setActive] = useState(1);
-
+  const [active, setActive] = useState(1)
 
   useEffect(() => {
-  const handler = setTimeout(() => {
-    setDebouncedSearch(searchTerm);
-    setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytarish
-  }, 500); // 500ms kutish
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setActive(1)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [searchTerm])
 
-  return () => {
-    clearTimeout(handler); // Agar foydalanuvchi yana yozsa, eski taymerni o'chiradi
-  };
-}, [searchTerm]);
-
-  
-
-  useEffect(()=>{
-    async function loadAllUserPag() {
-      try{
-        //setShowLoad(true)
-        const productListPag= await getAllStockPaginationSearch(active,10,debouncedSearch);
-        const wareHouseListResult = await getAllWareHouse();
+  useEffect(() => {
+    async function loadAllStockPag() {
+      try {
+        const productListPag = await getAllStockPaginationSearch(active, 10, debouncedSearch)
+        const wareHouseListResult = await getAllWareHouse()
         setWareHouseList(wareHouseListResult)
-        
-        //console.log("productListPag.stock");
-        //console.log(productListPag.stock);
-        //console.log(productListPag);
-        setPageCount(productListPag.meta.totalPages);
-        //console.log(active);
-        setProductList(productListPag.data);
+        setPageCount(productListPag.meta.totalPages)
+        setProductList(productListPag.data)
         setShowLoad(false)
-        
-        
-      }catch(error){
-          console.log(error.message);
-          setShowLoad(false)
-          
+      } catch (error) {
+        console.log(error.message)
+        setShowLoad(false)
       }
     }
 
-    
-      if (props.activeTab === "home") {
-        loadAllUserPag();
-      }
-      
-  },[active,showResAlert,props.activeTab,debouncedSearch])  
-
-
-
-  //Pagination
-
-  
-
-  let items = [];
-
-  for (let number = 1; number <= pageCount; number++) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === active}
-        onClick={() => setActive(number)} // 🔥 click handler
-      >
-        {number}
-      </Pagination.Item>
-    );
-  }
-
-
-
+    if (props.activeTab === 'home') loadAllStockPag()
+  }, [active, showResAlert, props.activeTab, debouncedSearch])
 
   return (
-    <div>
-       <Form.Control className="mb-2" type="text" placeholder="Поиск..." 
+    <div className="flex flex-col gap-3">
+      <SearchField
         value={searchTerm}
         onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setActive(1); // Qidiruv o'zgarganda birinchi sahifaga qaytish muhim!
+          setSearchTerm(e.target.value)
+          setActive(1)
         }}
-       />
-        <ListGroup as="ol"  className="rounded overflow-hiddenx">
-      {productList.map((stock,index) => (
-        <ListGroup.Item
-          key={stock.id}
-          as="li"
-          className="d-flex "
-        >
-          <div className='d-flex flex-row w-100'>
-            <div className='d-flex'>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{index+1}</small>
-              <small className='me-2 m-0 p-0 bg-dark-subtle px-2 rounded mt-0'>{stock.id}</small>
-              <h6 className='m-0 p-0'>{stock.product.name}</h6>
-              
-            </div>
-            <div className='d-flex ms-auto'>
-              
-           
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.product.barCode}</small>
-            <small className='ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0'>{stock.warehouse.name}</small>
-             <OverlayTrigger
-              key={"top"}
-              placement={"top"}
-              overlay={
-                <Tooltip id={`tooltip-${"top"}`}>
-                  <div>
-                     <small className=''>{stock.user?.username} {stock.user?.surname}</small>
-                   
-                    <br />
-                    <small className=''>{stock.user?.email}</small>
-                   
-                  </div>
-                </Tooltip>
-              }
-            >
-              <small className={`ms-2 m-0 p-0 bg-success-subtle px-2 rounded mt-0 ${stock.quantity <10 ? "text-danger": null}`}>{stock.quantity} {stock.product.unit}</small>
+        onClear={() => setSearchTerm('')}
+        placeholder="Поиск по названию или штрихкоду..."
+      />
 
-            </OverlayTrigger>
-           
-            <small className='ms-2 m-0 p-0 bg-primary-subtle px-2 rounded mt-0'>{
-            
-             new Date( stock.date).toLocaleString("UZ")
-            }</small>
-            
-            </div>
-          </div>
-          <div className='d-flex ms-3'>
-          
-           <Dropdown>
-            <Dropdown.Toggle as="div" className="bg-dark-subtle px-3 rounded" style={{ cursor: 'pointer' }}>
-              Опции  
-            </Dropdown.Toggle>
+      {productList.length === 0 ? (
+        <EmptyState
+          icon={Boxes}
+          title="Остатки не найдены"
+          description="Остатки появятся после оформления прихода товара на склад."
+        />
+      ) : (
+        <ListGroup as="ol">
+          {productList.map((stock, index) => {
+            const low = stock.quantity < 10
+            return (
+              <ListGroup.Item key={stock.id} as="li">
+                <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
+                  {index + 1}
+                </span>
 
-            <Dropdown.Menu 
-              className="my-dropdown" 
-              align="end" 
-              //popperConfig={{ strategy: 'fixed' }}
-              //flip={true} // 🔥 Mana shu qator menyuni overflow-dan qutqaradi
-            >
-              
-              <Dropdown.Item  disabled={stock.stock && stock.stock.length > 0} onClick={() => { 
-                setShowStockAlert(true); 
-                setSid(stock.id); 
-                setPid(stock.product.id);
-                setWareHouseId(stock.warehouse.id);
-                setWareHouseName(stock.warehouse.name);
-                setQuantity(stock.quantity)
-                }}>
-                 Изменить
-              </Dropdown.Item>
-              
-              <Dropdown.Item onClick={() => {
-                 setShowDel(true); 
-                 setSid(stock.id);
-                 setPid(stock.product.id);
-                  }}>
-                Удалить
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-fg">{stock.product.name}</p>
+                  <p className="text-[11px] text-subtle">ID: {stock.id}</p>
+                </div>
 
-          
+                <Badge className="hidden font-mono md:inline-flex">
+                  <Barcode />
+                  {stock.product.barCode}
+                </Badge>
+                <Badge bg="info" className="hidden sm:inline-flex">
+                  <Warehouse />
+                  {stock.warehouse.name}
+                </Badge>
 
-            {/* <Button variant='secondary p-0 px-3' style={{fontSize:"12px"}} className=''>Изменить</Button>
-            <Button variant='secondary p-0 px-3 ms-2'  style={{fontSize:"12px"}} className=''>Удалить</Button> */}
-          </div>
-          
-                </ListGroup.Item>
-              ))}
-      </ListGroup>
-
-       <div className="mt-4">
-         {/* <Pagination>{items}</Pagination> */}
-          <CustomPaginationScreen
-          active={active}
-          pageCount={pageCount}
-          setActive={setActive}
-         ></CustomPaginationScreen>
-              
-       </div>
-
-
-
-           {
-            //Edit
-            }
-           
-            <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
-                <Modal.Header closeButton>
-                <Modal.Title>Редактировать</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <small>Остаток</small>
-                     <Form.Control className="mt-2" type="text" placeholder="Введите остаток"
-                        value={quantity}
-                        onChange={(e)=>{setQuantity(e.target.value)}}
-                        />
-
-                        <Dropdown className="my-2">
-                        <Dropdown.Toggle variant="light w-100 d-flex align-items-center justify-content-between py-0 ps-0 pe-2" id="dropdown-basic">
-                      
-                        <Form.Control className='me- me-2' value={wareHouseName} disabled  type="text" placeholder="Выберите Склад" />
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu align="end" className="mt-1 w-100">
-                        
-                           {wareHouseList && 
-                           
-                           wareHouseList.map(wareHouse => (
-
-                            <div>
-                               <Dropdown.Item
-                              
-                              onClick={() => {
-                                  setWareHouseName(wareHouse.name)
-                                  setWareHouseId(wareHouse.id)
-
-                              }}
-                            >
-                              {wareHouse.name}
-                            </Dropdown.Item>
-
-                            
-                            </div>
-                           ))
-                           
-                           }
-                          
-                        </Dropdown.Menu>
-                      </Dropdown>
-                        
-
-                       
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" 
-                onClick={() => setShowStockAlert(false)}>
-                   Отмена
-                </Button>
-                <Button variant="warning" 
-                 onClick={async()=>{
-                 setShowResAlert(false)
-                 //await updateCategory(cid,categoryName,categoryNameUZ,categoryNameEN,fileInputRef.current.files[0]);
-                 //let result = await addCategory(categoryName,fileInputRef.current.files[0]);
-                 setShowEdit(false)                 
-                 setShowLoad(true)
-                 setShowLoadTitle("Загрузка...")
-                 const res = await updateStock(sid,pid,wareHouseId,Number(quantity))
-                 const data= await res.json();
-                 setShowLoad(false);
-                 setShowStockAlert(false);
-                 
-                 
-                 if(!res.ok){
-                  setShowResAlert(false)
-                  setShowResTitle(data.message)
-                 }else{
-                  setShowResAlert(true)
-                  setShowResTitle("Остаток успешно добавлен")
-                 
-                } 
-                
-                setShowRes(true);
-                const timer = setTimeout(() => {
-                  setShowRes(false);
-
-                }, 1000);
-                return () => clearTimeout(timer);
-                
-                 
-                }}
+                <OverlayTrigger
+                  placement="top"
+                  overlay={
+                    <Tooltip>
+                      <p className="font-medium">
+                        {stock.user?.username} {stock.user?.surname}
+                      </p>
+                      <p className="text-subtle">{stock.user?.email}</p>
+                    </Tooltip>
+                  }
                 >
-                    Сохранять
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            {
-            //delete
-            }
+                  <span tabIndex={0}>
+                    <Badge bg={low ? 'danger' : 'success'} className="tabular-nums">
+                      {stock.quantity} {stock.product.unit}
+                    </Badge>
+                  </span>
+                </OverlayTrigger>
 
-            <Modal show={showDel} onHide={() => setShowDel(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Удалить</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDel(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" 
-                        onClick={ async ()=>{
-                          setShowResAlert(false)
-                          setShowLoadTitle("Загрузка...")
-                          setShowDel(false);
-                          setShowLoad(true);                         
-                          
-                          const res = await deleteStock(sid);
-                          const deleteResponse = await res.json();
-                          console.log(deleteResponse.message); 
+                <Badge className="hidden xl:inline-flex">
+                  <CalendarClock />
+                  {new Date(stock.date).toLocaleString('UZ')}
+                </Badge>
 
-                          if(!res.ok){
-                              setShowResAlert(false)
-                          }else{
-                              setShowResAlert(true)
-                          }
-                           setTimeout(() => {
-                            console.log("log");
-                            setShowDel(false);
-                          }, 500);   
-                          
-                          setTimeout(() => {
-                            console.log("log");
-                            setShowLoadTitle("Почти готово")
-                          }, 1000);   
-                          
-                          
+                <Dropdown>
+                  <Dropdown.Toggle
+                    as="div"
+                    className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="end">
+                    <Dropdown.Item
+                      disabled={stock.stock && stock.stock.length > 0}
+                      onClick={() => {
+                        setShowStockAlert(true)
+                        setSid(stock.id)
+                        setPid(stock.product.id)
+                        setWareHouseId(stock.warehouse.id)
+                        setQuantity(stock.quantity)
+                      }}
+                    >
+                      <Pencil /> Изменить
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      variant="danger"
+                      onClick={() => {
+                        setShowDel(true)
+                        setSid(stock.id)
+                        setPid(stock.product.id)
+                      }}
+                    >
+                      <Trash2 /> Удалить
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )}
 
-                           setTimeout(() => {
-                            setShowLoad(false);
-                            setShowResTitle(deleteResponse.message)
-                            setShowRes(true);
-                          }, 2000);
-                          
-                          //window.location.reload();
-                        }
-                }>
-                    Удалить
-                </Button>
-                </Modal.Footer>
-            </Modal>
+      <div className="flex justify-center pt-1">
+        <CustomPaginationScreen active={active} pageCount={pageCount} setActive={setActive} />
+      </div>
 
-            {
-             //Loading
-            }
+      {/* Изменить */}
+      <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Редактировать остаток</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-3">
+          <Form.Group controlId="editStockQuantity">
+            <Form.Label>Остаток</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="Введите остаток"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="editStockWarehouse">
+            <Form.Label>Склад</Form.Label>
+            <Form.Select
+              value={wareHouseId}
+              onChange={(e) => setWareHouseId(Number(e.target.value))}
+            >
+              <option value={-1} disabled>
+                Выберите склад
+              </option>
+              {wareHouseList?.map((wareHouse) => (
+                <option key={wareHouse.id} value={wareHouse.id}>
+                  {wareHouse.name}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowStockAlert(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="warning"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowLoad(true)
+              setShowLoadTitle('Загрузка...')
 
-            <Modal show={showLoad} onHide={() => setShowLoad(false)} centered>
-                        <Modal.Header closeButton>
-                        <Modal.Title>{showLoadTitle}</Modal.Title>
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          <Spinner className="mx-auto mt-3" animation="border" variant="primary" />
-                          <Modal.Body className="mx-auto">Пожалуйста, подождите</Modal.Body>
-                          <ProgressBar  className="my-3" animated variant="primary" now={100} />
-                          
-                        </div>
+              const res = await updateStock(sid, pid, wareHouseId, Number(quantity))
+              const data = await res.json()
+              setShowLoad(false)
+              setShowStockAlert(false)
 
-                        
-            </Modal>
+              if (!res.ok) {
+                setShowResAlert(false)
+                setShowResTitle(data.message)
+              } else {
+                setShowResAlert(true)
+                setShowResTitle('Остаток успешно обновлён')
+              }
 
-            {
-             //Success
-            }
+              setShowRes(true)
+              const timer = setTimeout(() => setShowRes(false), 1000)
+              return () => clearTimeout(timer)
+            }}
+          >
+            <Save />
+            Сохранить
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-            <Modal show={showRes} onHide={() => setShowRes(false)} centered>
-                        <Modal.Header closeButton>
-                      
-                        </Modal.Header>
-                        
-                        <div className="d-flex flex-column mx-4"> 
-                          
-                          
-                          <Modal.Body className={`mx-auto alert alert-${showResAlert ? "success" : "danger"} w-100 mt-2`}>{showResTitle}</Modal.Body>
-                          
-                          
-                        </div>
+      {/* Удалить */}
+      <Modal show={showDel} onHide={() => setShowDel(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Удалить</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
+            Отмена
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              setShowResAlert(false)
+              setShowLoadTitle('Загрузка...')
+              setShowDel(false)
+              setShowLoad(true)
 
-                        
-            </Modal>
+              const res = await deleteStock(sid)
+              const deleteResponse = await res.json()
+              setShowResAlert(res.ok)
+
+              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => {
+                setShowLoad(false)
+                setShowResTitle(deleteResponse.message)
+                setShowRes(true)
+              }, 2000)
+            }}
+          >
+            <Trash2 />
+            Удалить
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <LoadingModal show={showLoad} onHide={() => setShowLoad(false)} title={showLoadTitle} />
+      <ResultModal
+        show={showRes}
+        onHide={() => setShowRes(false)}
+        success={showResAlert}
+        message={showResTitle}
+      />
     </div>
-  );
+  )
 }
 
-
-export {StockListGroup}
+export { StockListGroup }

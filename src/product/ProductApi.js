@@ -25,7 +25,7 @@ async function updateProduct(
     if (unit) body.unit = unit;
    
 
-    const response = await fetch(`http://109.196.103.18:3000/product/update/${id}`, {
+    const response = await fetch(`http://localhost:3000/product/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -67,7 +67,7 @@ async function updateProductWImage(
       formData.append("image", image);
     }
 
-    const response = await fetch( `http://109.196.103.18:3000/product/update/${id}`,
+    const response = await fetch( `http://localhost:3000/product/update/${id}`,
       {
         method: "PATCH",
         body: formData, 
@@ -88,7 +88,7 @@ async function deleteProduct(id){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/product/delete/${id}`,{ 
+        let response = await fetch(`http://localhost:3000/product/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -113,7 +113,7 @@ async function getAllProductPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
             method:"GET"
 
         });
@@ -137,7 +137,7 @@ async function getAllWareHouse(){
    
 
     try{
-        let response = await fetch(`http://109.196.103.18:3000/warehouse/all`,{ 
+        let response = await fetch(`http://localhost:3000/warehouse/all`,{ 
             method:"GET"
 
         });
@@ -158,7 +158,7 @@ async function getAllWareHouse(){
 
 async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
     try {
-        let response = await fetch(`http://109.196.103.18:3000/product/add`, {
+        let response = await fetch(`http://localhost:3000/product/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -190,7 +190,7 @@ async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
 
 async function addStock(productId,warehouseId,userId,quantity) {
     try {
-        let response = await fetch(`http://109.196.103.18:3000/stock/add`, {
+        let response = await fetch(`http://localhost:3000/stock/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
