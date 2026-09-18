@@ -5,18 +5,14 @@ import { stockOf, unitPrice } from './pricing'
 
 /**
  * Savat. Har bir qatorda miqdorni oʻzgartirish, ulgurji narxga oʻtish
- * va oʻchirish mumkin.
+ * va oʻchirish mumkin. `limitByStock` da qoldiqdan ortiq miqdor bloklanmaydi,
+ * faqat belgilanadi — savdo tugmasi esa Checkout da bloklanadi.
  */
 function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock = false }) {
   const update = (id, fn) =>
     setOrderList((prev) => prev.map((item) => (item.id === id ? fn(item) : item)))
 
-  const increase = (id) =>
-    update(id, (item) =>
-      limitByStock && item.quantity >= stockOf(item)
-        ? item
-        : { ...item, quantity: item.quantity + 1 },
-    )
+  const increase = (id) => update(id, (item) => ({ ...item, quantity: item.quantity + 1 }))
 
   const decrease = (id) =>
     setOrderList((prev) =>
@@ -62,12 +58,16 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
         <ul className="m-0 flex max-h-[68vh] list-none flex-col gap-1.5 overflow-y-auto p-0">
           {orderList.map((product) => {
             const price = unitPrice(product, priceField)
-            const atLimit = limitByStock && product.quantity >= stockOf(product)
+            const available = stockOf(product)
+            const overStock = limitByStock && product.quantity > available
 
             return (
               <li
                 key={product.id}
-                className="animate-fade-in rounded-card border border-line bg-surface p-2.5 shadow-soft"
+                className={cn(
+                  'animate-fade-in rounded-card border bg-surface p-2.5 shadow-soft',
+                  overStock ? 'border-danger/50' : 'border-line',
+                )}
               >
                 <div className="flex items-start gap-2">
                   <div className="min-w-0 flex-1">
@@ -105,9 +105,8 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
                     <button
                       type="button"
                       onClick={() => increase(product.id)}
-                      disabled={atLimit}
                       aria-label="Увеличить"
-                      className="inline-flex size-7 items-center justify-center rounded-r-lg text-muted transition hover:bg-surface-3 hover:text-fg disabled:cursor-not-allowed disabled:opacity-35"
+                      className="inline-flex size-7 items-center justify-center rounded-r-lg text-muted transition hover:bg-surface-3 hover:text-fg"
                     >
                       <Plus className="size-3.5" />
                     </button>
@@ -137,6 +136,13 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
                     </p>
                   </div>
                 </div>
+
+                {overStock && (
+                  <p className="mt-1.5 text-[11px] font-medium tabular-nums text-danger-soft-fg">
+                    На складе только {available} {product.unit} — лишних{' '}
+                    {product.quantity - available}
+                  </p>
+                )}
               </li>
             )
           })}

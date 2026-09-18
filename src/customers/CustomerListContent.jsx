@@ -12,11 +12,36 @@ import {
 } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
+import { exportToExcel } from '../utils/ExcelUtils'
 import {
   deleteCustomer,
   getAllCustomersPaginationSearch,
+  importCustomers,
   updateCustomer,
 } from './CustomerApi'
+
+const CUSTOMER_IMPORT_FIELDS = [
+  { key: 'username', label: 'Имя', required: true, aliases: ['имя', 'name', 'firstname'] },
+  { key: 'surname', label: 'Фамилия', required: true, aliases: ['фамилия', 'surname', 'lastname'] },
+  {
+    key: 'phone',
+    label: 'Телефон',
+    required: true,
+    aliases: ['телефон', 'тел', 'phone', 'номер', 'номер телефона'],
+  },
+]
+
+const CUSTOMER_EXPORT_COLUMNS = [
+  { key: 'username', label: 'Имя' },
+  { key: 'surname', label: 'Фамилия' },
+  { key: 'phone', label: 'Телефон' },
+  {
+    key: 'createdAt',
+    label: 'Дата регистрации',
+    value: (row) => new Date(row.createdAt).toLocaleString('UZ'),
+  },
+]
 
 function CustomerListGroup(props) {
   const [showEdit, setShowEdit] = useState(false)
@@ -39,6 +64,10 @@ function CustomerListGroup(props) {
   const [customerList, setCustomerList] = useState([])
   const [pageCount, setPageCount] = useState(0)
   const [active, setActive] = useState(1)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const [showImport, setShowImport] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   // Har bir belgida soʻrov ketmasligi uchun qidiruv 500 ms kechiktiriladi.
   useEffect(() => {
@@ -64,19 +93,47 @@ function CustomerListGroup(props) {
     }
 
     if (props.activeTab === 'home') loadAllUserPag()
-  }, [active, showResAlert, props.activeTab, debouncedSearch])
+  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch])
+
+  const handleImportChunk = (rows) => importCustomers(rows)
+
+  const handleExport = async () => {
+    try {
+      setExporting(true)
+      await exportToExcel({
+        fetchRows: async () => {
+          const result = await getAllCustomersPaginationSearch(1, 100000, '')
+          return result?.data ?? []
+        },
+        columns: CUSTOMER_EXPORT_COLUMNS,
+        fileName: 'Клиенты.xlsx',
+      })
+    } catch (error) {
+      console.log(error.message)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      <SearchField
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value)
-          setActive(1)
-        }}
-        onClear={() => setSearchTerm('')}
-        placeholder="Поиск по имени, фамилии или телефону..."
-      />
+      <div className="flex items-center gap-2">
+        <SearchField
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value)
+            setActive(1)
+          }}
+          onClear={() => setSearchTerm('')}
+          placeholder="Поиск по имени, фамилии или телефону..."
+          className="flex-1"
+        />
+        <ImportExportMenu
+          onImport={() => setShowImport(true)}
+          onExport={handleExport}
+          exporting={exporting}
+        />
+      </div>
 
       {customerList.length === 0 ? (
         <EmptyState
@@ -263,6 +320,16 @@ function CustomerListGroup(props) {
         success={showResAlert}
         message={showResTitle}
       />
+
+      {showImport && (
+        <ImportModal
+          onHide={() => setShowImport(false)}
+          entityTitle="клиенты"
+          fields={CUSTOMER_IMPORT_FIELDS}
+          onImportChunk={handleImportChunk}
+          onFinished={() => setReloadKey((k) => k + 1)}
+        />
+      )}
     </div>
   )
 }

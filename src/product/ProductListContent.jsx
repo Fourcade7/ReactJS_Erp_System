@@ -27,13 +27,76 @@ import {
   deleteProduct,
   getAllProductPaginationSearch,
   getAllWareHouse,
+  importProducts,
   updateProductWImage,
 } from './ProductApi'
 import placeholderImage from '../assets/placeholder.jpg'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
+import { exportToExcel } from '../utils/ExcelUtils'
 
 const money = (v) => `${Number(v || 0).toLocaleString('uz')} So'm`
+
+const PRODUCT_IMPORT_FIELDS = [
+  { key: 'name', label: 'Название', required: true, aliases: ['название', 'наименование', 'name', 'товар'] },
+  { key: 'category', label: 'Категория', required: true, aliases: ['категория', 'category', 'группа'] },
+  {
+    key: 'buyPrice',
+    label: 'Цена продажи',
+    required: true,
+    aliases: ['цена', 'розница', 'розничная цена', 'цена продажи', 'продажа', 'price', 'sale price'],
+  },
+  {
+    key: 'price',
+    label: 'Цена закупки',
+    required: false,
+    aliases: ['закупка', 'закупочная цена', 'цена закупки', 'себестоимость', 'purchase', 'cost'],
+  },
+  {
+    key: 'bulkPrice',
+    label: 'Цена оптом',
+    required: false,
+    aliases: ['опт', 'оптом', 'цена оптом', 'оптовая цена', 'bulk', 'wholesale'],
+    hint: 'Если не указана — равна цене продажи.',
+  },
+  {
+    key: 'quantity',
+    label: 'Остаток',
+    required: false,
+    aliases: ['остаток', 'количество', 'кол-во', 'кол во', 'qty', 'quantity', 'stock'],
+    hint: 'Записывается на выбранный ниже склад.',
+  },
+  {
+    key: 'barCode',
+    label: 'Штрихкод',
+    required: false,
+    aliases: ['штрихкод', 'штрих-код', 'barcode', 'код'],
+    hint: 'Если столбец не указан, штрихкод будет сгенерирован автоматически.',
+  },
+  {
+    key: 'unit',
+    label: 'Единица измерения',
+    required: false,
+    aliases: ['единица', 'единица измерения', 'ед изм', 'unit'],
+    hint: 'По умолчанию — «Штук».',
+  },
+]
+
+const PRODUCT_EXPORT_COLUMNS = [
+  { key: 'name', label: 'Название' },
+  { key: 'barCode', label: 'Штрихкод' },
+  { key: 'category', label: 'Категория', value: (row) => row.category?.name ?? '' },
+  { key: 'buyPrice', label: 'Цена продажи' },
+  { key: 'price', label: 'Цена закупки' },
+  { key: 'bulkPrice', label: 'Цена оптом' },
+  { key: 'unit', label: 'Единица измерения' },
+  {
+    key: 'stock',
+    label: 'Остаток',
+    value: (row) => row.stock?.reduce((sum, s) => sum + s.quantity, 0) ?? 0,
+  },
+]
 
 function ProductListGroup(props) {
   const [showEdit, setShowEdit] = useState(false)
@@ -66,6 +129,12 @@ function ProductListGroup(props) {
   const [wareHouseId, setWareHouseId] = useState(-1)
 
   const [active, setActive] = useState(1)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const [showImport, setShowImport] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [createMissingCategories, setCreateMissingCategories] = useState(true)
+  const [importWarehouseId, setImportWarehouseId] = useState('')
 
   const isUser = localStorage.getItem('role') === 'User'
 
@@ -93,19 +162,54 @@ function ProductListGroup(props) {
     }
 
     if (props.activeTab === 'home') loadAllProductPag()
-  }, [active, showResAlert, props.activeTab, debouncedSearch])
+  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch])
+
+  const handleImportChunk = (rows) =>
+    importProducts(rows, createMissingCategories, importWarehouseId ? Number(importWarehouseId) : undefined)
+
+  const openImport = () => {
+    // Omborsiz mahsulotni sotib ham, kirim qilib ham boʻlmaydi — shuning uchun birinchi ombor standart.
+    setImportWarehouseId(wareHouseList?.[0]?.id ? String(wareHouseList[0].id) : '')
+    setShowImport(true)
+  }
+
+  const handleExport = async () => {
+    try {
+      setExporting(true)
+      await exportToExcel({
+        fetchRows: async () => {
+          const result = await getAllProductPaginationSearch(1, 100000, '')
+          return result?.data ?? []
+        },
+        columns: PRODUCT_EXPORT_COLUMNS,
+        fileName: 'Продукты.xlsx',
+      })
+    } catch (error) {
+      console.log(error.message)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      <SearchField
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value)
-          setActive(1)
-        }}
-        onClear={() => setSearchTerm('')}
-        placeholder="Поиск по названию или штрихкоду..."
-      />
+      <div className="flex items-center gap-2">
+        <SearchField
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value)
+            setActive(1)
+          }}
+          onClear={() => setSearchTerm('')}
+          placeholder="Поиск по названию или штрихкоду..."
+          className="flex-1"
+        />
+        <ImportExportMenu
+          onImport={openImport}
+          onExport={handleExport}
+          exporting={exporting}
+        />
+      </div>
 
       {productList.length === 0 ? (
         <EmptyState
@@ -168,7 +272,7 @@ function ProductListGroup(props) {
                   overlay={
                     <Tooltip>
                       <div className="grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 tabular-nums">
-                        <span className="text-subtle">Цена</span>
+                        <span className="text-subtle">Закупка</span>
                         <span className="text-right font-medium">{money(product.price)}</span>
                         <span className="text-subtle">Оптом</span>
                         <span className="text-right font-medium">{money(product.bulkPrice)}</span>
@@ -272,7 +376,7 @@ function ProductListGroup(props) {
           </Form.Group>
           <div className="grid gap-3 sm:grid-cols-3">
             <Form.Group controlId="editProductPrice">
-              <Form.Label>Цена</Form.Label>
+              <Form.Label>Закупка</Form.Label>
               <Form.Control
                 inputMode="decimal"
                 value={price}
@@ -288,7 +392,7 @@ function ProductListGroup(props) {
               />
             </Form.Group>
             <Form.Group controlId="editProductBuy">
-              <Form.Label>Закупка</Form.Label>
+              <Form.Label>Продажа</Form.Label>
               <Form.Control
                 inputMode="decimal"
                 value={buyPrice}
@@ -456,6 +560,46 @@ function ProductListGroup(props) {
         success={showResAlert}
         message={showResTitle}
       />
+
+      {showImport && (
+        <ImportModal
+          onHide={() => setShowImport(false)}
+          entityTitle="продукты"
+          fields={PRODUCT_IMPORT_FIELDS}
+          options={
+            <div className="flex flex-col gap-3">
+              <Form.Check
+                type="switch"
+                id="importCreateCategories"
+                label="Создавать отсутствующие категории"
+                checked={createMissingCategories}
+                onChange={(e) => setCreateMissingCategories(e.target.checked)}
+              />
+              <Form.Group controlId="importWarehouse">
+                <Form.Label>Склад для остатков</Form.Label>
+                <Form.Select
+                  value={importWarehouseId}
+                  onChange={(e) => setImportWarehouseId(e.target.value)}
+                >
+                  <option value="">— не привязывать к складу —</option>
+                  {(wareHouseList ?? []).map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text>
+                  {importWarehouseId
+                    ? 'Товары сразу появятся в «Продаже» и «Приходе».'
+                    : 'Без склада товары нельзя продать или оприходовать, пока не добавите их на склад.'}
+                </Form.Text>
+              </Form.Group>
+            </div>
+          }
+          onImportChunk={handleImportChunk}
+          onFinished={() => setReloadKey((k) => k + 1)}
+        />
+      )}
     </div>
   )
 }

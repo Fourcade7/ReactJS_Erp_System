@@ -74,7 +74,7 @@ function BarChartEdited({ weekSaleList = [] }) {
 
   return (
     <div className="h-52 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 208 }}>
         <BarChart data={week} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={c.grid} vertical={false} />
           <XAxis
@@ -115,7 +115,7 @@ function ChartLinearEdited({ monthSaleList = [] }) {
 
   return (
     <div className="h-52 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 208 }}>
         <AreaChart data={month} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
           <defs>
             <linearGradient id="saleGradient" x1="0" y1="0" x2="0" y2="1">

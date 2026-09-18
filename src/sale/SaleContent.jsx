@@ -25,6 +25,7 @@ const SALE_CONFIG = {
   tone: 'primary',
   priceField: 'buyPrice',
   limitByStock: true,
+  maxDiscountPercent: 20,
   onlyStocked: false,
   autoAddSingle: true,
   printable: true,

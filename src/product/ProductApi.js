@@ -113,7 +113,7 @@ async function getAllProductPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });
@@ -188,6 +188,33 @@ async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
 }
 
 
+// Excel importi uchun ommaviy yozish. Kategoriya `id` emas, nomi bilan
+// yuboriladi — backend uni bitta soʻrovda yechadi (va kerak boʻlsa yaratadi).
+async function importProducts(items, createMissingCategories, warehouseId) {
+
+    const response = await fetch(`http://localhost:3000/product/import`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ items, createMissingCategories, warehouseId })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        // ValidationPipe `message` ni massiv qilib qaytaradi.
+        const message = Array.isArray(result?.message)
+            ? result.message.join(", ")
+            : result?.message;
+
+        throw new Error(message || "Ошибка сервера");
+    }
+
+    return result;
+}
+
+
 async function addStock(productId,warehouseId,userId,quantity) {
     try {
         let response = await fetch(`http://localhost:3000/stock/add`, {
@@ -214,4 +241,4 @@ async function addStock(productId,warehouseId,userId,quantity) {
     }
 }
 
-export {getAllProductPaginationSearch,addProduct,deleteProduct,updateProduct,getAllWareHouse,addStock,updateProductWImage}
+export {getAllProductPaginationSearch,addProduct,deleteProduct,updateProduct,getAllWareHouse,addStock,updateProductWImage,importProducts}

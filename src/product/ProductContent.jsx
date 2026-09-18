@@ -125,7 +125,7 @@ function ProductAdd(props) {
 
         <div className="grid gap-3 sm:grid-cols-3">
           <Form.Group controlId="productPrice">
-            <Form.Label>Цена</Form.Label>
+            <Form.Label>Цена закупки</Form.Label>
             <Form.Control
               inputMode="decimal"
               placeholder="0"
@@ -143,7 +143,7 @@ function ProductAdd(props) {
             />
           </Form.Group>
           <Form.Group controlId="productBuyPrice">
-            <Form.Label>Цена закупки</Form.Label>
+            <Form.Label>Цена продажи</Form.Label>
             <Form.Control
               inputMode="decimal"
               placeholder="0"

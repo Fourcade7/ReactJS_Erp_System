@@ -9,7 +9,7 @@ async function getAllPurchaseListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/purchase/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/purchase/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });
@@ -32,7 +32,7 @@ async function getAllProductPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });
@@ -54,13 +54,10 @@ async function getAllProductPaginationSearch(page,limit,search){
 
 async function getAllCustomersForSale(search) {
 
-    if (!search || search.trim() === "") {
-        return []; // yoki null qaytarasan (UI ga qarab)
-    }
 
     try {
         const response = await fetch(
-            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${search}`,
+            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${encodeURIComponent(search ?? "")}`,
             {
                 method: "GET"
             }

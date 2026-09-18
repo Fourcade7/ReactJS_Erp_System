@@ -6,7 +6,7 @@ import { BrandMark, Button, Container, Dropdown, ThemeToggle } from '../ui'
 function Brand({ to = '/', subtitle }) {
   return (
     <Link to={to} className="group flex items-center gap-2.5">
-      <BrandMark className="transition-colors duration-150 group-hover:border-primary/40 group-hover:bg-primary-soft" />
+      <BrandMark className="transition-transform duration-150 group-hover:scale-105" />
       <span className="leading-tight">
         <span className="block text-[13px] font-semibold tracking-tight text-fg">
           5858 UZ

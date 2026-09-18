@@ -30,12 +30,41 @@ async function addCustomer(username,surname,phone) {
 
 
 
+// Excel importi uchun ommaviy yozish. Boshqa funksiyalardan farqli oʻlaroq
+// bu yerda javob oʻqib olinadi va xato boʻlsa otiladi — importda har bir
+// paketning natijasi (nechta yozildi, qaysi qator xato) kerak boʻladi.
+async function importCustomers(items) {
+
+    const response = await fetch(`http://localhost:3000/customer/import`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ items })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        // ValidationPipe `message` ni massiv qilib qaytaradi.
+        const message = Array.isArray(result?.message)
+            ? result.message.join(", ")
+            : result?.message;
+
+        throw new Error(message || "Ошибка сервера");
+    }
+
+    return result;
+}
+
+
+
 async function updateCustomer(
   id,
   username,
   surname,
   phone,
- 
+
 ) {
   try {
 
@@ -114,7 +143,7 @@ async function getAllCustomersPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/customer/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });
@@ -132,4 +161,4 @@ async function getAllCustomersPaginationSearch(page,limit,search){
 
 }
 
-export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer}
+export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers}

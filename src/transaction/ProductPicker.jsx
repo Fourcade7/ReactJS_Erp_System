@@ -10,7 +10,6 @@ import { stockOf } from './pricing'
 /**
  * Savatga qoʻshish uchun mahsulot tanlagich.
  *
- * - `limitByStock` — savdoda qoldiqdan ortiq qoʻshib boʻlmaydi;
  * - `onlyStocked` — faqat omborda yozuvi bor mahsulotlar koʻrsatiladi;
  * - `autoAddSingle` — qidiruv (masalan, shtrixkod skaneri) bitta natija qaytarsa,
  *   u darhol savatga tushadi.
@@ -19,7 +18,6 @@ function ProductPicker({
   fetchProducts,
   setOrderList,
   priceField = 'buyPrice',
-  limitByStock = false,
   onlyStocked = false,
   autoAddSingle = false,
 }) {
@@ -41,18 +39,15 @@ function ProductPicker({
     return () => clearTimeout(handler)
   }, [searchTerm])
 
+  // Qoldiqdan ortiq ham qoʻshiladi: savdo tugmasi (Checkout) ortiqcha miqdor
+  // kamaytirilmaguncha bloklanadi.
   function addProductToOrder(product) {
-    const stockQty = stockOf(product)
-    if (limitByStock && stockQty <= 0) return
-
     setOrderList((prev) => {
       const exists = prev.find((item) => item.id === product.id)
       if (exists) {
-        return prev.map((item) => {
-          if (item.id !== product.id) return item
-          if (limitByStock && item.quantity >= stockQty) return item
-          return { ...item, quantity: item.quantity + 1 }
-        })
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+        )
       }
       return [...prev, { ...product, quantity: 1, checkPrice: false }]
     })
@@ -67,7 +62,9 @@ function ProductPicker({
         setProductList(page.data)
         setShowLoad(false)
 
-        if (autoAddSingle && page.data.length === 1) {
+        // Faqat qidiruv (skaner) natijasi uchun: aks holda omborda bitta mahsulot
+        // boʻlsa, u sahifa ochilishi bilanoq savatga tushib qoladi.
+        if (autoAddSingle && debouncedSearch.trim() && page.data.length === 1) {
           addProductToOrder(page.data[0])
           setSearchTerm('')
         }
@@ -101,21 +98,28 @@ function ProductPicker({
       />
 
       {visible.length === 0 && !showLoad ? (
-        <EmptyState icon={PackageSearch} title="Ничего не найдено" className="py-8" />
+        <EmptyState
+          icon={PackageSearch}
+          title="Ничего не найдено"
+          description={
+            onlyStocked && productList.length > 0
+              ? 'Товары не привязаны к складу. Добавьте их на склад в разделе «Продукты».'
+              : undefined
+          }
+          className="py-8"
+        />
       ) : (
         <ul className="m-0 max-h-[60vh] list-none divide-y divide-line overflow-y-auto rounded-card border border-line bg-surface p-0 shadow-soft">
           {visible.map((product) => {
             const totalStock = stockOf(product)
-            const blocked = limitByStock && totalStock <= 0
             const image = product.imgUrl ? product.imgUrl : placeholderImage
 
             return (
               <li key={product.id}>
                 <button
                   type="button"
-                  disabled={blocked}
                   onClick={() => addProductToOrder(product)}
-                  className="group flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-2"
                 >
                   <OverlayTrigger
                     placement="right"

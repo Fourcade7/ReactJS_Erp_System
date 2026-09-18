@@ -19,7 +19,34 @@ import {
   ProgressDismissible,
 } from '../utils/UtilsContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
-import { addCategory, deleteCategory, getAllCategory, updateCategory } from './CategoryApi'
+import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
+import { exportToExcel } from '../utils/ExcelUtils'
+import {
+  addCategory,
+  deleteCategory,
+  getAllCategory,
+  importCategories,
+  updateCategory,
+} from './CategoryApi'
+
+const CATEGORY_IMPORT_FIELDS = [
+  {
+    key: 'name',
+    label: 'Название',
+    required: true,
+    aliases: ['название', 'наименование', 'категория', 'группа', 'name', 'category'],
+  },
+]
+
+const CATEGORY_EXPORT_COLUMNS = [
+  { key: 'name', label: 'Название' },
+  { key: 'products', label: 'Товаров', value: (row) => row.products?.length ?? 0 },
+  {
+    key: 'date',
+    label: 'Дата создания',
+    value: (row) => new Date(row.date).toLocaleString('uz'),
+  },
+]
 
 function CategoryList(props) {
   const [showEdit, setShowEdit] = useState(false)
@@ -34,6 +61,8 @@ function CategoryList(props) {
   const [cName, setCname] = useState('')
 
   const [categoryList, setCategoryList] = useState([])
+  const [reloadKey, setReloadKey] = useState(0)
+  const [showImport, setShowImport] = useState(false)
 
   const isUser = localStorage.getItem('role') === 'User'
 
@@ -52,10 +81,23 @@ function CategoryList(props) {
       }
     }
     handleCategory()
-  }, [props.activeTab, showResTypeAlert])
+  }, [props.activeTab, showResTypeAlert, reloadKey])
+
+  const handleExport = () =>
+    exportToExcel({
+      fetchRows: async () => categoryList,
+      columns: CATEGORY_EXPORT_COLUMNS,
+      fileName: 'Категории.xlsx',
+    })
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
+      {!isUser && (
+        <div className="flex justify-end">
+          <ImportExportMenu onImport={() => setShowImport(true)} onExport={handleExport} />
+        </div>
+      )}
+
       {categoryList.length === 0 ? (
         <EmptyState
           icon={Tags}
@@ -213,6 +255,16 @@ function CategoryList(props) {
         success={showResTypeAlert}
         message={showResTitle}
       />
+
+      {showImport && (
+        <ImportModal
+          onHide={() => setShowImport(false)}
+          entityTitle="категории"
+          fields={CATEGORY_IMPORT_FIELDS}
+          onImportChunk={importCategories}
+          onFinished={() => setReloadKey((k) => k + 1)}
+        />
+      )}
     </div>
   )
 }

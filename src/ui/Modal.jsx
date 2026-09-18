@@ -35,6 +35,14 @@ function Modal({
   const restoreFocusRef = useRef(null)
   const ctx = useMemo(() => ({ onHide }), [onHide])
 
+  // Chaqiruvchilar `onHide` ni inline funksiya qilib beradi (har renderda yangi).
+  // Effekt unga bogʻlansa, har bir harf kiritilganda fokus dialogdan chiqib,
+  // birinchi inputga qaytib ketadi — shuning uchun oxirgi qiymat ref da saqlanadi.
+  const onHideRef = useRef(onHide)
+  useEffect(() => {
+    onHideRef.current = onHide
+  }, [onHide])
+
   useEffect(() => {
     if (!show) return
 
@@ -43,7 +51,7 @@ function Modal({
     const onKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation()
-        onHide?.()
+        onHideRef.current?.()
         return
       }
       if (e.key !== 'Tab' || !dialogRef.current) return
@@ -85,7 +93,7 @@ function Modal({
       window.clearTimeout(focusTimer)
       restoreFocusRef.current?.focus?.()
     }
-  }, [show, onHide])
+  }, [show])
 
   if (!show) return null
 

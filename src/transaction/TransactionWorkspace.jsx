@@ -58,7 +58,6 @@ function TransactionWorkspace({ config }) {
                 fetchProducts={config.fetchProducts}
                 setOrderList={setOrderList}
                 priceField={config.priceField}
-                limitByStock={config.limitByStock}
                 onlyStocked={config.onlyStocked}
                 autoAddSingle={config.autoAddSingle}
               />
@@ -78,6 +77,8 @@ function TransactionWorkspace({ config }) {
                 title={config.checkoutTitle}
                 tone={config.tone}
                 printable={config.printable}
+                maxDiscountPercent={config.maxDiscountPercent}
+                limitByStock={config.limitByStock}
               />
             </div>
           </div>

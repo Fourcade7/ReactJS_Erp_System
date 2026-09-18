@@ -104,4 +104,27 @@ async function addCategory(name,weight) {
     }
 }
 
-export {addCategory,getAllCategory ,deleteCategory,updateCategory}
+async function importCategories(items) {
+
+    const response = await fetch(`http://localhost:3000/category/import`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ items })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        const message = Array.isArray(result?.message)
+            ? result.message.join(", ")
+            : result?.message;
+
+        throw new Error(message || "Ошибка сервера");
+    }
+
+    return result;
+}
+
+export {addCategory,getAllCategory ,deleteCategory,updateCategory,importCategories}

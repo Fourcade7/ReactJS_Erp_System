@@ -37,6 +37,8 @@ function InfoRow({ icon: Icon, label, children }) {
 function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, icon: Icon }) {
   const [showDebtEdit, setShowDebtEdit] = useState(false)
   const [debtAmount, setDebtAmount] = useState('')
+  const [debtError, setDebtError] = useState('')
+  const [debtSaving, setDebtSaving] = useState(false)
 
   if (!selectedSale) return null
 
@@ -68,13 +70,13 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
             </Card.Header>
             <div className="divide-y divide-line px-4">
               <InfoRow icon={UserRound} label="Имя">
-                {selectedSale.user.username} {selectedSale.user.surname}
+                {selectedSale.user?.username} {selectedSale.user?.surname}
               </InfoRow>
               <InfoRow icon={Mail} label="Email">
-                {selectedSale.user.email}
+                {selectedSale.user?.email}
               </InfoRow>
               <InfoRow icon={Phone} label="Телефон">
-                {selectedSale.user.phone}
+                {selectedSale.user?.phone}
               </InfoRow>
               <InfoRow icon={CalendarClock} label="Дата и время">
                 {new Date(selectedSale.date).toLocaleString('uz')}
@@ -88,10 +90,12 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
             </Card.Header>
             <div className="divide-y divide-line px-4">
               <InfoRow icon={UserRound} label="Имя">
-                {selectedSale.customer.username} {selectedSale.customer.surname}
+                {selectedSale.customer
+                  ? `${selectedSale.customer.username} ${selectedSale.customer.surname}`
+                  : 'Не указан'}
               </InfoRow>
               <InfoRow icon={Phone} label="Телефон">
-                {selectedSale.user.phone}
+                {selectedSale.customer?.phone ?? '—'}
               </InfoRow>
             </div>
           </Card>
@@ -110,7 +114,9 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
                     <Package className="size-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">{item.product.name}</p>
+                    <p className="truncate text-[13px] font-medium text-fg">
+                      {item.product?.name ?? 'Товар удалён'}
+                    </p>
                     <p className="flex items-center gap-1 text-[11px] text-subtle">
                       <Warehouse className="size-3" />
                       {item.warehouse?.name}
@@ -199,6 +205,7 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
               block
               onClick={() => {
                 setShowDebtEdit(true)
+                setDebtError('')
                 setDebtAmount(remaining)
               }}
             >
@@ -223,6 +230,7 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
               onChange={(e) => setDebtAmount(e.target.value)}
             />
             <Form.Text>Остаток долга: {remaining.toLocaleString('uz')} So&apos;m</Form.Text>
+            {debtError && <p className="mt-1.5 text-[12px] text-danger-soft-fg">{debtError}</p>}
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
@@ -231,11 +239,36 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
           </Button>
           <Button
             variant="warning"
+            loading={debtSaving}
             onClick={async () => {
-              const res = await addNewPayment(selectedSale.id, 'В долг', Number(debtAmount))
-              await res.json()
-              setShowDebtEdit(false)
-              if (res.ok) setActiveTab('home')
+              const amount = Math.round(Number(`${debtAmount}`.replace(/\s/g, '').replace(',', '.')))
+              if (!Number.isFinite(amount) || amount <= 0) {
+                setDebtError('Введите сумму больше нуля')
+                return
+              }
+              if (amount > remaining) {
+                setDebtError('Сумма больше остатка долга')
+                return
+              }
+
+              setDebtSaving(true)
+              setDebtError('')
+              try {
+                const res = await addNewPayment(selectedSale.id, 'В долг', amount)
+                const result = await res.json()
+                if (!res.ok) {
+                  setDebtError(
+                    Array.isArray(result.message) ? result.message.join(', ') : result.message,
+                  )
+                  return
+                }
+                setShowDebtEdit(false)
+                setActiveTab('home')
+              } catch {
+                setDebtError('Не удалось подключиться к серверу')
+              } finally {
+                setDebtSaving(false)
+              }
             }}
           >
             Сохранить

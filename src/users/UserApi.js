@@ -171,7 +171,7 @@ async function getAllUsersPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/user/allpagsearch?page=${page}&limit=${limit}&search=${search}`,{ 
+        let response = await fetch(`http://localhost:3000/user/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });

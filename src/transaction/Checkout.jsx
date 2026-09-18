@@ -19,7 +19,7 @@ import {
   ProgressDismissible,
 } from '../utils/UtilsContent'
 import logobgtransparent from '../assets/logobgtransparent.png'
-import { unitPrice } from './pricing'
+import { stockOf, unitPrice } from './pricing'
 
 const PAYMENTS = [
   { value: 'Наличные', Icon: Banknote },
@@ -73,6 +73,7 @@ function CustomerPicker({ fetchCustomers, setCustomerId }) {
         onFocus={() => setOpen(true)}
         onChange={(e) => {
           setSearchTerm(e.target.value)
+          setCustomerId(null)
           setOpen(true)
         }}
         placeholder="Имя контрагента или телефон"
@@ -177,12 +178,14 @@ function Checkout({
   title = 'Оформление',
   tone = 'primary',
   printable = false,
+  maxDiscountPercent = null,
+  limitByStock = false,
 }) {
   const componentRef = useRef(null)
 
   const [userId] = useState(localStorage.getItem('userid') || 1)
   const [open, setOpen] = useState(false)
-  const [customerId, setCustomerId] = useState(1)
+  const [customerId, setCustomerId] = useState(null)
   const [printType, setPrintType] = useState(null)
 
   const [paymentType, setPaymentType] = useState('Наличные')
@@ -199,14 +202,35 @@ function Checkout({
     0,
   )
 
-  const rawFinal =
-    discountType === 'sum'
-      ? totalCost - Number(discountSum || 0)
-      : totalCost - (totalCost * Number(discountSum || 0)) / 100
-  const finalCost = Math.max(0, rawFinal)
+  // Backend ham xuddi shu chegarani (pastga yaxlitlangan) tekshiradi.
+  const maxDiscount =
+    maxDiscountPercent == null ? totalCost : Math.floor((totalCost * maxDiscountPercent) / 100)
 
-  const discountAmount =
-    discountType === 'sum' ? discountSum : (totalCost * discountSum) / 100
+  // Qiymat kiritilayotganda chegaradan oshirilmaydi; savat keyin kichraysa ham
+  // amaldagi chegirma `maxDiscount` bilan cheklanadi.
+  const changeDiscount = (raw) => {
+    if (raw === '') return setDiscountSum(0)
+    const value = Math.max(0, Number(raw))
+    if (!Number.isFinite(value)) return
+    const cap = discountType === 'percent' ? (maxDiscountPercent ?? 100) : maxDiscount
+    setDiscountSum(Math.min(value, cap))
+  }
+
+  const overStockItems = limitByStock ? orderList.filter((item) => item.quantity > stockOf(item)) : []
+
+  // Summalar bazada butun son, shuning uchun foizli chegirma yaxlitlanadi.
+  const discountAmount = Math.min(
+    maxDiscount,
+    Math.max(
+      0,
+      Math.round(
+        discountType === 'sum'
+          ? Number(discountSum || 0)
+          : (totalCost * Number(discountSum || 0)) / 100,
+      ),
+    ),
+  )
+  const finalCost = totalCost - discountAmount
 
   const isDebt = paymentType === 'В долг'
 
@@ -228,6 +252,15 @@ function Checkout({
   }, [printType, handlePrint, handlePrintDraft])
 
   const handleSubmit = async () => {
+    if (overStockItems.length > 0) return
+
+    if (isDebt && !customerId) {
+      setShowSuccess(false)
+      setAlertMessage('Для оформления в долг выберите контрагента')
+      setShowDanger(true)
+      return
+    }
+
     try {
       psetShow(true)
       setShowDanger(false)
@@ -245,7 +278,9 @@ function Checkout({
 
       if (!res.ok) {
         setShowDanger(true)
-        setAlertMessage(result.message)
+        setAlertMessage(
+          Array.isArray(result.message) ? result.message.join(', ') : result.message,
+        )
         psetShow(false)
         return
       }
@@ -303,11 +338,10 @@ function Checkout({
                 <Form.Control
                   type="number"
                   placeholder="0"
+                  min={0}
+                  max={discountType === 'percent' ? (maxDiscountPercent ?? 100) : maxDiscount}
                   value={discountSum === 0 ? '' : discountSum}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    setDiscountSum(val === '' ? 0 : Number(val))
-                  }}
+                  onChange={(e) => changeDiscount(e.target.value)}
                 />
                 <div className="inline-flex shrink-0 rounded-lg border border-line bg-surface-2 p-0.5">
                   {[
@@ -317,7 +351,11 @@ function Checkout({
                     <button
                       key={opt.key}
                       type="button"
-                      onClick={() => setDiscountType(opt.key)}
+                      onClick={() => {
+                        // Sum ↔ % almashganda eski son yangi birlikda boshqa maʼno beradi.
+                        if (opt.key !== discountType) setDiscountSum(0)
+                        setDiscountType(opt.key)
+                      }}
                       className={cn(
                         'min-w-9 rounded-md px-2 text-xs font-medium transition',
                         discountType === opt.key
@@ -333,6 +371,11 @@ function Checkout({
               {discountType === 'percent' && discountAmount > 0 && (
                 <p className="mt-1 text-[11px] tabular-nums text-subtle">
                   = {discountAmount.toLocaleString('uz')} So&apos;m
+                </p>
+              )}
+              {maxDiscountPercent != null && (
+                <p className="mt-1 text-[11px] tabular-nums text-subtle">
+                  Макс. скидка: {maxDiscountPercent}% ({maxDiscount.toLocaleString('uz')} So&apos;m)
                 </p>
               )}
             </div>
@@ -383,6 +426,12 @@ function Checkout({
           </div>
         </dl>
 
+        {overStockItems.length > 0 && (
+          <p className="rounded-lg border border-danger/30 bg-danger-soft px-2.5 py-2 text-[11.5px] leading-snug text-danger-soft-fg">
+            Недостаточно товара на складе: {overStockItems.map((item) => item.name).join(', ')}.
+            Уменьшите количество до остатка.
+          </p>
+        )}
         {showDanger && <AlertDismissibleDanger alertMsg={alertMessage} />}
         {showSuccess && <AlertDismissibleSuccess alertMsg={alertMessage} />}
         <Collapse in={pshow} className={pshow ? undefined : '-mb-3'}>
@@ -394,7 +443,12 @@ function Checkout({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={pshow || (finalCost <= 0 && !isDebt)}
+          disabled={
+            pshow ||
+            orderList.length === 0 ||
+            overStockItems.length > 0 ||
+            (finalCost <= 0 && !isDebt)
+          }
           className={cn(
             'flex w-full flex-col items-center justify-center rounded-xl px-4 py-3 shadow-soft transition active:translate-y-px',
             'disabled:cursor-not-allowed disabled:opacity-50',
