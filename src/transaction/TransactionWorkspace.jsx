@@ -52,23 +52,23 @@ function TransactionWorkspace({ config }) {
             </>
           }
         >
-          {/* Tovarlar va savat teng kenglikda — ikkalasida ham nom sigʻishi uchun;
-              hisob-kitob savat ostida. */}
-          <div className="grid items-start gap-4 lg:grid-cols-2">
-            <ProductPicker
-              fetchProducts={config.fetchProducts}
-              setOrderList={setOrderList}
-              priceField={config.priceField}
-              onlyStocked={config.onlyStocked}
-              autoAddSingle={config.autoAddSingle}
-            />
-            <div className="flex min-w-0 flex-col gap-4">
-              <Cart
-                orderList={orderList}
+          <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_290px]">
+            <div className="lg:row-span-2 xl:row-span-1">
+              <ProductPicker
+                fetchProducts={config.fetchProducts}
                 setOrderList={setOrderList}
                 priceField={config.priceField}
-                limitByStock={config.limitByStock}
+                onlyStocked={config.onlyStocked}
+                autoAddSingle={config.autoAddSingle}
               />
+            </div>
+            <Cart
+              orderList={orderList}
+              setOrderList={setOrderList}
+              priceField={config.priceField}
+              limitByStock={config.limitByStock}
+            />
+            <div className="xl:sticky xl:top-20">
               <Checkout
                 orderList={orderList}
                 submit={config.submit}

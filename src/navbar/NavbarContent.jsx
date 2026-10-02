@@ -35,7 +35,7 @@ function NavbarScreen({ onMenuClick }) {
 
   return (
     <header className="sticky top-0 z-[1030] border-b border-line bg-app/80 backdrop-blur-xl">
-      <Container className="flex h-14 items-center gap-3">
+      <Container size="wide" className="flex h-14 items-center gap-3">
         <button
           type="button"
           onClick={onMenuClick}

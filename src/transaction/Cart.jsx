@@ -1,6 +1,8 @@
-import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Check, Copy, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
+import { copyCartImage } from './cartImage'
 import { stockOf, unitPrice } from './pricing'
 
 /**
@@ -25,6 +27,25 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
 
   const count = orderList.reduce((sum, item) => sum + item.quantity, 0)
 
+  // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya koʻrinadi.
+  const [copyState, setCopyState] = useState('idle')
+
+  useEffect(() => {
+    if (copyState === 'idle') return
+    const timer = setTimeout(() => setCopyState('idle'), 2000)
+    return () => clearTimeout(timer)
+  }, [copyState])
+
+  const copyAsImage = async () => {
+    try {
+      await copyCartImage(orderList, priceField)
+      setCopyState('done')
+    } catch (error) {
+      console.log(error.message)
+      setCopyState('error')
+    }
+  }
+
   return (
     <section className="flex min-w-0 flex-col gap-2">
       <div className="flex h-6 items-center justify-between">
@@ -32,8 +53,24 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
         <div className="flex items-center gap-2">
           {count > 0 && (
             <span className="rounded-full bg-primary-soft px-2 text-[11px] font-medium tabular-nums text-primary-soft-fg">
-              {count} шт.
+              {orderList.length} тов. · {count} шт.
             </span>
+          )}
+          {orderList.length > 0 && (
+            <button
+              type="button"
+              onClick={copyAsImage}
+              title="Скопировать корзину как изображение"
+              className={cn(
+                'inline-flex items-center gap-1 text-[11px] transition',
+                copyState === 'done' && 'text-success-soft-fg',
+                copyState === 'error' && 'text-danger-soft-fg',
+                copyState === 'idle' && 'text-subtle hover:text-fg',
+              )}
+            >
+              {copyState === 'done' ? <Check className="size-3" /> : <Copy className="size-3" />}
+              {copyState === 'done' ? 'Скопировано' : copyState === 'error' ? 'Ошибка' : 'Копировать'}
+            </button>
           )}
           {orderList.length > 0 && (
             <button
@@ -55,7 +92,7 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
           className="py-14"
         />
       ) : (
-        <ul className="m-0 flex max-h-[40vh] list-none flex-col gap-1.5 overflow-y-auto p-0">
+        <ul className="m-0 flex max-h-[68vh] list-none flex-col gap-1.5 overflow-y-auto p-0">
           {orderList.map((product) => {
             const price = unitPrice(product, priceField)
             const available = stockOf(product)
