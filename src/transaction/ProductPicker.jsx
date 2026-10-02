@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Barcode, PackageSearch, Plus, Warehouse } from 'lucide-react'
 import { cn } from '../lib/cn'
-import { EmptyState, OverlayTrigger, SearchField, Spinner, Tooltip } from '../ui'
+import { EmptyState, Form, OverlayTrigger, SearchField, Spinner, Tooltip } from '../ui'
+import { getAllCategory } from '../category/CategoryApi'
 import placeholderImage from '../assets/placeholder.jpg'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { ResultModal } from '../utils/StatusModals'
@@ -31,6 +32,21 @@ function ProductPicker({
   const [pageCount, setPageCount] = useState(0)
   const [active, setActive] = useState(1)
 
+  const [categoryList, setCategoryList] = useState([])
+  const [categoryId, setCategoryId] = useState('')
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await getAllCategory()
+        if (res.ok) setCategoryList(await res.json())
+      } catch (error) {
+        console.log(error.message)
+      }
+    }
+    loadCategories()
+  }, [])
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
@@ -57,7 +73,7 @@ function ProductPicker({
     async function loadProducts() {
       try {
         setShowLoad(true)
-        const page = await fetchProducts(active, 20, debouncedSearch)
+        const page = await fetchProducts(active, 20, debouncedSearch, categoryId)
         setPageCount(page.meta.totalPages)
         setProductList(page.data)
         setShowLoad(false)
@@ -76,7 +92,7 @@ function ProductPicker({
     }
     loadProducts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, debouncedSearch])
+  }, [active, debouncedSearch, categoryId])
 
   const visible = onlyStocked ? productList.filter((p) => p.stock?.[0]?.id) : productList
 
@@ -87,15 +103,35 @@ function ProductPicker({
         {showLoad && <Spinner size="sm" />}
       </div>
 
-      <SearchField
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value)
-          setActive(1)
-        }}
-        onClear={() => setSearchTerm('')}
-        placeholder="Название или штрихкод..."
-      />
+      <div className="flex gap-2">
+        <SearchField
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value)
+            setActive(1)
+          }}
+          onClear={() => setSearchTerm('')}
+          placeholder="Название или штрихкод..."
+          className="flex-1"
+        />
+        <div className="w-40 shrink-0">
+          <Form.Select
+            aria-label="Категория"
+            value={categoryId}
+            onChange={(e) => {
+              setCategoryId(e.target.value)
+              setActive(1)
+            }}
+          >
+            <option value="">Все категории</option>
+            {categoryList.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </Form.Select>
+        </div>
+      </div>
 
       {visible.length === 0 && !showLoad ? (
         <EmptyState

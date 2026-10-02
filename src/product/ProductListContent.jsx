@@ -30,6 +30,7 @@ import {
   importProducts,
   updateProductWImage,
 } from './ProductApi'
+import { getAllCategory } from '../category/CategoryApi'
 import placeholderImage from '../assets/placeholder.jpg'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
@@ -119,6 +120,12 @@ function ProductListGroup(props) {
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
+  // `props.categoryId` berilsa (Категория boʻlimidan) roʻyxat shu kategoriyaga
+  // qotiriladi: filtr va import/eksport menyusi koʻrsatilmaydi.
+  const fixedCategory = Boolean(props.categoryId)
+  const [categoryList, setCategoryList] = useState([])
+  const [categoryId, setCategoryId] = useState(props.categoryId ?? '')
+
   const fileInputRef = useRef(null)
   const [pid, setPid] = useState(-1)
 
@@ -149,7 +156,12 @@ function ProductListGroup(props) {
   useEffect(() => {
     async function loadAllProductPag() {
       try {
-        const productListPag = await getAllProductPaginationSearch(active, 10, debouncedSearch)
+        const productListPag = await getAllProductPaginationSearch(
+          active,
+          10,
+          debouncedSearch,
+          categoryId,
+        )
         const wareHouseListResult = await getAllWareHouse()
         setWareHouseList(wareHouseListResult)
         setPageCount(productListPag.meta.totalPages)
@@ -162,7 +174,19 @@ function ProductListGroup(props) {
     }
 
     if (props.activeTab === 'home') loadAllProductPag()
-  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch])
+  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch, categoryId])
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await getAllCategory()
+        if (res.ok) setCategoryList(await res.json())
+      } catch (error) {
+        console.log(error.message)
+      }
+    }
+    if (props.activeTab === 'home' && !fixedCategory) loadCategories()
+  }, [props.activeTab, reloadKey, fixedCategory])
 
   const handleImportChunk = (rows) =>
     importProducts(rows, createMissingCategories, importWarehouseId ? Number(importWarehouseId) : undefined)
@@ -204,11 +228,32 @@ function ProductListGroup(props) {
           placeholder="Поиск по названию или штрихкоду..."
           className="flex-1"
         />
-        <ImportExportMenu
-          onImport={openImport}
-          onExport={handleExport}
-          exporting={exporting}
-        />
+        {!fixedCategory && (
+          <>
+            <div className="w-48 shrink-0">
+              <Form.Select
+                aria-label="Категория"
+                value={categoryId}
+                onChange={(e) => {
+                  setCategoryId(e.target.value)
+                  setActive(1)
+                }}
+              >
+                <option value="">Все категории</option>
+                {categoryList.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+            <ImportExportMenu
+              onImport={openImport}
+              onExport={handleExport}
+              exporting={exporting}
+            />
+          </>
+        )}
       </div>
 
       {productList.length === 0 ? (

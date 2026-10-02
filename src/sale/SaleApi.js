@@ -52,12 +52,12 @@ async function getAllSaleDebtList(){
 }
 
 
-async function getAllProductPaginationSearch(page,limit,search){
+async function getAllProductPaginationSearch(page,limit,search,categoryId){
 
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}`,{ 
             method:"GET"
 
         });

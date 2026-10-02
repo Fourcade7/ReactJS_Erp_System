@@ -55,7 +55,7 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
           className="py-14"
         />
       ) : (
-        <ul className="m-0 flex max-h-[68vh] list-none flex-col gap-1.5 overflow-y-auto p-0">
+        <ul className="m-0 flex max-h-[40vh] list-none flex-col gap-1.5 overflow-y-auto p-0">
           {orderList.map((product) => {
             const price = unitPrice(product, priceField)
             const available = stockOf(product)

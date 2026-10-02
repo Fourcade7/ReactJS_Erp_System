@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ListOrdered, Package, PackagePlus, Save } from 'lucide-react'
 import { Button, Collapse, Form, PageHeader, Tab, Tabs } from '../ui'
 import { getAllCategory } from '../category/CategoryApi'
@@ -23,6 +23,7 @@ function ProductAdd(props) {
   const [buyPrice, setBuyerPrice] = useState('')
   const [categoryId, setCategoryId] = useState(-1)
   const [categoryList, setCategoryList] = useState([])
+  const nameRef = useRef(null)
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -61,6 +62,15 @@ function ProductAdd(props) {
         setShowSuccess(true)
         psetShow(false)
         setAlertMessage('Успешно...')
+
+        // Keyingi mahsulotni darhol kiritish uchun. Kategoriya saqlanadi —
+        // odatda bir guruh tovarlari ketma-ket kiritiladi.
+        setName('')
+        setBarcode('')
+        setPrice('')
+        setBulkPrice('')
+        setBuyerPrice('')
+        nameRef.current?.focus()
       }
     } catch {
       setShowDanger(true)
@@ -89,39 +99,29 @@ function ProductAdd(props) {
         <Form.Group controlId="productName">
           <Form.Label>Название</Form.Label>
           <Form.Control
+            ref={nameRef}
             placeholder="Введите имя"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </Form.Group>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Form.Group controlId="productBarcode">
-            <Form.Label>Штрихкод</Form.Label>
-            <Form.Control
-              className="font-mono"
-              placeholder="Введите штрихкод"
-              value={barCode}
-              onChange={(e) => setBarcode(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="productCategory">
-            <Form.Label>Категория</Form.Label>
-            <Form.Select
-              value={categoryId}
-              onChange={(e) => setCategoryId(Number(e.target.value))}
-            >
-              <option value={-1} disabled>
-                Выберите категорию
+        <Form.Group controlId="productCategory">
+          <Form.Label>Категория</Form.Label>
+          <Form.Select
+            value={categoryId}
+            onChange={(e) => setCategoryId(Number(e.target.value))}
+          >
+            <option value={-1} disabled>
+              Выберите категорию
+            </option>
+            {categoryList?.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
-              {categoryList?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </div>
+            ))}
+          </Form.Select>
+        </Form.Group>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <Form.Group controlId="productPrice">
@@ -152,6 +152,16 @@ function ProductAdd(props) {
             />
           </Form.Group>
         </div>
+
+        <Form.Group controlId="productBarcode">
+          <Form.Label>Штрихкод (необязательно)</Form.Label>
+          <Form.Control
+            className="font-mono"
+            placeholder="Введите или отсканируйте штрихкод"
+            value={barCode}
+            onChange={(e) => setBarcode(e.target.value)}
+          />
+        </Form.Group>
 
         <Button type="submit" loading={pshow} block className="mt-1">
           {!pshow && <Save />}

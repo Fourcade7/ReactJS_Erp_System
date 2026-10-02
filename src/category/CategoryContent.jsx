@@ -13,6 +13,7 @@ import {
   Tab,
   Tabs,
 } from '../ui'
+import { ProductListGroup } from '../product/ProductListContent'
 import {
   AlertDismissibleDanger,
   AlertDismissibleSuccess,
@@ -107,7 +108,7 @@ function CategoryList(props) {
       ) : (
         <ListGroup as="ol">
           {categoryList.map((category) => (
-            <ListGroup.Item key={category.id} as="li">
+            <ListGroup.Item key={category.id} as="li" onClick={() => props.onOpenCategory(category)}>
               <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
                 {category.id}
               </span>
@@ -126,37 +127,40 @@ function CategoryList(props) {
                 {new Date(category.date).toLocaleString('uz')}
               </Badge>
 
-              <Dropdown>
-                <Dropdown.Toggle
-                  as="div"
-                  className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
-                >
-                  <MoreHorizontal className="size-4" />
-                </Dropdown.Toggle>
+              {/* Menyu bosilganda kategoriya mahsulotlari ochilib ketmasin. */}
+              <span className="contents" onClick={(e) => e.stopPropagation()}>
+                <Dropdown>
+                  <Dropdown.Toggle
+                    as="div"
+                    className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Dropdown.Toggle>
 
-                <Dropdown.Menu align="end">
-                  <Dropdown.Item
-                    disabled={isUser}
-                    onClick={() => {
-                      setShowEdit(true)
-                      setCid(category.id)
-                      setCname(category.name)
-                    }}
-                  >
-                    Изменить
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    variant="danger"
-                    disabled={isUser}
-                    onClick={() => {
-                      setShowDel(true)
-                      setCid(category.id)
-                    }}
-                  >
-                    Удалить
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+                  <Dropdown.Menu align="end">
+                    <Dropdown.Item
+                      disabled={isUser}
+                      onClick={() => {
+                        setShowEdit(true)
+                        setCid(category.id)
+                        setCname(category.name)
+                      }}
+                    >
+                      Изменить
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      variant="danger"
+                      disabled={isUser}
+                      onClick={() => {
+                        setShowDel(true)
+                        setCid(category.id)
+                      }}
+                    >
+                      Удалить
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </span>
             </ListGroup.Item>
           ))}
         </ListGroup>
@@ -344,6 +348,7 @@ function CategoryAdd(props) {
 
 function CategoryTab() {
   const [activeTab, setActiveTab] = useState('home')
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
   return (
     <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} variant="underline">
@@ -356,7 +361,13 @@ function CategoryTab() {
           </>
         }
       >
-        <CategoryList activeTab={activeTab} />
+        <CategoryList
+          activeTab={activeTab}
+          onOpenCategory={(category) => {
+            setSelectedCategory(category)
+            setActiveTab('category_products')
+          }}
+        />
       </Tab>
 
       <Tab
@@ -371,6 +382,21 @@ function CategoryTab() {
       >
         <CategoryAdd tabChange={(tname) => setActiveTab(tname)} />
       </Tab>
+
+      {activeTab === 'category_products' && selectedCategory && (
+        <Tab
+          eventKey="category_products"
+          title={
+            <>
+              <Package />
+              {selectedCategory.name}
+            </>
+          }
+        >
+          {/* ProductListGroup faqat activeTab === 'home' da yuklaydi. */}
+          <ProductListGroup activeTab="home" categoryId={selectedCategory.id} />
+        </Tab>
+      )}
     </Tabs>
   )
 }
