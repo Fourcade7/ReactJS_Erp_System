@@ -1,16 +1,96 @@
-import { useEffect, useState } from 'react'
-import { Check, Copy, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Check, Copy, Minus, Pencil, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
 import { copyCartImage } from './cartImage'
-import { stockOf, unitPrice } from './pricing'
+import { priceChange, stockOf, unitPrice } from './pricing'
+
+const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString('uz')}`
+
+/**
+ * Savat qatoridagi birlik narx — bosib oʻzgartiriladi. Enter yoki tashqariga
+ * bosish — saqlash, Esc — bekor qilish. Opt narxdan past narx qabul qilinmaydi.
+ */
+function PriceInput({ product, price, onSave }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [error, setError] = useState('')
+  const cancelled = useRef(false)
+
+  const min = Number(product.bulkPrice || 0)
+
+  const save = () => {
+    const value = Math.round(Number(draft.replace(/[\s,]/g, '')))
+    if (value === price) return setEditing(false)
+    if (!Number.isFinite(value) || value <= 0) return setError('Введите цену')
+    if (value < min) return setError(`Не ниже оптовой: ${min.toLocaleString('uz')}`)
+    onSave(value)
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        title="Изменить цену в этой продаже"
+        onClick={() => {
+          setDraft(String(price))
+          setError('')
+          setEditing(true)
+        }}
+        className="inline-flex items-center gap-1 rounded text-[12px] tabular-nums text-muted underline decoration-dashed underline-offset-2 transition hover:text-fg"
+      >
+        <Pencil className="size-2.5" />
+        {Number(price || 0).toLocaleString('uz')}
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <input
+        autoFocus
+        inputMode="numeric"
+        title="Enter — сохранить, Esc — отмена"
+        value={draft}
+        onChange={(e) => {
+          setDraft(e.target.value.replace(/[^\d\s]/g, ''))
+          setError('')
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') save()
+          if (e.key === 'Escape') {
+            cancelled.current = true
+            setEditing(false)
+          }
+        }}
+        onBlur={() => {
+          if (cancelled.current) {
+            cancelled.current = false
+            return
+          }
+          save()
+        }}
+        className="h-6 w-24 rounded-md border border-primary bg-surface px-1.5 text-right text-[12px] tabular-nums text-fg outline-none focus:ring-2 focus:ring-[var(--ring)]"
+      />
+      {error && <span className="text-[10px] text-danger-soft-fg">{error}</span>}
+    </div>
+  )
+}
 
 /**
  * Savat. Har bir qatorda miqdorni oʻzgartirish, ulgurji narxga oʻtish
  * va oʻchirish mumkin. `limitByStock` da qoldiqdan ortiq miqdor bloklanmaydi,
  * faqat belgilanadi — savdo tugmasi esa Checkout da bloklanadi.
+ * `editablePrice` da (savdo) narxni shu savdo uchun oʻzgartirish mumkin.
  */
-function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock = false }) {
+function Cart({
+  orderList,
+  setOrderList,
+  priceField = 'buyPrice',
+  limitByStock = false,
+  editablePrice = false,
+}) {
   const update = (id, fn) =>
     setOrderList((prev) => prev.map((item) => (item.id === id ? fn(item) : item)))
 
@@ -92,94 +172,141 @@ function Cart({ orderList, setOrderList, priceField = 'buyPrice', limitByStock =
           className="py-14"
         />
       ) : (
-        <ul className="m-0 flex max-h-[68vh] list-none flex-col gap-1.5 overflow-y-auto p-0">
-          {orderList.map((product) => {
+        // Har bir tovar — bitta ixcham qator. Savat ustuni tor boʻlsa (@lg dan kichik)
+        // nom alohida qatorga tushadi, boshqaruv tugmalari ikkinchi qatorda.
+        <ul className="@container m-0 flex max-h-[68vh] list-none flex-col gap-1 overflow-y-auto p-0">
+          {orderList.map((product, index) => {
             const price = unitPrice(product, priceField)
+            const change = priceChange(product, priceField)
             const available = stockOf(product)
             const overStock = limitByStock && product.quantity > available
+            const stockHint = overStock
+              ? `На складе только ${available} ${product.unit} — лишних ${product.quantity - available}`
+              : undefined
 
             return (
               <li
                 key={product.id}
                 className={cn(
-                  'animate-fade-in rounded-card border bg-surface p-2.5 shadow-soft',
+                  'animate-fade-in flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border bg-surface px-2.5 py-1.5 shadow-soft @lg:flex-nowrap',
                   overStock ? 'border-danger/50' : 'border-line',
                 )}
               >
-                <div className="flex items-start gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 text-[13px] font-medium leading-snug text-fg">
-                      {product.name}
-                    </p>
-                    <p className="mt-0.5 truncate font-mono text-[11px] text-subtle">
-                      {product.barCode}
-                      {product.code ? ` · ${product.code}` : ''}
-                    </p>
-                  </div>
+                <p
+                  title={[product.name, product.barCode].filter(Boolean).join(' · ')}
+                  className="m-0 min-w-0 basis-full truncate text-[13px] font-medium text-fg @lg:basis-0 @lg:flex-1"
+                >
+                  <span className="mr-2 inline-flex h-5 min-w-5 items-center justify-center rounded bg-surface-2 px-1 align-middle text-[10px] font-semibold tabular-nums text-subtle">
+                    {index + 1}
+                  </span>
+                  {product.name}
+                </p>
+
+                <div
+                  title={stockHint}
+                  className={cn(
+                    'inline-flex shrink-0 items-center rounded-md border bg-surface-2',
+                    overStock ? 'border-danger/50' : 'border-line',
+                  )}
+                >
                   <button
                     type="button"
-                    onClick={() => remove(product.id)}
-                    aria-label="Удалить из корзины"
-                    className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-subtle transition hover:bg-danger-soft hover:text-danger-soft-fg"
+                    onClick={() => decrease(product.id)}
+                    aria-label="Уменьшить"
+                    className="inline-flex size-6 items-center justify-center rounded-l-md text-muted transition hover:bg-surface-3 hover:text-fg"
                   >
-                    <Trash2 className="size-3.5" />
+                    <Minus className="size-3" />
                   </button>
-                </div>
-
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="inline-flex items-center rounded-lg border border-line bg-surface-2">
-                    <button
-                      type="button"
-                      onClick={() => decrease(product.id)}
-                      aria-label="Уменьшить"
-                      className="inline-flex size-7 items-center justify-center rounded-l-lg text-muted transition hover:bg-surface-3 hover:text-fg"
-                    >
-                      <Minus className="size-3.5" />
-                    </button>
-                    <span className="min-w-8 px-1 text-center text-[13px] font-semibold tabular-nums text-fg">
-                      {product.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => increase(product.id)}
-                      aria-label="Увеличить"
-                      className="inline-flex size-7 items-center justify-center rounded-r-lg text-muted transition hover:bg-surface-3 hover:text-fg"
-                    >
-                      <Plus className="size-3.5" />
-                    </button>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => update(product.id, (item) => ({ ...item, checkPrice: !item.checkPrice }))}
-                    title="Применить оптовую цену"
+                  <span
                     className={cn(
-                      'rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition',
-                      product.checkPrice
-                        ? 'border-warning/40 bg-warning-soft text-warning-soft-fg'
-                        : 'border-line text-subtle hover:text-fg',
+                      'min-w-6 px-0.5 text-center text-[12px] font-semibold tabular-nums',
+                      overStock ? 'text-danger-soft-fg' : 'text-fg',
                     )}
                   >
-                    Опт
+                    {product.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => increase(product.id)}
+                    aria-label="Увеличить"
+                    className="inline-flex size-6 items-center justify-center rounded-r-md text-muted transition hover:bg-surface-3 hover:text-fg"
+                  >
+                    <Plus className="size-3" />
                   </button>
-
-                  <div className="ml-auto text-right leading-tight">
-                    <p className="text-[11px] tabular-nums text-subtle">
-                      {Number(price || 0).toLocaleString('uz')} × {product.quantity}
-                    </p>
-                    <p className="text-[13px] font-semibold tabular-nums text-fg">
-                      {(product.quantity * price).toLocaleString('uz')}{' '}
-                      <span className="text-[11px] font-normal text-subtle">So&apos;m</span>
-                    </p>
-                  </div>
                 </div>
 
-                {overStock && (
-                  <p className="mt-1.5 text-[11px] font-medium tabular-nums text-danger-soft-fg">
-                    На складе только {available} {product.unit} — лишних{' '}
-                    {product.quantity - available}
-                  </p>
-                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    update(product.id, (item) => ({
+                      ...item,
+                      checkPrice: !item.checkPrice,
+                      customPrice: undefined,
+                    }))
+                  }
+                  title="Применить оптовую цену"
+                  className={cn(
+                    'shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition',
+                    product.checkPrice
+                      ? 'border-warning/40 bg-warning-soft text-warning-soft-fg'
+                      : 'border-line text-subtle hover:text-fg',
+                  )}
+                >
+                  Опт
+                </button>
+
+                <div className="flex shrink-0 items-center justify-end gap-1 @lg:min-w-[5.5rem]">
+                  {editablePrice ? (
+                    <PriceInput
+                      product={product}
+                      price={price}
+                      onSave={(value) =>
+                        update(product.id, (item) => ({
+                          ...item,
+                          checkPrice: false,
+                          // Odatiy narxga qaytarilsa — oʻzgartirish bekor.
+                          customPrice: value === item[priceField] ? undefined : value,
+                        }))
+                      }
+                    />
+                  ) : (
+                    <span className="text-[12px] tabular-nums text-muted">
+                      {Number(price || 0).toLocaleString('uz')}
+                    </span>
+                  )}
+                  {change !== 0 && (
+                    <>
+                      <span
+                        title={`Цена изменена: ${Number(product[priceField]).toLocaleString('uz')} → ${price.toLocaleString('uz')}`}
+                        className="text-[11px] tabular-nums text-warning-soft-fg"
+                      >
+                        {signed(change)}
+                      </span>
+                      <button
+                        type="button"
+                        title="Вернуть обычную цену"
+                        aria-label="Вернуть обычную цену"
+                        onClick={() => update(product.id, (item) => ({ ...item, customPrice: undefined }))}
+                        className="inline-flex size-4 items-center justify-center rounded text-subtle transition hover:bg-surface-2 hover:text-fg"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <span className="ml-auto shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg @lg:ml-0 @lg:min-w-[5.5rem]">
+                  {(product.quantity * price).toLocaleString('uz')}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => remove(product.id)}
+                  aria-label="Удалить из корзины"
+                  className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-subtle transition hover:bg-danger-soft hover:text-danger-soft-fg"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
               </li>
             )
           })}

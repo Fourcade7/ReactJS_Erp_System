@@ -27,6 +27,8 @@ const SALE_CONFIG = {
   tone: 'primary',
   priceField: 'buyPrice',
   limitByStock: true,
+  // Savatda narxni shu savdo uchun oʻzgartirish (opt narxdan past emas).
+  editablePrice: true,
   maxDiscountPercent: 20,
   onlyStocked: false,
   autoAddSingle: true,

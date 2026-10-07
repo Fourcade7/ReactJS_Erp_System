@@ -52,7 +52,8 @@ function TransactionWorkspace({ config }) {
             </>
           }
         >
-          <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_290px]">
+          {/* Keng ekranda tovarlar roʻyxati ~440px da qoladi, qolgan joy savatga. */}
+          <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_290px] 2xl:grid-cols-[440px_minmax(0,1fr)_290px]">
             <div className="lg:row-span-2 xl:row-span-1">
               <ProductPicker
                 fetchProducts={config.fetchProducts}
@@ -67,6 +68,7 @@ function TransactionWorkspace({ config }) {
               setOrderList={setOrderList}
               priceField={config.priceField}
               limitByStock={config.limitByStock}
+              editablePrice={config.editablePrice}
             />
             <div className="xl:sticky xl:top-20">
               <Checkout

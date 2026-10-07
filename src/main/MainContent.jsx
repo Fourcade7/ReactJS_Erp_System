@@ -19,7 +19,7 @@ function MainScreen() {
   return (
     <div className="min-h-svh">
       <NavbarScreen onMenuClick={() => setMenuOpen(true)} />
-      <Container size="wide" className="flex">
+      <Container size="full" className="flex">
         <LeftTab mobileOpen={menuOpen} onCloseMobile={() => setMenuOpen(false)} />
       </Container>
     </div>

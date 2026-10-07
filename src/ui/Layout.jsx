@@ -97,6 +97,8 @@ function Container({ size = 'app', className, children, ...props }) {
     lg: 'max-w-5xl',
     app: 'max-w-[1200px]',
     wide: 'max-w-[1440px]',
+    // Butun ekran kengligi — sidebar chap chetga yopishadi.
+    full: 'max-w-none',
   }
   return (
     <div

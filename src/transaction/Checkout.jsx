@@ -19,7 +19,7 @@ import {
   ProgressDismissible,
 } from '../utils/UtilsContent'
 import logobgtransparent from '../assets/logobgtransparent.png'
-import { stockOf, unitPrice } from './pricing'
+import { priceChange, stockOf, unitPrice } from './pricing'
 
 const PAYMENTS = [
   { value: 'Наличные', Icon: Banknote },
@@ -107,8 +107,16 @@ function CustomerPicker({ fetchCustomers, setCustomerId }) {
   )
 }
 
+const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString('uz')}`
+
 /** Chop etiladigan chek. Tema qanday boʻlishidan qatʼi nazar oq fonda. */
 function CheckScreen({ orderList, discountAmount, finalCost, printType, priceField }) {
+  // Savatda qoʻlda oʻzgartirilgan narxlar boʻyicha jami farq (odatiy narxga nisbatan).
+  const changeTotal = orderList.reduce(
+    (sum, item) => sum + priceChange(item, priceField) * item.quantity,
+    0,
+  )
+
   return (
     <div className="bg-white p-3 font-mono text-[12px] text-black">
       <div className="mb-2 text-center">
@@ -120,6 +128,7 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
       <div className="flex flex-col">
         {orderList.map((item, index) => {
           const price = unitPrice(item, priceField)
+          const change = priceChange(item, priceField)
           return (
             <div key={index} className="border-b border-dashed border-black/30 py-1">
               <div className="flex justify-between gap-2">
@@ -132,12 +141,24 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
                 <span>{price.toLocaleString('uz')} So&apos;m</span>
                 <span>{(item.quantity * price).toLocaleString('uz')} So&apos;m</span>
               </div>
+              {change !== 0 && (
+                <div className="flex justify-between gap-2 text-[11px]">
+                  <span>было {Number(item[priceField]).toLocaleString('uz')}</span>
+                  <span>{signed(change * item.quantity)}</span>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
 
       <div className="mt-2">
+        {changeTotal !== 0 && (
+          <div className="flex justify-between">
+            <span>Изменение цены:</span>
+            <span>{signed(changeTotal)} So&apos;m</span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span>Скидка:</span>
           <span>{discountAmount.toLocaleString('uz')} So&apos;m</span>
