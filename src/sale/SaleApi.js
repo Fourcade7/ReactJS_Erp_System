@@ -194,4 +194,34 @@ async function addNewPayment(saleId,method,amount) {
 
 
 
-export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList}
+// Savdo tafsiloti: har bir qatordan qancha qaytarilgani (`returned`) bilan.
+async function getSaleDetail(id) {
+
+    const response = await fetch(`http://localhost:3000/sale/detail/${id}`);
+
+    if (!response.ok) throw new Error("Ошибка сервера");
+
+    return response.json();
+}
+
+
+// Список продаж ichidan qaytarish. items — [{ sale_item_id, quantity }].
+// `method` faqat mijozga pul qaytariladigan boʻlsa kerak (qarz boʻlsa — qarzdan ayiriladi).
+async function returnFromSale(saleId, items, method, userId) {
+
+    return fetch(`http://localhost:3000/return/fromsale`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            sale_id: saleId,
+            items,
+            method,
+            user_id: userId
+        })
+    });
+}
+
+
+export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale}

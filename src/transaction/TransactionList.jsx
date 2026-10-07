@@ -100,6 +100,8 @@ function TransactionList({
                     <p className="flex items-center gap-1 text-[11px] text-subtle">
                       <CalendarClock className="size-3" />
                       {new Date(sale.date).toLocaleString('UZ')}
+                      {/* Список продаж ichidan qilingan qaytarish */}
+                      {sale.sale && <span className="ml-1">· из продажи #{sale.sale.id}</span>}
                     </p>
                   </div>
 

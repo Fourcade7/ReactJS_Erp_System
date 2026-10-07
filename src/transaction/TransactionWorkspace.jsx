@@ -98,6 +98,8 @@ function TransactionWorkspace({ config }) {
               selectedSale={selectedSale}
               setActiveTab={setActiveTab}
               addNewPayment={config.addNewPayment}
+              fetchDetail={config.fetchDetail}
+              returnFromSale={config.returnFromSale}
               label={config.label}
               icon={Icon}
             />

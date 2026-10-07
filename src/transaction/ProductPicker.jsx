@@ -73,7 +73,8 @@ function ProductPicker({
     async function loadProducts() {
       try {
         setShowLoad(true)
-        const page = await fetchProducts(active, 20, debouncedSearch, categoryId)
+        // `onlyStocked` backend da filtrlanadi — sahifalash faqat omborli tovarlar boʻyicha.
+        const page = await fetchProducts(active, 20, debouncedSearch, categoryId, onlyStocked)
         setPageCount(page.meta.totalPages)
         setProductList(page.data)
         setShowLoad(false)
@@ -138,8 +139,8 @@ function ProductPicker({
           icon={PackageSearch}
           title="Ничего не найдено"
           description={
-            onlyStocked && productList.length > 0
-              ? 'Товары не привязаны к складу. Добавьте их на склад в разделе «Продукты».'
+            onlyStocked
+              ? 'Здесь показываются только товары, привязанные к складу. Добавьте их на склад в разделе «Продукты».'
               : undefined
           }
           className="py-8"

@@ -27,12 +27,12 @@ async function getAllReturnsListPaginationSearch(page,limit,search){
 
 }
 
-async function getAllProductPaginationSearch(page,limit,search,categoryId){
+async function getAllProductPaginationSearch(page,limit,search,categoryId,onlyStocked){
 
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}`,{ 
+        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}${onlyStocked ? "&stocked=true" : ""}`,{ 
             method:"GET"
 
         });

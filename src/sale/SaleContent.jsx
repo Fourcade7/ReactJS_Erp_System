@@ -11,6 +11,8 @@ import {
   getAllProductPaginationSearch,
   getAllSaleDebtList,
   getAllSaleListPaginationSearch,
+  getSaleDetail,
+  returnFromSale,
 } from './SaleApi'
 
 const SALE_CONFIG = {
@@ -34,6 +36,9 @@ const SALE_CONFIG = {
   fetchCustomers: getAllCustomersForSale,
   submit: addNewSale,
   addNewPayment,
+  // Tafsilotda tovarni shu yerning oʻzidan qaytarish uchun.
+  fetchDetail: getSaleDetail,
+  returnFromSale,
 }
 
 /** Bosh sahifadagi "qarzdor savdolar" bloki. */
@@ -77,6 +82,8 @@ function SaleTabForHome() {
             selectedSale={selectedSale}
             setActiveTab={setActiveTab}
             addNewPayment={addNewPayment}
+            fetchDetail={getSaleDetail}
+            returnFromSale={returnFromSale}
             label="Продажа"
             icon={ShoppingBag}
           />

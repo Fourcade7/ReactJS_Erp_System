@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowLeft,
   Banknote,
@@ -7,17 +7,21 @@ import {
   Mail,
   Package,
   Phone,
+  Undo2,
   UserRound,
   Wallet,
   Warehouse,
 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Badge, Button, Card, Form, Modal } from '../ui'
+import { ResultModal } from '../utils/StatusModals'
+import SaleReturnModal from './SaleReturnModal'
 
 const PAYMENT_ICONS = {
   Наличные: Banknote,
   'Банковская карта': CreditCard,
   'В долг': Wallet,
+  'Зачёт возврата': Undo2,
 }
 
 function InfoRow({ icon: Icon, label, children }) {
@@ -33,18 +37,53 @@ function InfoRow({ icon: Icon, label, children }) {
 /**
  * Operatsiya tafsilotlari: masʼul xodim, kontragent, mahsulotlar va toʻlovlar.
  * Qarz qolgan boʻlsa — `addNewPayment(id, method, amount)` orqali uni yopish mumkin.
+ *
+ * Savdo uchun (`fetchDetail` + `returnFromSale` berilganda) har bir tovarni shu
+ * yerning oʻzidan qaytarish mumkin; buning uchun yangilangan maʼlumot
+ * (qatorlardan qancha qaytarilgani) `fetchDetail` orqali yuklanadi.
  */
-function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, icon: Icon }) {
+function TransactionDetail({
+  selectedSale,
+  setActiveTab,
+  addNewPayment,
+  label,
+  icon: Icon,
+  fetchDetail,
+  returnFromSale,
+}) {
   const [showDebtEdit, setShowDebtEdit] = useState(false)
   const [debtAmount, setDebtAmount] = useState('')
   const [debtError, setDebtError] = useState('')
   const [debtSaving, setDebtSaving] = useState(false)
 
+  const [detail, setDetail] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [returnItem, setReturnItem] = useState(null)
+  const [returnDone, setReturnDone] = useState('')
+
+  useEffect(() => {
+    if (!fetchDetail || !selectedSale) return
+    let cancelled = false
+    fetchDetail(selectedSale.id)
+      .then((data) => {
+        if (!cancelled) setDetail(data)
+      })
+      .catch((error) => console.log(error.message))
+    return () => {
+      cancelled = true
+    }
+  }, [fetchDetail, selectedSale, reloadKey])
+
   if (!selectedSale) return null
 
-  const totalPayed = selectedSale.payments.reduce((sum, item) => sum + item.amount, 0)
-  const remaining = selectedSale.total - (totalPayed + selectedSale.discount)
+  // Yangilangan maʼlumot kelguncha roʻyxatdagi nusxa koʻrsatiladi.
+  const sale = detail ?? selectedSale
+  const canReturn = Boolean(returnFromSale && detail)
+
+  const totalPayed = sale.payments.reduce((sum, item) => sum + item.amount, 0)
+  const remaining = sale.total - (totalPayed + sale.discount)
   const settled = remaining <= 0
+  const returnedTotal = sale.returnedTotal ?? 0
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,7 +94,7 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
         </Button>
         <h3 className="flex items-center gap-2 text-sm font-semibold text-fg">
           {Icon && <Icon className="size-4 text-primary" />}
-          {label} #{selectedSale.id}
+          {label} #{sale.id}
         </h3>
         <Badge bg={settled ? 'success' : 'danger'} dot className="ml-auto">
           {settled ? 'Оплачено' : 'Есть долг'}
@@ -70,16 +109,16 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
             </Card.Header>
             <div className="divide-y divide-line px-4">
               <InfoRow icon={UserRound} label="Имя">
-                {selectedSale.user?.username} {selectedSale.user?.surname}
+                {sale.user?.username} {sale.user?.surname}
               </InfoRow>
               <InfoRow icon={Mail} label="Email">
-                {selectedSale.user?.email}
+                {sale.user?.email}
               </InfoRow>
               <InfoRow icon={Phone} label="Телефон">
-                {selectedSale.user?.phone}
+                {sale.user?.phone}
               </InfoRow>
               <InfoRow icon={CalendarClock} label="Дата и время">
-                {new Date(selectedSale.date).toLocaleString('uz')}
+                {new Date(sale.date).toLocaleString('uz')}
               </InfoRow>
             </div>
           </Card>
@@ -90,12 +129,12 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
             </Card.Header>
             <div className="divide-y divide-line px-4">
               <InfoRow icon={UserRound} label="Имя">
-                {selectedSale.customer
-                  ? `${selectedSale.customer.username} ${selectedSale.customer.surname}`
+                {sale.customer
+                  ? `${sale.customer.username} ${sale.customer.surname}`
                   : 'Не указан'}
               </InfoRow>
               <InfoRow icon={Phone} label="Телефон">
-                {selectedSale.customer?.phone ?? '—'}
+                {sale.customer?.phone ?? '—'}
               </InfoRow>
             </div>
           </Card>
@@ -105,36 +144,60 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
           <Card padded={false}>
             <Card.Header>
               <Card.Title>Список продуктов</Card.Title>
-              <span className="text-[11px] text-subtle">{selectedSale.items.length} поз.</span>
+              <span className="text-[11px] text-subtle">{sale.items.length} поз.</span>
             </Card.Header>
             <ul className="m-0 list-none divide-y divide-line p-0">
-              {selectedSale.items.map((item, index) => (
-                <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">
-                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-subtle">
-                    <Package className="size-3.5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">
-                      {item.product?.name ?? 'Товар удалён'}
-                    </p>
-                    <p className="flex items-center gap-1 text-[11px] text-subtle">
-                      <Warehouse className="size-3" />
-                      {item.warehouse?.name}
-                      {item.checkPrice && (
-                        <Badge bg="warning" className="ml-1 py-0 text-[10px]">
-                          Оптом
-                        </Badge>
-                      )}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-right text-[13px] tabular-nums">
-                    <span className="text-subtle">{item.quantity} × </span>
-                    <span className="font-semibold text-fg">
-                      {item.price.toLocaleString('uz')}
+              {sale.items.map((item, index) => {
+                const returned = item.returned ?? 0
+                const returnable = item.quantity - returned
+
+                return (
+                  <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">
+                    <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-subtle">
+                      <Package className="size-3.5" />
                     </span>
-                  </span>
-                </li>
-              ))}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium text-fg">
+                        {item.product?.name ?? 'Товар удалён'}
+                      </p>
+                      <p className="flex flex-wrap items-center gap-1 text-[11px] text-subtle">
+                        <Warehouse className="size-3" />
+                        {item.warehouse?.name}
+                        {item.checkPrice && (
+                          <Badge bg="warning" className="ml-1 py-0 text-[10px]">
+                            Оптом
+                          </Badge>
+                        )}
+                        {returned > 0 && (
+                          <Badge bg="warning" className="ml-1 py-0 text-[10px] tabular-nums">
+                            <Undo2 />
+                            Возвращено: {returned} шт.
+                            {returnable > 0 && ` · осталось ${returnable}`}
+                          </Badge>
+                        )}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-right text-[13px] tabular-nums">
+                      <span className="text-subtle">{item.quantity} × </span>
+                      <span className="font-semibold text-fg">
+                        {item.price.toLocaleString('uz')}
+                      </span>
+                    </span>
+                    {canReturn && (
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        disabled={returnable <= 0 || !item.product}
+                        onClick={() => setReturnItem(item)}
+                        title={returnable > 0 ? 'Вернуть товар' : 'Товар возвращён полностью'}
+                      >
+                        <Undo2 />
+                        Возврат
+                      </Button>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </Card>
 
@@ -143,16 +206,21 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
               <Card.Title>Оплата</Card.Title>
             </Card.Header>
             <ul className="m-0 list-none divide-y divide-line p-0">
-              {selectedSale.payments.map((item, index) => {
+              {sale.payments.map((item, index) => {
                 const method = item.method.trim()
                 const PayIcon = PAYMENT_ICONS[method] ?? CreditCard
                 const debt = item.method === 'В долг'
+                const offset = method === 'Зачёт возврата'
                 return (
                   <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">
                     <span
                       className={cn(
                         'inline-flex size-7 shrink-0 items-center justify-center rounded-md',
-                        debt ? 'bg-danger-soft text-danger-soft-fg' : 'bg-success-soft text-success-soft-fg',
+                        debt
+                          ? 'bg-danger-soft text-danger-soft-fg'
+                          : offset
+                            ? 'bg-warning-soft text-warning-soft-fg'
+                            : 'bg-success-soft text-success-soft-fg',
                       )}
                     >
                       <PayIcon className="size-3.5" />
@@ -175,7 +243,7 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
               <div className="flex justify-between">
                 <dt className="text-subtle">Скидка</dt>
                 <dd className="tabular-nums text-fg">
-                  {selectedSale.discount.toLocaleString('uz')} So&apos;m
+                  {sale.discount.toLocaleString('uz')} So&apos;m
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -185,9 +253,25 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
               <div className="flex justify-between text-sm font-semibold">
                 <dt className="text-fg">Общая стоимость</dt>
                 <dd className={cn('tabular-nums', settled ? 'text-fg' : 'text-danger-soft-fg')}>
-                  {selectedSale.total.toLocaleString('uz')} So&apos;m
+                  {sale.total.toLocaleString('uz')} So&apos;m
                 </dd>
               </div>
+              {returnedTotal > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <dt className="text-warning-soft-fg">Возвращено</dt>
+                    <dd className="tabular-nums text-warning-soft-fg">
+                      −{returnedTotal.toLocaleString('uz')} So&apos;m
+                    </dd>
+                  </div>
+                  <div className="flex justify-between font-semibold">
+                    <dt className="text-fg">Итого после возврата</dt>
+                    <dd className="tabular-nums text-fg">
+                      {(sale.total - sale.discount - returnedTotal).toLocaleString('uz')} So&apos;m
+                    </dd>
+                  </div>
+                </>
+              )}
               {!settled && (
                 <div className="flex justify-between text-xs">
                   <dt className="text-danger-soft-fg">Остаток долга</dt>
@@ -254,7 +338,7 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
               setDebtSaving(true)
               setDebtError('')
               try {
-                const res = await addNewPayment(selectedSale.id, 'В долг', amount)
+                const res = await addNewPayment(sale.id, 'В долг', amount)
                 const result = await res.json()
                 if (!res.ok) {
                   setDebtError(
@@ -275,6 +359,31 @@ function TransactionDetail({ selectedSale, setActiveTab, addNewPayment, label, i
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {returnItem && (
+        <SaleReturnModal
+          sale={sale}
+          item={returnItem}
+          returnFromSale={returnFromSale}
+          onHide={() => setReturnItem(null)}
+          onDone={(result) => {
+            setReturnItem(null)
+            setReloadKey((k) => k + 1)
+            setReturnDone(
+              result.offset > 0
+                ? `Возврат оформлен: ${result.value.toLocaleString('uz')} So'm (с долга списано ${result.offset.toLocaleString('uz')})`
+                : `Возврат оформлен: ${result.value.toLocaleString('uz')} So'm`,
+            )
+          }}
+        />
+      )}
+
+      <ResultModal
+        show={Boolean(returnDone)}
+        onHide={() => setReturnDone('')}
+        success
+        message={returnDone}
+      />
     </div>
   )
 }
