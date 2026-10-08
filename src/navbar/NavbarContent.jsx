@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronDown, LifeBuoy, LogOut, Menu, Sparkles, UserRound } from 'lucide-react'
 import { BrandMark, Button, Container, Dropdown, ThemeToggle } from '../ui'
+import ServerSettings from './ServerSettings'
+import { clearLocalData } from '../config/api'
 
 /** Brend belgisi — logotip va nom. */
 function Brand({ to = '/', subtitle }) {
@@ -63,6 +65,8 @@ function NavbarScreen({ onMenuClick }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <ServerSettings />
+
           <ThemeToggle />
 
           <Dropdown>
@@ -102,7 +106,7 @@ function NavbarScreen({ onMenuClick }) {
               <Dropdown.Item
                 variant="danger"
                 onClick={() => {
-                  localStorage.clear()
+                  clearLocalData()
                   navigate('/login')
                 }}
               >
@@ -123,6 +127,7 @@ function NavbarScreenFourAuth() {
       <Container className="flex h-14 items-center gap-3">
         <Brand to="/" subtitle="ID Group" />
         <div className="ml-auto flex items-center gap-2">
+          <ServerSettings />
           <ThemeToggle compact />
           <Button as={Link} to="/register" variant="outline-primary" size="sm">
             <Sparkles />

@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api'
 
 
 
@@ -14,7 +15,7 @@ async function updateWareHouse(
     if (weight) body.weight = Number(weight);
     
 
-    const response = await fetch(`http://localhost:3000/warehouse/update/${id}`, {
+    const response = await fetch(`${API_BASE}/warehouse/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -35,7 +36,7 @@ async function deleteWareHouse(id){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/warehouse/delete/${id}`,{ 
+        let response = await fetch(`${API_BASE}/warehouse/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -59,7 +60,7 @@ async function getAllWareHouse(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/warehouse/all`,{ 
+        let response = await fetch(`${API_BASE}/warehouse/all`,{ 
             method:"GET"
 
         });
@@ -79,7 +80,7 @@ async function getAllWareHouse(){
 
 async function addWareHouse(name,weight) {
     try {
-        let response = await fetch(`http://localhost:3000/warehouse/add`, {
+        let response = await fetch(`${API_BASE}/warehouse/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

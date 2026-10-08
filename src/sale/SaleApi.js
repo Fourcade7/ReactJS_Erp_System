@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api'
 
 
 
@@ -9,7 +10,7 @@ async function getAllSaleListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/sale/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });
@@ -33,7 +34,7 @@ async function getAllSaleDebtList(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/alldebt`,{ 
+        let response = await fetch(`${API_BASE}/sale/alldebt`,{ 
             method:"GET"
 
         });
@@ -57,7 +58,7 @@ async function getAllProductPaginationSearch(page,limit,search,categoryId){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}`,{ 
+        let response = await fetch(`${API_BASE}/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}`,{ 
             method:"GET"
 
         });
@@ -82,7 +83,7 @@ async function getAllCustomersForSale(search) {
 
     try {
         const response = await fetch(
-            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${encodeURIComponent(search ?? "")}`,
+            `${API_BASE}/customer/allpagsearch?page=${1}&limit=${10}&search=${encodeURIComponent(search ?? "")}`,
             {
                 method: "GET"
             }
@@ -125,7 +126,7 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
 
 
     try {
-        let response = await fetch(`http://localhost:3000/sale/addfull`, {
+        let response = await fetch(`${API_BASE}/sale/addfull`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -163,7 +164,7 @@ async function addNewPayment(saleId,method,amount) {
 
 
     try {
-        let response = await fetch(`http://localhost:3000/payment/add`, {
+        let response = await fetch(`${API_BASE}/payment/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -198,7 +199,7 @@ async function addNewPayment(saleId,method,amount) {
 // Savdo tafsiloti: har bir qatordan qancha qaytarilgani (`returned`) bilan.
 async function getSaleDetail(id) {
 
-    const response = await fetch(`http://localhost:3000/sale/detail/${id}`);
+    const response = await fetch(`${API_BASE}/sale/detail/${id}`);
 
     if (!response.ok) throw new Error("Ошибка сервера");
 
@@ -210,7 +211,7 @@ async function getSaleDetail(id) {
 // `method` faqat mijozga pul qaytariladigan boʻlsa kerak (qarz boʻlsa — qarzdan ayiriladi).
 async function returnFromSale(saleId, items, method, userId) {
 
-    return fetch(`http://localhost:3000/return/fromsale`, {
+    return fetch(`${API_BASE}/return/fromsale`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

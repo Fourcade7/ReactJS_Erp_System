@@ -1,4 +1,5 @@
-const BASE = 'http://localhost:3000/telegram'
+import { API_BASE } from '../config/api'
+const BASE = `${API_BASE}/telegram`
 
 async function request(url, options) {
     const response = await fetch(url, options)

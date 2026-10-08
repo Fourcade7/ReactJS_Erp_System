@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api'
 
 
 async function getAllSaleDebt(){
@@ -5,7 +6,7 @@ async function getAllSaleDebt(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/alldebt`,{ 
+        let response = await fetch(`${API_BASE}/sale/alldebt`,{ 
             method:"GET"
 
         });
@@ -30,7 +31,7 @@ async function getAllSaleToday(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/alltoday`,{ 
+        let response = await fetch(`${API_BASE}/sale/alltoday`,{ 
             method:"GET"
 
         });
@@ -54,7 +55,7 @@ async function getAllSaleWeek(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/allweek`,{ 
+        let response = await fetch(`${API_BASE}/sale/allweek`,{ 
             method:"GET"
 
         });
@@ -77,7 +78,7 @@ async function getAllSaleMonth(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/sale/allmonth`,{ 
+        let response = await fetch(`${API_BASE}/sale/allmonth`,{ 
             method:"GET"
 
         });

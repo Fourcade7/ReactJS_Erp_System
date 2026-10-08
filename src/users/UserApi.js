@@ -1,13 +1,14 @@
+import { API_BASE } from '../config/api'
 
 
 
-const urlGetALlProducts = "http://localhost:3000/getallproducts"
+const urlGetALlProducts = `${API_BASE}/getallproducts`
 //const accessToken = "0401c8f573fb9123965566e3da60e6dd2fda3c1d"
 
 
 async function registerUser(username,surname,phone,email, password) {
     try {
-        let response = await fetch(`http://localhost:3000/user/add`, {
+        let response = await fetch(`${API_BASE}/user/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -36,7 +37,7 @@ async function registerUser(username,surname,phone,email, password) {
 
 async function loginUser(email, password) {
     try {
-        let response = await fetch(`http://localhost:3000/user/login`, {
+        let response = await fetch(`${API_BASE}/user/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -64,7 +65,7 @@ async function getAllContragents(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/getallcontragents`,{ 
+        let response = await fetch(`${API_BASE}/getallcontragents`,{ 
             method:"GET"
 
         });
@@ -103,7 +104,7 @@ async function updateUser(
     if (password) body.password = password;
     if (role) body.role = role;
 
-    const response = await fetch(`http://localhost:3000/user/update/${id}`, {
+    const response = await fetch(`${API_BASE}/user/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -124,7 +125,7 @@ async function deleteUser(id){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/user/delete/${id}`,{ 
+        let response = await fetch(`${API_BASE}/user/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -147,7 +148,7 @@ async function getAllUsersPagination(page,limit){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/user/allpag?page=${page}&limit=10`,{ 
+        let response = await fetch(`${API_BASE}/user/allpag?page=${page}&limit=10`,{ 
             method:"GET"
 
         });
@@ -171,7 +172,7 @@ async function getAllUsersPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/user/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/user/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });

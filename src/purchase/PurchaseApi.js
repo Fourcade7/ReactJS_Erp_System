@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api'
 
 
 
@@ -9,7 +10,7 @@ async function getAllPurchaseListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/purchase/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/purchase/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });
@@ -32,7 +33,7 @@ async function getAllProductPaginationSearch(page,limit,search,categoryId,onlySt
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}${onlyStocked ? "&stocked=true" : ""}`,{ 
+        let response = await fetch(`${API_BASE}/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}${onlyStocked ? "&stocked=true" : ""}`,{ 
             method:"GET"
 
         });
@@ -57,7 +58,7 @@ async function getAllCustomersForSale(search) {
 
     try {
         const response = await fetch(
-            `http://localhost:3000/customer/allpagsearch?page=${1}&limit=${10}&search=${encodeURIComponent(search ?? "")}`,
+            `${API_BASE}/customer/allpagsearch?page=${1}&limit=${10}&search=${encodeURIComponent(search ?? "")}`,
             {
                 method: "GET"
             }
@@ -99,7 +100,7 @@ async function addNewPurchase(orderList,finalCost,paymentType,discount,customerI
 
 
     try {
-        let response = await fetch(`http://localhost:3000/purchase/addfull`, {
+        let response = await fetch(`${API_BASE}/purchase/addfull`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -132,7 +133,7 @@ async function addNewPayment(purchaseId,method,amount) {
     
 
     try {
-        let response = await fetch(`http://localhost:3000/payment/add`, {
+        let response = await fetch(`${API_BASE}/payment/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

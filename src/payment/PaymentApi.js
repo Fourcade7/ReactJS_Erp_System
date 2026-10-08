@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api'
 
 
 
@@ -9,7 +10,7 @@ async function getAllPaymentListPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/payment/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/payment/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });

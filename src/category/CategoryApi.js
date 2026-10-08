@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api'
 
 
 
@@ -14,7 +15,7 @@ async function updateCategory(
    
     
 
-    const response = await fetch(`http://localhost:3000/category/update/${id}`, {
+    const response = await fetch(`${API_BASE}/category/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -35,7 +36,7 @@ async function deleteCategory(id){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/category/delete/${id}`,{ 
+        let response = await fetch(`${API_BASE}/category/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -59,7 +60,7 @@ async function getAllCategory(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/category/all`,{ 
+        let response = await fetch(`${API_BASE}/category/all`,{ 
             method:"GET"
 
         });
@@ -81,7 +82,7 @@ async function getAllCategory(){
 
 async function addCategory(name,weight) {
     try {
-        let response = await fetch(`http://localhost:3000/category/add`, {
+        let response = await fetch(`${API_BASE}/category/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -106,7 +107,7 @@ async function addCategory(name,weight) {
 
 async function importCategories(items) {
 
-    const response = await fetch(`http://localhost:3000/category/import`, {
+    const response = await fetch(`${API_BASE}/category/import`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

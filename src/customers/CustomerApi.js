@@ -1,9 +1,10 @@
+import { API_BASE } from '../config/api'
 
 
 
 async function addCustomer(username,surname,phone) {
     try {
-        let response = await fetch(`http://localhost:3000/customer/add`, {
+        let response = await fetch(`${API_BASE}/customer/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -35,7 +36,7 @@ async function addCustomer(username,surname,phone) {
 // paketning natijasi (nechta yozildi, qaysi qator xato) kerak boʻladi.
 async function importCustomers(items) {
 
-    const response = await fetch(`http://localhost:3000/customer/import`, {
+    const response = await fetch(`${API_BASE}/customer/import`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -75,7 +76,7 @@ async function updateCustomer(
     if (phone) body.phone = phone;
    
 
-    const response = await fetch(`http://localhost:3000/customer/update/${id}`, {
+    const response = await fetch(`${API_BASE}/customer/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -96,7 +97,7 @@ async function deleteCustomer(id){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/customer/delete/${id}`,{ 
+        let response = await fetch(`${API_BASE}/customer/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -119,7 +120,7 @@ async function getAllUsersPagination(page,limit){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/user/allpag?page=${page}&limit=10`,{ 
+        let response = await fetch(`${API_BASE}/user/allpag?page=${page}&limit=10`,{ 
             method:"GET"
 
         });
@@ -143,7 +144,7 @@ async function getAllCustomersPaginationSearch(page,limit,search){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
             method:"GET"
 
         });

@@ -1,4 +1,4 @@
-import { unitPrice } from './pricing'
+import { priceChange, unitPrice } from './pricing'
 
 /**
  * Savatni PNG rasm qilib chizadi va clipboard ga yozadi — mijozga
@@ -24,6 +24,7 @@ const COLORS = {
 }
 
 const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
+const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString('uz')}`
 
 function fontFamily() {
   return getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif'
@@ -68,16 +69,21 @@ function renderCartImage(orderList, priceField) {
       item,
       price,
       sum: price * item.quantity,
+      // Savatda qoʻlda oʻzgartirilgan narxning odatiy narxdan farqi (1 dona uchun).
+      change: priceChange(item, priceField),
       lines: wrapText(ctx, item.name, NAME_W),
     }
   })
 
   const total = rows.reduce((sum, row) => sum + row.sum, 0)
   const count = orderList.reduce((sum, item) => sum + item.quantity, 0)
+  const changeTotal = rows.reduce((sum, row) => sum + row.change * row.item.quantity, 0)
 
   const HEADER_H = 74
-  const FOOTER_H = 90
-  const rowHeight = (row) => Math.max(row.lines.length * LINE_H, LINE_H * 2) + 20
+  const CHANGE_H = changeTotal !== 0 ? 24 : 0
+  const FOOTER_H = 90 + CHANGE_H
+  // Oʻng ustun: summa, «son × narx» va (oʻzgargan boʻlsa) «было … · farq».
+  const rowHeight = (row) => Math.max(row.lines.length, row.change !== 0 ? 3 : 2) * LINE_H + 20
   const height = HEADER_H + rows.reduce((sum, row) => sum + rowHeight(row), 0) + FOOTER_H
 
   const canvas = document.createElement('canvas')
@@ -130,6 +136,15 @@ function renderCartImage(orderList, priceField) {
       right,
       top + LINE_H + 1,
     )
+    if (row.change !== 0) {
+      // Yuqoridagi «son × narx» qatori bilan bir xil rangda, biroz kichikroq.
+      g.font = font(400, 11)
+      g.fillText(
+        `было ${Number(row.item[priceField]).toLocaleString('uz')} · ${signed(row.change * row.item.quantity)}`,
+        right,
+        top + LINE_H * 2 + 1,
+      )
+    }
 
     y += rowHeight(row)
     divider(y)
@@ -140,14 +155,22 @@ function renderCartImage(orderList, priceField) {
   g.fillStyle = COLORS.muted
   g.font = font(400, 13)
   g.fillText(`Товаров: ${rows.length} · Всего: ${count} шт.`, PAD, y + 16)
+
+  if (changeTotal !== 0) {
+    g.fillText('Изменение цены', PAD, y + 40)
+    g.textAlign = 'right'
+    g.fillText(`${signed(changeTotal)} So'm`, WIDTH - PAD, y + 40)
+    g.textAlign = 'left'
+  }
+
   g.fillStyle = COLORS.fg
   g.font = font(700, 16)
-  g.fillText('ИТОГО', PAD, y + 46)
+  g.fillText('ИТОГО', PAD, y + 46 + CHANGE_H)
 
   g.textAlign = 'right'
   g.fillStyle = COLORS.accent
   g.font = font(800, 22)
-  g.fillText(money(total), WIDTH - PAD, y + 42)
+  g.fillText(money(total), WIDTH - PAD, y + 42 + CHANGE_H)
 
   return canvas
 }

@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api'
 
 
 
@@ -25,7 +26,7 @@ async function updateProduct(
     if (unit) body.unit = unit;
    
 
-    const response = await fetch(`http://localhost:3000/product/update/${id}`, {
+    const response = await fetch(`${API_BASE}/product/update/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -67,7 +68,7 @@ async function updateProductWImage(
       formData.append("image", image);
     }
 
-    const response = await fetch( `http://localhost:3000/product/update/${id}`,
+    const response = await fetch( `${API_BASE}/product/update/${id}`,
       {
         method: "PATCH",
         body: formData, 
@@ -88,7 +89,7 @@ async function deleteProduct(id){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/delete/${id}`,{ 
+        let response = await fetch(`${API_BASE}/product/delete/${id}`,{ 
             method:"DELETE"
 
         });
@@ -113,7 +114,7 @@ async function getAllProductPaginationSearch(page,limit,search,categoryId){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}`,{ 
+        let response = await fetch(`${API_BASE}/product/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${categoryId ? `&categoryId=${categoryId}` : ""}`,{ 
             method:"GET"
 
         });
@@ -137,7 +138,7 @@ async function getAllWareHouse(){
    
 
     try{
-        let response = await fetch(`http://localhost:3000/warehouse/all`,{ 
+        let response = await fetch(`${API_BASE}/warehouse/all`,{ 
             method:"GET"
 
         });
@@ -158,7 +159,7 @@ async function getAllWareHouse(){
 
 async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
     try {
-        let response = await fetch(`http://localhost:3000/product/add`, {
+        let response = await fetch(`${API_BASE}/product/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -192,7 +193,7 @@ async function addProduct(name,barCode,price,bulkPrice,buyPrice,categoryId) {
 // yuboriladi — backend uni bitta soʻrovda yechadi (va kerak boʻlsa yaratadi).
 async function importProducts(items, createMissingCategories, warehouseId) {
 
-    const response = await fetch(`http://localhost:3000/product/import`, {
+    const response = await fetch(`${API_BASE}/product/import`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -217,7 +218,7 @@ async function importProducts(items, createMissingCategories, warehouseId) {
 
 async function addStock(productId,warehouseId,userId,quantity) {
     try {
-        let response = await fetch(`http://localhost:3000/stock/add`, {
+        let response = await fetch(`${API_BASE}/stock/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

@@ -12,8 +12,8 @@ import { stockOf } from './pricing'
  * Savatga qoʻshish uchun mahsulot tanlagich.
  *
  * - `onlyStocked` — faqat omborda yozuvi bor mahsulotlar koʻrsatiladi;
- * - `autoAddSingle` — qidiruv (masalan, shtrixkod skaneri) bitta natija qaytarsa,
- *   u darhol savatga tushadi.
+ * - `autoAddSingle` — kiritilgan matn mahsulot shtrixkodiga aynan teng boʻlsa
+ *   (shtrixkod skaneri), u darhol savatga tushadi. Nom yozilganda ishlamaydi.
  */
 function ProductPicker({
   fetchProducts,
@@ -70,28 +70,43 @@ function ProductPicker({
   }
 
   useEffect(() => {
+    // Keyinroq yuborilgan qidiruvning javobi oldinroq kelsa, eski javob
+    // yangisining ustiga yozilmasin.
+    let stale = false
+
     async function loadProducts() {
       try {
         setShowLoad(true)
         // `onlyStocked` backend da filtrlanadi — sahifalash faqat omborli tovarlar boʻyicha.
         const page = await fetchProducts(active, 20, debouncedSearch, categoryId, onlyStocked)
+        if (stale) return
         setPageCount(page.meta.totalPages)
         setProductList(page.data)
         setShowLoad(false)
 
-        // Faqat qidiruv (skaner) natijasi uchun: aks holda omborda bitta mahsulot
-        // boʻlsa, u sahifa ochilishi bilanoq savatga tushib qoladi.
-        if (autoAddSingle && debouncedSearch.trim() && page.data.length === 1) {
-          addProductToOrder(page.data[0])
+        // Faqat shtrixkod aynan mos kelsa (skaner). Nom yozilayotganda bitta natija
+        // qolsa ham qoʻshilmaydi — aks holda tovar savatga oʻz-oʻzidan tushib,
+        // qidiruv tozalanib ketadi.
+        const code = debouncedSearch.trim().toLowerCase()
+        const scanned =
+          autoAddSingle && code
+            ? page.data.find((p) => `${p.barCode ?? ''}`.trim().toLowerCase() === code)
+            : null
+        if (scanned) {
+          addProductToOrder(scanned)
           setSearchTerm('')
         }
       } catch (error) {
+        if (stale) return
         console.log(error.message)
         setShowRes(true)
         setShowLoad(false)
       }
     }
     loadProducts()
+    return () => {
+      stale = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, debouncedSearch, categoryId])
 
