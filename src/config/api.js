@@ -6,12 +6,15 @@ const SERVER_KEYS = [KEY_MODE, KEY_HOST, KEY_API_PORT, KEY_LOCAL_PORT]
 
 const DEFAULT_PORT = '3000'
 
+/** Foydalanuvchi sozlama saqlamagan bo'lsa ishlatiladigan markaziy server ("IPv4:port"). */
+const DEFAULT_SERVER = '129.101.114.113:3000'
+
 /**
- * Build vaqtida beriladigan standart server ("IPv4:port"). Electron build
- * (ElectronJS_ERP_System/scripts/prepare.js) uni markaziy serverga qo'yadi;
- * veb build'da bo'sh — u holda standart rejim Local.
+ * Standart server. Build vaqtida VITE_DEFAULT_API bilan almashtirish mumkin (Electron build,
+ * ElectronJS_ERP_System/scripts/prepare.js, shu orqali beradi); bo'lmasa — DEFAULT_SERVER.
+ * Foydalanuvchi ⚙ dan Local rejimiga o'tsa, tanlovi saqlanadi va shu ustun turadi.
  */
-const [BUILD_HOST = '', BUILD_PORT = ''] = (import.meta.env?.VITE_DEFAULT_API ?? '').split(':')
+const [BUILD_HOST = '', BUILD_PORT = ''] = (import.meta.env?.VITE_DEFAULT_API || DEFAULT_SERVER).split(':')
 
 // Server almashganda eski serverning foydalanuvchi ma'lumoti yaroqsiz boʻladi.
 const SESSION_KEYS = ['username', 'surname', 'userid', 'role']
