@@ -65,36 +65,44 @@ function YearCalendar({ initialYear, onSelectDay }) {
 
   const today = shown?.today
   const fill = (lvl) => (lvl > 0 ? `rgb(${c.primaryRgb} / ${LEVEL_ALPHA[lvl]})` : undefined)
+  // Oldingi yil — faqat birinchi savdo yiligacha, keyingisi — joriy yilgacha (kelajak bo'sh).
   const canPrev = shown ? year > shown.firstYear : false
   const canNext = shown ? year < shown.lastYear : false
+  // Nofaol tugmada title ko'rinmasligi mumkin — izoh o'rab turgan span'da.
+  const prevHint = canPrev ? 'Предыдущий год' : shown ? `Продаж раньше ${shown.firstYear} г. нет` : ''
+  const nextHint = canNext ? 'Следующий год' : 'Следующий год ещё не наступил'
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex items-center gap-1">
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            icon
-            aria-label="Предыдущий год"
-            disabled={!canPrev || loading}
-            onClick={() => setYear((y) => y - 1)}
-          >
-            <ChevronLeft />
-          </Button>
+          <span title={prevHint} className="inline-flex">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              icon
+              aria-label="Предыдущий год"
+              disabled={!canPrev || loading}
+              onClick={() => setYear((y) => y - 1)}
+            >
+              <ChevronLeft />
+            </Button>
+          </span>
           <span className="min-w-14 text-center text-sm font-semibold tabular-nums text-fg" aria-live="polite">
             {year}
           </span>
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            icon
-            aria-label="Следующий год"
-            disabled={!canNext || loading}
-            onClick={() => setYear((y) => y + 1)}
-          >
-            <ChevronRight />
-          </Button>
+          <span title={nextHint} className="inline-flex">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              icon
+              aria-label="Следующий год"
+              disabled={!canNext || loading}
+              onClick={() => setYear((y) => y + 1)}
+            >
+              <ChevronRight />
+            </Button>
+          </span>
         </div>
 
         <div role="group" aria-label="Показатель" className="inline-flex rounded-lg border border-line bg-surface-2 p-0.5">
@@ -115,6 +123,11 @@ function YearCalendar({ initialYear, onSelectDay }) {
         </div>
 
         {loading && <Spinner size="sm" />}
+
+        {/* Ikkala tugma ham nofaol bo'lsa — sababi ko'rinsin (xato emas). */}
+        {shown && !canPrev && !canNext && (
+          <span className="text-[11px] text-subtle">Прошлых лет с продажами нет</span>
+        )}
 
         {shown && (
           <p className="ml-auto text-xs text-muted">

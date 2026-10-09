@@ -498,6 +498,40 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
         </div>
 
         <div className="flex flex-col gap-4">
+          {/* Amallar ro'yxat tepasida: holatni o'zgartirish uchun pastga aylantirish shart emas. */}
+          {isActive && (
+            <div className="flex flex-wrap items-center gap-2">
+              {(NEXT_ACTIONS[order.status] ?? []).map((action) => (
+                <Button
+                  key={action.status}
+                  variant={action.variant}
+                  disabled={busy}
+                  onClick={() => changeStatus(action.status)}
+                >
+                  {action.label}
+                </Button>
+              ))}
+              <Button variant="primary" onClick={toSale} disabled={busy || !goTo}>
+                <ShoppingBag />
+                Оформить продажу
+              </Button>
+              <Button
+                variant="outline-danger"
+                className="ml-auto"
+                disabled={busy}
+                onClick={() => setConfirmCancel(true)}
+              >
+                Отменить заказ
+              </Button>
+            </div>
+          )}
+
+          {order.status === 'completed' && (
+            <Alert variant="success">
+              Заказ выдан{order.sale ? ` — продажа #${order.sale.id}` : ''}.
+            </Alert>
+          )}
+
           <Card padded={false}>
             <Card.Header>
               <Card.Title>Товары</Card.Title>
@@ -541,39 +575,6 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
               <span className="font-semibold tabular-nums text-fg">{money(order.itemsTotal)}</span>
             </div>
           </Card>
-
-          {order.status === 'completed' && (
-            <Alert variant="success">
-              Заказ выдан{order.sale ? ` — продажа #${order.sale.id}` : ''}.
-            </Alert>
-          )}
-
-          {isActive && (
-            <div className="flex flex-wrap items-center gap-2">
-              {(NEXT_ACTIONS[order.status] ?? []).map((action) => (
-                <Button
-                  key={action.status}
-                  variant={action.variant}
-                  disabled={busy}
-                  onClick={() => changeStatus(action.status)}
-                >
-                  {action.label}
-                </Button>
-              ))}
-              <Button variant="primary" onClick={toSale} disabled={busy || !goTo}>
-                <ShoppingBag />
-                Оформить продажу
-              </Button>
-              <Button
-                variant="outline-danger"
-                className="ml-auto"
-                disabled={busy}
-                onClick={() => setConfirmCancel(true)}
-              >
-                Отменить заказ
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
