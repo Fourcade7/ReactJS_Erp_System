@@ -17,6 +17,7 @@ import { Badge, Button, Card, Form, Modal } from '../ui'
 import { ResultModal } from '../utils/StatusModals'
 import { roundQty } from '../lib/quantity'
 import SaleReturnModal from './SaleReturnModal'
+import { t, td } from '../i18n'
 
 const PAYMENT_ICONS = {
   Наличные: Banknote,
@@ -91,14 +92,14 @@ function TransactionDetail({
       <div className="flex flex-wrap items-center gap-3">
         <Button variant="outline-secondary" size="sm" onClick={() => setActiveTab('home')}>
           <ArrowLeft />
-          Назад
+          {t('Назад')}
         </Button>
         <h3 className="flex items-center gap-2 text-sm font-semibold text-fg">
           {Icon && <Icon className="size-4 text-primary" />}
           {label} #{sale.id}
         </h3>
         <Badge bg={settled ? 'success' : 'danger'} dot className="ml-auto">
-          {settled ? 'Оплачено' : 'Есть долг'}
+          {settled ? t('Оплачено') : t('Есть долг')}
         </Badge>
       </div>
 
@@ -106,19 +107,19 @@ function TransactionDetail({
         <div className="flex flex-col gap-4">
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Ответственный</Card.Title>
+              <Card.Title>{t('Ответственный')}</Card.Title>
             </Card.Header>
             <div className="divide-y divide-line px-4">
-              <InfoRow icon={UserRound} label="Имя">
+              <InfoRow icon={UserRound} label={t('Имя')}>
                 {sale.user?.username} {sale.user?.surname}
               </InfoRow>
               <InfoRow icon={Mail} label="Email">
                 {sale.user?.email}
               </InfoRow>
-              <InfoRow icon={Phone} label="Телефон">
+              <InfoRow icon={Phone} label={t('Телефон')}>
                 {sale.user?.phone}
               </InfoRow>
-              <InfoRow icon={CalendarClock} label="Дата и время">
+              <InfoRow icon={CalendarClock} label={t('Дата и время')}>
                 {new Date(sale.date).toLocaleString('uz')}
               </InfoRow>
             </div>
@@ -126,15 +127,15 @@ function TransactionDetail({
 
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Контрагент</Card.Title>
+              <Card.Title>{t('Контрагент')}</Card.Title>
             </Card.Header>
             <div className="divide-y divide-line px-4">
-              <InfoRow icon={UserRound} label="Имя">
+              <InfoRow icon={UserRound} label={t('Имя')}>
                 {sale.customer
                   ? `${sale.customer.username} ${sale.customer.surname}`
-                  : 'Не указан'}
+                  : t('Не указан')}
               </InfoRow>
-              <InfoRow icon={Phone} label="Телефон">
+              <InfoRow icon={Phone} label={t('Телефон')}>
                 {sale.customer?.phone ?? '—'}
               </InfoRow>
             </div>
@@ -144,8 +145,8 @@ function TransactionDetail({
         <div className="flex flex-col gap-4">
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Список продуктов</Card.Title>
-              <span className="text-[11px] text-subtle">{sale.items.length} поз.</span>
+              <Card.Title>{t('Список продуктов')}</Card.Title>
+              <span className="text-[11px] text-subtle">{t('{length} поз.', { length: sale.items.length })}</span>
             </Card.Header>
             <ul className="m-0 list-none divide-y divide-line p-0">
               {sale.items.map((item, index) => {
@@ -159,21 +160,20 @@ function TransactionDetail({
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-medium text-fg">
-                        {item.product?.name ?? 'Товар удалён'}
+                        {item.product?.name ?? t('Товар удалён')}
                       </p>
                       <p className="flex flex-wrap items-center gap-1 text-[11px] text-subtle">
                         <Warehouse className="size-3" />
                         {item.warehouse?.name}
                         {item.checkPrice && (
                           <Badge bg="warning" className="ml-1 py-0 text-[10px]">
-                            Оптом
+                            {t('Оптом')}
                           </Badge>
                         )}
                         {returned > 0 && (
                           <Badge bg="warning" className="ml-1 py-0 text-[10px] tabular-nums">
                             <Undo2 />
-                            Возвращено: {returned} шт.
-                            {returnable > 0 && ` · осталось ${returnable}`}
+                            {t('Возвращено: {returned} шт. {v}', { returned, v: returnable > 0 && t(' · осталось {returnable}', { returnable }) })}
                           </Badge>
                         )}
                       </p>
@@ -190,10 +190,10 @@ function TransactionDetail({
                         size="sm"
                         disabled={returnable <= 0 || !item.product}
                         onClick={() => setReturnItem(item)}
-                        title={returnable > 0 ? 'Вернуть товар' : 'Товар возвращён полностью'}
+                        title={returnable > 0 ? t('Вернуть товар') : t('Товар возвращён полностью')}
                       >
                         <Undo2 />
-                        Возврат
+                        {t('Возврат')}
                       </Button>
                     )}
                   </li>
@@ -204,7 +204,7 @@ function TransactionDetail({
 
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Оплата</Card.Title>
+              <Card.Title>{t('Оплата')}</Card.Title>
             </Card.Header>
             <ul className="m-0 list-none divide-y divide-line p-0">
               {sale.payments.map((item, index) => {
@@ -227,7 +227,7 @@ function TransactionDetail({
                       <PayIcon className="size-3.5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-medium text-fg">{method}</p>
+                      <p className="text-[13px] font-medium text-fg">{td(method)}</p>
                       <p className="text-[11px] text-subtle">
                         {new Date(item.date).toLocaleString('uz')}
                       </p>
@@ -242,17 +242,17 @@ function TransactionDetail({
 
             <dl className="flex flex-col gap-1.5 border-t border-line bg-surface-2/60 px-4 py-3 text-[13px]">
               <div className="flex justify-between">
-                <dt className="text-subtle">Скидка</dt>
+                <dt className="text-subtle">{t('Скидка')}</dt>
                 <dd className="tabular-nums text-fg">
                   {sale.discount.toLocaleString('uz')} So&apos;m
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-subtle">Оплачено</dt>
+                <dt className="text-subtle">{t('Оплачено')}</dt>
                 <dd className="tabular-nums text-fg">{totalPayed.toLocaleString('uz')} So&apos;m</dd>
               </div>
               <div className="flex justify-between text-sm font-semibold">
-                <dt className="text-fg">Общая стоимость</dt>
+                <dt className="text-fg">{t('Общая стоимость')}</dt>
                 <dd className={cn('tabular-nums', settled ? 'text-fg' : 'text-danger-soft-fg')}>
                   {sale.total.toLocaleString('uz')} So&apos;m
                 </dd>
@@ -260,13 +260,13 @@ function TransactionDetail({
               {returnedTotal > 0 && (
                 <>
                   <div className="flex justify-between">
-                    <dt className="text-warning-soft-fg">Возвращено</dt>
+                    <dt className="text-warning-soft-fg">{t('Возвращено')}</dt>
                     <dd className="tabular-nums text-warning-soft-fg">
                       −{returnedTotal.toLocaleString('uz')} So&apos;m
                     </dd>
                   </div>
                   <div className="flex justify-between font-semibold">
-                    <dt className="text-fg">Итого после возврата</dt>
+                    <dt className="text-fg">{t('Итого после возврата')}</dt>
                     <dd className="tabular-nums text-fg">
                       {(sale.total - sale.discount - returnedTotal).toLocaleString('uz')} So&apos;m
                     </dd>
@@ -275,7 +275,7 @@ function TransactionDetail({
               )}
               {!settled && (
                 <div className="flex justify-between text-xs">
-                  <dt className="text-danger-soft-fg">Остаток долга</dt>
+                  <dt className="text-danger-soft-fg">{t('Остаток долга')}</dt>
                   <dd className="tabular-nums text-danger-soft-fg">
                     {remaining.toLocaleString('uz')} So&apos;m
                   </dd>
@@ -295,7 +295,7 @@ function TransactionDetail({
               }}
             >
               <Wallet />
-              Оплата долга
+              {t('Оплата долга')}
             </Button>
           )}
         </div>
@@ -303,24 +303,24 @@ function TransactionDetail({
 
       <Modal show={showDebtEdit} onHide={() => setShowDebtEdit(false)} size="sm" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Оплата долга</Modal.Title>
+          <Modal.Title>{t('Оплата долга')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group controlId="debtAmount">
-            <Form.Label>Сумма</Form.Label>
+            <Form.Label>{t('Сумма')}</Form.Label>
             <Form.Control
               inputMode="decimal"
-              placeholder="Введите сумму"
+              placeholder={t('Введите сумму')}
               value={debtAmount}
               onChange={(e) => setDebtAmount(e.target.value)}
             />
-            <Form.Text>Остаток долга: {remaining.toLocaleString('uz')} So&apos;m</Form.Text>
+            <Form.Text>{t("Остаток долга: {amount} So'm", { amount: remaining.toLocaleString('uz') })}</Form.Text>
             {debtError && <p className="mt-1.5 text-[12px] text-danger-soft-fg">{debtError}</p>}
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDebtEdit(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
@@ -328,11 +328,11 @@ function TransactionDetail({
             onClick={async () => {
               const amount = Math.round(Number(`${debtAmount}`.replace(/\s/g, '').replace(',', '.')))
               if (!Number.isFinite(amount) || amount <= 0) {
-                setDebtError('Введите сумму больше нуля')
+                setDebtError(t('Введите сумму больше нуля'))
                 return
               }
               if (amount > remaining) {
-                setDebtError('Сумма больше остатка долга')
+                setDebtError(t('Сумма больше остатка долга'))
                 return
               }
 
@@ -350,13 +350,13 @@ function TransactionDetail({
                 setShowDebtEdit(false)
                 setActiveTab('home')
               } catch {
-                setDebtError('Не удалось подключиться к серверу')
+                setDebtError(t('Не удалось подключиться к серверу'))
               } finally {
                 setDebtSaving(false)
               }
             }}
           >
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -372,8 +372,8 @@ function TransactionDetail({
             setReloadKey((k) => k + 1)
             setReturnDone(
               result.offset > 0
-                ? `Возврат оформлен: ${result.value.toLocaleString('uz')} So'm (с долга списано ${result.offset.toLocaleString('uz')})`
-                : `Возврат оформлен: ${result.value.toLocaleString('uz')} So'm`,
+                ? t("Возврат оформлен: {amount} So'm (с долга списано {offset})", { amount: result.value.toLocaleString('uz'), offset: result.offset.toLocaleString('uz') })
+                : t("Возврат оформлен: {amount} So'm", { amount: result.value.toLocaleString('uz') }),
             )
           }}
         />

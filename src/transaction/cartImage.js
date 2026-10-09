@@ -1,4 +1,5 @@
 import { priceChange, unitPrice } from './pricing'
+import { locale, t } from '../i18n'
 
 /**
  * Savatni PNG rasm qilib chizadi va clipboard ga yozadi — mijozga
@@ -99,10 +100,10 @@ function renderCartImage(orderList, priceField) {
   // Sarlavha
   g.fillStyle = COLORS.fg
   g.font = font(700, 20)
-  g.fillText('Список товаров', PAD, PAD)
+  g.fillText(t('Список товаров'), PAD, PAD)
   g.fillStyle = COLORS.muted
   g.font = font(400, 13)
-  g.fillText(new Date().toLocaleString('ru-RU'), PAD, PAD + 28)
+  g.fillText(new Date().toLocaleString(locale), PAD, PAD + 28)
 
   let y = HEADER_H
   const divider = (atY) => {
@@ -130,7 +131,7 @@ function renderCartImage(orderList, priceField) {
     g.fillText(money(row.sum), right, top)
     g.fillStyle = COLORS.muted
     g.font = font(400, 12)
-    const wholesale = row.item.checkPrice ? ' (опт)' : ''
+    const wholesale = row.item.checkPrice ? t(' (опт)') : ''
     g.fillText(
       `${row.item.quantity} × ${Number(row.price).toLocaleString('uz')}${wholesale}`,
       right,
@@ -140,7 +141,7 @@ function renderCartImage(orderList, priceField) {
       // Yuqoridagi «son × narx» qatori bilan bir xil rangda, biroz kichikroq.
       g.font = font(400, 11)
       g.fillText(
-        `было ${Number(row.item[priceField]).toLocaleString('uz')} · ${signed(Math.round(row.change * row.item.quantity))}`,
+        t('было {price} · {change}', { price: Number(row.item[priceField]).toLocaleString('uz'), change: signed(Math.round(row.change * row.item.quantity)) }),
         right,
         top + LINE_H * 2 + 1,
       )
@@ -154,10 +155,10 @@ function renderCartImage(orderList, priceField) {
   g.textAlign = 'left'
   g.fillStyle = COLORS.muted
   g.font = font(400, 13)
-  g.fillText(`Товаров: ${rows.length} · Всего: ${count} шт.`, PAD, y + 16)
+  g.fillText(t('Товаров: {length} · Всего: {count} шт.', { length: rows.length, count }), PAD, y + 16)
 
   if (changeTotal !== 0) {
-    g.fillText('Изменение цены', PAD, y + 40)
+    g.fillText(t('Изменение цены'), PAD, y + 40)
     g.textAlign = 'right'
     g.fillText(`${signed(changeTotal)} So'm`, WIDTH - PAD, y + 40)
     g.textAlign = 'left'
@@ -165,7 +166,7 @@ function renderCartImage(orderList, priceField) {
 
   g.fillStyle = COLORS.fg
   g.font = font(700, 16)
-  g.fillText('ИТОГО', PAD, y + 46 + CHANGE_H)
+  g.fillText(t('ИТОГО'), PAD, y + 46 + CHANGE_H)
 
   g.textAlign = 'right'
   g.fillStyle = COLORS.accent

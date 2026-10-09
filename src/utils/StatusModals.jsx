@@ -1,11 +1,12 @@
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Modal, ProgressBar, Spinner } from '../ui'
+import { t } from '../i18n'
 
 /**
  * Soʻrov bajarilayotganda koʻrsatiladigan modal.
  * Barcha boʻlimlarda bir xil koʻrinishda boʻlishi uchun shu yerda saqlanadi.
  */
-function LoadingModal({ show, onHide, title = 'Загрузка...', text = 'Пожалуйста, подождите' }) {
+function LoadingModal({ show, onHide, title = t('Загрузка...'), text = t('Пожалуйста, подождите') }) {
   return (
     <Modal show={show} onHide={onHide} size="sm" centered>
       <Modal.Header closeButton>
@@ -25,7 +26,7 @@ function ResultModal({ show, onHide, success, message }) {
   return (
     <Modal show={show} onHide={onHide} size="sm" centered>
       <Modal.Header closeButton>
-        <Modal.Title>{success ? 'Готово' : 'Ошибка'}</Modal.Title>
+        <Modal.Title>{success ? t('Готово') : t('Ошибка')}</Modal.Title>
       </Modal.Header>
       <div className="flex flex-col items-center gap-3 px-5 pb-6 pt-2 text-center">
         <span

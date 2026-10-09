@@ -29,22 +29,23 @@ import {
   importCategories,
   updateCategory,
 } from './CategoryApi'
+import { t } from '../i18n'
 
 const CATEGORY_IMPORT_FIELDS = [
   {
     key: 'name',
-    label: 'Название',
+    label: t('Название'),
     required: true,
-    aliases: ['название', 'наименование', 'категория', 'группа', 'name', 'category'],
+    aliases: ['название', 'наименование', 'категория', 'группа', 'name', 'category', 'nomi', 'nom', 'kategoriya', 'guruh'],
   },
 ]
 
 const CATEGORY_EXPORT_COLUMNS = [
-  { key: 'name', label: 'Название' },
-  { key: 'products', label: 'Товаров', value: (row) => row.products?.length ?? 0 },
+  { key: 'name', label: t('Название') },
+  { key: 'products', label: t('Товаров'), value: (row) => row.products?.length ?? 0 },
   {
     key: 'date',
-    label: 'Дата создания',
+    label: t('Дата создания'),
     value: (row) => new Date(row.date).toLocaleString('uz'),
   },
 ]
@@ -55,7 +56,7 @@ function CategoryList(props) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
-  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResTypeAlert, setShowResTypeAlert] = useState(false)
 
   const [cid, setCid] = useState(-1)
@@ -88,7 +89,7 @@ function CategoryList(props) {
     exportToExcel({
       fetchRows: async () => categoryList,
       columns: CATEGORY_EXPORT_COLUMNS,
-      fileName: 'Категории.xlsx',
+      fileName: t('Категории.xlsx'),
     })
 
   return (
@@ -102,8 +103,8 @@ function CategoryList(props) {
       {categoryList.length === 0 ? (
         <EmptyState
           icon={Tags}
-          title="Категорий пока нет"
-          description="Добавьте первую категорию на соседней вкладке, чтобы начать раскладывать товары по группам."
+          title={t('Категорий пока нет')}
+          description={t('Добавьте первую категорию на соседней вкладке, чтобы начать раскладывать товары по группам.')}
         />
       ) : (
         <ListGroup as="ol">
@@ -146,7 +147,7 @@ function CategoryList(props) {
                         setCname(category.name)
                       }}
                     >
-                      Изменить
+                      {t('Изменить')}
                     </Dropdown.Item>
                     <Dropdown.Item
                       variant="danger"
@@ -156,7 +157,7 @@ function CategoryList(props) {
                         setCid(category.id)
                       }}
                     >
-                      Удалить
+                      {t('Удалить')}
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -169,14 +170,14 @@ function CategoryList(props) {
       {/* Изменить */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Редактировать</Modal.Title>
+          <Modal.Title>{t('Редактировать')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group controlId="editCategoryName">
-            <Form.Label>Название категории</Form.Label>
+            <Form.Label>{t('Название категории')}</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Введите имя"
+              placeholder={t('Введите имя')}
               value={cName}
               onChange={(e) => setCname(e.target.value)}
             />
@@ -184,7 +185,7 @@ function CategoryList(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
@@ -192,7 +193,7 @@ function CategoryList(props) {
               setShowResTypeAlert(false)
               setShowEdit(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await updateCategory(cid, cName)
               const data = await res.json()
@@ -203,14 +204,14 @@ function CategoryList(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResTypeAlert(true)
-                setShowResTitle('Категория успешно обновлена')
+                setShowResTitle(t('Категория успешно обновлена'))
               }
 
               setShowRes(true)
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -218,18 +219,18 @@ function CategoryList(props) {
       {/* Удалить */}
       <Modal show={showDel} onHide={() => setShowDel(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить</Modal.Title>
+          <Modal.Title>{t('Удалить')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Body>{t('Вы уверены, что хотите его удалить?')}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="danger"
             onClick={async () => {
               setShowResTypeAlert(false)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
               setShowDel(false)
               setShowLoad(true)
 
@@ -238,7 +239,7 @@ function CategoryList(props) {
 
               setShowResTypeAlert(res.ok)
 
-              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
               setTimeout(() => {
                 setShowLoad(false)
                 setShowResTitle(deleteResponse.message)
@@ -246,7 +247,7 @@ function CategoryList(props) {
               }, 2000)
             }}
           >
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -263,7 +264,7 @@ function CategoryList(props) {
       {showImport && (
         <ImportModal
           onHide={() => setShowImport(false)}
-          entityTitle="категории"
+          entityTitle={t('категории')}
           fields={CATEGORY_IMPORT_FIELDS}
           onImportChunk={importCategories}
           onFinished={() => setReloadKey((k) => k + 1)}
@@ -297,13 +298,13 @@ function CategoryAdd(props) {
       } else {
         setShowSuccess(true)
         psetShow(false)
-        setAlertMessage('Успешно...')
+        setAlertMessage(t('Успешно...'))
         const timer = setTimeout(() => props.tabChange('home'), 2000)
         return () => clearTimeout(timer)
       }
     } catch {
       setShowDanger(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
       psetShow(false)
     }
   }
@@ -327,19 +328,19 @@ function CategoryAdd(props) {
         className="flex flex-col gap-3"
       >
         <Form.Group controlId="newCategoryName">
-          <Form.Label>Название категории</Form.Label>
+          <Form.Label>{t('Название категории')}</Form.Label>
           <Form.Control
             type="text"
             value={wname}
             onChange={(e) => setWname(e.target.value)}
-            placeholder="Введите имя"
+            placeholder={t('Введите имя')}
           />
-          <Form.Text>Например: «Напитки», «Бытовая химия», «Канцелярия».</Form.Text>
+          <Form.Text>{t('Например: «Напитки», «Бытовая химия», «Канцелярия».')}</Form.Text>
         </Form.Group>
 
         <Button type="submit" loading={pshow} block>
           {!pshow && <Save />}
-          Сохранить
+          {t('Сохранить')}
         </Button>
       </Form>
     </div>
@@ -357,7 +358,7 @@ function CategoryTab() {
         title={
           <>
             <Tags />
-            Список категорий
+            {t('Список категорий')}
           </>
         }
       >
@@ -376,7 +377,7 @@ function CategoryTab() {
         title={
           <>
             <Plus />
-            Добавить новую категорию
+            {t('Добавить новую категорию')}
           </>
         }
       >
@@ -406,8 +407,8 @@ function CategoryScreen() {
     <div>
       <PageHeader
         icon={Tags}
-        title="Категория"
-        description="Группы товаров, по которым строится номенклатура"
+        title={t('Категория')}
+        description={t('Группы товаров, по которым строится номенклатура')}
       />
       <CategoryTab />
     </div>

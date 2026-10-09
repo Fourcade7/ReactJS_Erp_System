@@ -37,22 +37,23 @@ import {
   getMasterOrders,
   setMasterOrderStatus,
 } from './MasterOrderApi'
+import { t, td } from '../i18n'
 
 const STATUS = {
-  new: { label: 'Новый', tone: 'info' },
-  preparing: { label: 'В работе', tone: 'warning' },
-  ready: { label: 'Готов', tone: 'success' },
-  completed: { label: 'Завершён', tone: 'neutral' },
-  cancelled: { label: 'Отменён', tone: 'danger' },
+  new: { label: t('Новый'), tone: 'info' },
+  preparing: { label: t('В работе'), tone: 'warning' },
+  ready: { label: t('Готов'), tone: 'success' },
+  completed: { label: t('Завершён'), tone: 'neutral' },
+  cancelled: { label: t('Отменён'), tone: 'danger' },
 }
 
 const FILTERS = [
-  { key: '', label: 'Все' },
-  { key: 'new', label: 'Новые' },
-  { key: 'preparing', label: 'В работе' },
-  { key: 'ready', label: 'Готовы' },
-  { key: 'completed', label: 'Завершённые' },
-  { key: 'cancelled', label: 'Отменённые' },
+  { key: '', label: t('Все') },
+  { key: 'new', label: t('Новые') },
+  { key: 'preparing', label: t('В работе') },
+  { key: 'ready', label: t('Готовы') },
+  { key: 'completed', label: t('Завершённые') },
+  { key: 'cancelled', label: t('Отменённые') },
 ]
 
 const ACTIVE = ['new', 'preparing', 'ready']
@@ -60,11 +61,11 @@ const ACTIVE = ['new', 'preparing', 'ready']
 /** Kassir holatni shu tugmalar bilan oldinga suradi. */
 const NEXT_ACTIONS = {
   new: [
-    { status: 'preparing', label: 'Взять в работу', variant: 'primary' },
-    { status: 'ready', label: 'Сразу готов', variant: 'outline-success' },
+    { status: 'preparing', label: t('Взять в работу'), variant: 'primary' },
+    { status: 'ready', label: t('Сразу готов'), variant: 'outline-success' },
   ],
-  preparing: [{ status: 'ready', label: 'Готов к выдаче', variant: 'success' }],
-  ready: [{ status: 'preparing', label: 'Вернуть в работу', variant: 'outline-secondary' }],
+  preparing: [{ status: 'ready', label: t('Готов к выдаче'), variant: 'success' }],
+  ready: [{ status: 'preparing', label: t('Вернуть в работу'), variant: 'outline-secondary' }],
 }
 
 const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
@@ -120,7 +121,7 @@ function MasterOrderList({ onOpen }) {
         setPageCount(result.meta.totalPages)
         setError('')
       } catch (e) {
-        if (!stale) setError(e.message || 'Не удалось подключиться к серверу')
+        if (!stale) setError(e.message || t('Не удалось подключиться к серверу'))
       } finally {
         if (!stale) setLoading(false)
       }
@@ -162,7 +163,7 @@ function MasterOrderList({ onOpen }) {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         onClear={() => setSearchTerm('')}
-        placeholder="Мастер, клиент, телефон или номер заказа..."
+        placeholder={t('Мастер, клиент, телефон или номер заказа...')}
       />
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -172,7 +173,7 @@ function MasterOrderList({ onOpen }) {
           <Spinner />
         </div>
       ) : orders.length === 0 ? (
-        <EmptyState icon={HardHat} title="Заказов нет" />
+        <EmptyState icon={HardHat} title={t('Заказов нет')} />
       ) : (
         <ul className="m-0 list-none divide-y divide-line overflow-hidden rounded-card border border-line bg-surface p-0 shadow-soft">
           {orders.map((order) => (
@@ -188,7 +189,7 @@ function MasterOrderList({ onOpen }) {
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px] font-medium text-fg">
-                    Заказ #{order.id} · {order.customerName}
+                    {t('Заказ #{id} · {customerName}', { id: order.id, customerName: order.customerName })}
                   </p>
                   <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-subtle">
                     <span className="inline-flex items-center gap-1">
@@ -211,7 +212,7 @@ function MasterOrderList({ onOpen }) {
                 <span className="hidden shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg sm:block">
                   {order.itemsTotal.toLocaleString('uz')}
                   <span className="ml-1 text-[11px] font-normal text-subtle">
-                    So&apos;m · {order.itemsCount} поз.
+                    {t("So'm · {itemsCount} поз.", { itemsCount: order.itemsCount })}
                   </span>
                 </span>
 
@@ -240,7 +241,7 @@ function CreateCustomerModal({ order, onHide, onCreated }) {
 
   const submit = async () => {
     if (!username.trim() || !phone.trim()) {
-      setError('Укажите имя и телефон')
+      setError(t('Укажите имя и телефон'))
       return
     }
     setSaving(true)
@@ -257,30 +258,30 @@ function CreateCustomerModal({ order, onHide, onCreated }) {
   return (
     <Modal show onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Новый контрагент</Modal.Title>
+        <Modal.Title>{t('Новый контрагент')}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="flex flex-col gap-3">
-        <p className="text-xs text-subtle">Данные взяты из заказа мастера — при необходимости исправьте.</p>
+        <p className="text-xs text-subtle">{t('Данные взяты из заказа мастера — при необходимости исправьте.')}</p>
         <Form.Group controlId="masterOrderCustomerName">
-          <Form.Label>Имя</Form.Label>
+          <Form.Label>{t('Имя')}</Form.Label>
           <Form.Control value={username} onChange={(e) => setUsername(e.target.value)} />
         </Form.Group>
         <Form.Group controlId="masterOrderCustomerSurname">
-          <Form.Label>Фамилия</Form.Label>
+          <Form.Label>{t('Фамилия')}</Form.Label>
           <Form.Control value={surname} onChange={(e) => setSurname(e.target.value)} />
         </Form.Group>
         <Form.Group controlId="masterOrderCustomerPhone">
-          <Form.Label>Телефон</Form.Label>
+          <Form.Label>{t('Телефон')}</Form.Label>
           <Form.Control type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
         </Form.Group>
         {error && <Alert variant="danger">{error}</Alert>}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={onHide}>
-          Отмена
+          {t('Отмена')}
         </Button>
         <Button loading={saving} onClick={submit}>
-          Создать
+          {t('Создать')}
         </Button>
       </Modal.Footer>
     </Modal>
@@ -304,7 +305,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
         if (!cancelled) setOrder(data)
       })
       .catch((e) => {
-        if (!cancelled) setError(e.message || 'Не удалось подключиться к серверу')
+        if (!cancelled) setError(e.message || t('Не удалось подключиться к серверу'))
       })
     return () => {
       cancelled = true
@@ -337,7 +338,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
       <div className="flex flex-col gap-4">
         <Button variant="outline-secondary" size="sm" onClick={onBack} className="self-start">
           <ArrowLeft />
-          Назад
+          {t('Назад')}
         </Button>
         {error ? (
           <Alert variant="danger">{error}</Alert>
@@ -369,7 +370,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
     try {
       setOrder(await setMasterOrderStatus(order.id, status))
     } catch (e) {
-      setError(e.message || 'Не удалось подключиться к серверу')
+      setError(e.message || t('Не удалось подключиться к серверу'))
     } finally {
       setBusy(false)
     }
@@ -391,11 +392,11 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
       <div className="flex flex-wrap items-center gap-3">
         <Button variant="outline-secondary" size="sm" onClick={onBack}>
           <ArrowLeft />
-          Назад
+          {t('Назад')}
         </Button>
         <h3 className="flex items-center gap-2 text-sm font-semibold text-fg">
           <HardHat className="size-4 text-primary" />
-          Заказ #{order.id}
+          {t('Заказ #{id}', { id: order.id })}
         </h3>
         <span className="ml-auto">
           <StatusBadge status={order.status} />
@@ -410,8 +411,8 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
 
       {isActive && shortItems.length > 0 && (
         <Alert variant="warning">
-          Не хватает на складе:{' '}
-          {shortItems.map((item) => `${item.product.name} (есть ${item.available})`).join(', ')}
+          {t('Не хватает на складе:')}{' '}
+          {shortItems.map((item) => t('{name} (есть {available})', { name: item.product.name, available: item.available })).join(', ')}
         </Alert>
       )}
 
@@ -419,16 +420,16 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
         <div className="flex flex-col gap-4">
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Мастер</Card.Title>
+              <Card.Title>{t('Мастер')}</Card.Title>
             </Card.Header>
             <div className="divide-y divide-line px-4">
-              <InfoRow icon={UserRound} label="Имя">
+              <InfoRow icon={UserRound} label={t('Имя')}>
                 {personName(order.master)}
               </InfoRow>
-              <InfoRow icon={Phone} label="Телефон">
+              <InfoRow icon={Phone} label={t('Телефон')}>
                 {order.master?.phone}
               </InfoRow>
-              <InfoRow icon={CalendarClock} label="Создан">
+              <InfoRow icon={CalendarClock} label={t('Создан')}>
                 {new Date(order.createdAt).toLocaleString('uz')}
               </InfoRow>
             </div>
@@ -436,40 +437,40 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
 
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Клиент</Card.Title>
+              <Card.Title>{t('Клиент')}</Card.Title>
             </Card.Header>
             <div className="divide-y divide-line px-4">
-              <InfoRow icon={UserRound} label="Имя">
+              <InfoRow icon={UserRound} label={t('Имя')}>
                 {order.customerName}
               </InfoRow>
-              <InfoRow icon={Phone} label="Телефон">
+              <InfoRow icon={Phone} label={t('Телефон')}>
                 {order.customerPhone}
               </InfoRow>
-              <InfoRow icon={MapPin} label="Адрес">
+              <InfoRow icon={MapPin} label={t('Адрес')}>
                 {order.address || '—'}
               </InfoRow>
               {order.mapUrl && (
-                <InfoRow icon={ExternalLink} label="Карта">
+                <InfoRow icon={ExternalLink} label={t('Карта')}>
                   <a
                     href={order.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary underline-offset-2 hover:underline"
                   >
-                    Открыть на карте
+                    {t('Открыть на карте')}
                   </a>
                 </InfoRow>
               )}
-              <InfoRow icon={Wrench} label="Услуга мастера">
+              <InfoRow icon={Wrench} label={t('Услуга мастера')}>
                 {money(order.serviceFee)}
-                <span className="ml-1 text-[11px] text-subtle">(отдельно, в чек не входит)</span>
+                <span className="ml-1 text-[11px] text-subtle">{t('(отдельно, в чек не входит)')}</span>
               </InfoRow>
             </div>
           </Card>
 
           {isActive && (
             <Card>
-              <p className="mb-2 text-xs font-medium text-muted">Контрагент</p>
+              <p className="mb-2 text-xs font-medium text-muted">{t('Контрагент')}</p>
               {!customerChecked ? (
                 <Spinner size="sm" />
               ) : customer ? (
@@ -480,7 +481,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
               ) : (
                 <div className="flex flex-col gap-2">
                   <p className="text-[13px] text-muted">
-                    Контрагента с таким телефоном ещё нет.
+                    {t('Контрагента с таким телефоном ещё нет.')}
                   </p>
                   <Button
                     variant="outline-primary"
@@ -489,7 +490,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
                     onClick={() => setShowCreate(true)}
                   >
                     <UserPlus />
-                    Создать контрагента
+                    {t('Создать контрагента')}
                   </Button>
                 </div>
               )}
@@ -513,7 +514,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
               ))}
               <Button variant="primary" onClick={toSale} disabled={busy || !goTo}>
                 <ShoppingBag />
-                Оформить продажу
+                {t('Оформить продажу')}
               </Button>
               <Button
                 variant="outline-danger"
@@ -521,21 +522,21 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
                 disabled={busy}
                 onClick={() => setConfirmCancel(true)}
               >
-                Отменить заказ
+                {t('Отменить заказ')}
               </Button>
             </div>
           )}
 
           {order.status === 'completed' && (
             <Alert variant="success">
-              Заказ выдан{order.sale ? ` — продажа #${order.sale.id}` : ''}.
+              {t('Заказ выдан{v}.', { v: order.sale ? t(' — продажа #{id}', { id: order.sale.id }) : '' })}
             </Alert>
           )}
 
           <Card padded={false}>
             <Card.Header>
-              <Card.Title>Товары</Card.Title>
-              <span className="text-[11px] text-subtle">{items.length} поз.</span>
+              <Card.Title>{t('Товары')}</Card.Title>
+              <span className="text-[11px] text-subtle">{t('{length} поз.', { length: items.length })}</span>
             </Card.Header>
             <ul className="m-0 list-none divide-y divide-line p-0">
               {items.map((item) => (
@@ -548,22 +549,22 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
                     <p className="flex flex-wrap items-center gap-1 text-[11px] text-subtle">
                       {item.bulk && (
                         <Badge bg="warning" className="py-0 text-[10px]">
-                          Оптом
+                          {t('Оптом')}
                         </Badge>
                       )}
                       <span className={cn(item.short && isActive && 'text-danger-soft-fg')}>
-                        на складе: {item.available} {item.product.unit}
+                        {t('на складе: {available} {unit}', { available: item.available, unit: td(item.product.unit) })}
                       </span>
                       {isActive && item.price !== item.currentPrice && (
                         <span className="text-warning-soft-fg">
-                          · цена сейчас {item.currentPrice.toLocaleString('uz')}
+                          {t('· цена сейчас {price}', { price: item.currentPrice.toLocaleString('uz') })}
                         </span>
                       )}
                     </p>
                   </div>
                   <span className="shrink-0 text-right text-[13px] tabular-nums">
                     <span className="text-subtle">
-                      {item.quantity} {item.product.unit} ×{' '}
+                      {item.quantity} {td(item.product.unit)} ×{' '}
                     </span>
                     <span className="font-semibold text-fg">{item.price.toLocaleString('uz')}</span>
                   </span>
@@ -571,7 +572,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
               ))}
             </ul>
             <div className="flex items-center justify-between border-t border-line px-4 py-3 text-[13px]">
-              <span className="text-muted">Сумма товаров</span>
+              <span className="text-muted">{t('Сумма товаров')}</span>
               <span className="font-semibold tabular-nums text-fg">{money(order.itemsTotal)}</span>
             </div>
           </Card>
@@ -591,12 +592,12 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
 
       <Modal show={confirmCancel} onHide={() => setConfirmCancel(false)} size="sm" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Отменить заказ?</Modal.Title>
+          <Modal.Title>{t('Отменить заказ?')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Заказ #{order.id} будет отменён, мастер увидит этот статус.</Modal.Body>
+        <Modal.Body>{t('Заказ #{id} будет отменён, мастер увидит этот статус.', { id: order.id })}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setConfirmCancel(false)}>
-            Назад
+            {t('Назад')}
           </Button>
           <Button
             variant="danger"
@@ -605,7 +606,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
               changeStatus('cancelled')
             }}
           >
-            Отменить заказ
+            {t('Отменить заказ')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -622,8 +623,8 @@ function MasterOrderScreen({ goTo }) {
     <div>
       <PageHeader
         icon={HardHat}
-        title="Заказы мастеров"
-        description="Заявки от мастеров: подготовьте товар до их прихода и оформите продажу"
+        title={t('Заказы мастеров')}
+        description={t('Заявки от мастеров: подготовьте товар до их прихода и оформите продажу')}
       />
       {openId === null ? (
         <MasterOrderList onOpen={setOpenId} />

@@ -9,6 +9,7 @@ import {
   AlertDismissibleSuccess,
   ProgressDismissible,
 } from '../utils/UtilsContent'
+import { t } from '../i18n'
 
 function ProductAdd(props) {
   const [pshow, psetShow] = useState(false)
@@ -61,7 +62,7 @@ function ProductAdd(props) {
       } else {
         setShowSuccess(true)
         psetShow(false)
-        setAlertMessage('Успешно...')
+        setAlertMessage(t('Успешно...'))
 
         // Keyingi mahsulotni darhol kiritish uchun. Kategoriya saqlanadi —
         // odatda bir guruh tovarlari ketma-ket kiritiladi.
@@ -74,7 +75,7 @@ function ProductAdd(props) {
       }
     } catch {
       setShowDanger(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
       psetShow(false)
     }
   }
@@ -97,23 +98,23 @@ function ProductAdd(props) {
         className="flex flex-col gap-3"
       >
         <Form.Group controlId="productName">
-          <Form.Label>Название</Form.Label>
+          <Form.Label>{t('Название')}</Form.Label>
           <Form.Control
             ref={nameRef}
-            placeholder="Введите имя"
+            placeholder={t('Введите имя')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </Form.Group>
 
         <Form.Group controlId="productCategory">
-          <Form.Label>Категория</Form.Label>
+          <Form.Label>{t('Категория')}</Form.Label>
           <Form.Select
             value={categoryId}
             onChange={(e) => setCategoryId(Number(e.target.value))}
           >
             <option value={-1} disabled>
-              Выберите категорию
+              {t('Выберите категорию')}
             </option>
             {categoryList?.map((category) => (
               <option key={category.id} value={category.id}>
@@ -125,7 +126,7 @@ function ProductAdd(props) {
 
         <div className="grid gap-3 sm:grid-cols-3">
           <Form.Group controlId="productPrice">
-            <Form.Label>Цена закупки</Form.Label>
+            <Form.Label>{t('Цена закупки')}</Form.Label>
             <Form.Control
               inputMode="decimal"
               placeholder="0"
@@ -134,7 +135,7 @@ function ProductAdd(props) {
             />
           </Form.Group>
           <Form.Group controlId="productBulkPrice">
-            <Form.Label>Цена оптом</Form.Label>
+            <Form.Label>{t('Цена оптом')}</Form.Label>
             <Form.Control
               inputMode="decimal"
               placeholder="0"
@@ -143,7 +144,7 @@ function ProductAdd(props) {
             />
           </Form.Group>
           <Form.Group controlId="productBuyPrice">
-            <Form.Label>Цена продажи</Form.Label>
+            <Form.Label>{t('Цена продажи')}</Form.Label>
             <Form.Control
               inputMode="decimal"
               placeholder="0"
@@ -154,10 +155,10 @@ function ProductAdd(props) {
         </div>
 
         <Form.Group controlId="productBarcode">
-          <Form.Label>Штрихкод (необязательно)</Form.Label>
+          <Form.Label>{t('Штрихкод (необязательно)')}</Form.Label>
           <Form.Control
             className="font-mono"
-            placeholder="Введите или отсканируйте штрихкод"
+            placeholder={t('Введите или отсканируйте штрихкод')}
             value={barCode}
             onChange={(e) => setBarcode(e.target.value)}
           />
@@ -165,7 +166,7 @@ function ProductAdd(props) {
 
         <Button type="submit" loading={pshow} block className="mt-1">
           {!pshow && <Save />}
-          Сохранить
+          {t('Сохранить')}
         </Button>
       </Form>
     </div>
@@ -182,7 +183,7 @@ function ProductTab() {
         title={
           <>
             <ListOrdered />
-            Список продуктов
+            {t('Список продуктов')}
           </>
         }
       >
@@ -194,7 +195,7 @@ function ProductTab() {
         title={
           <>
             <PackagePlus />
-            Добавить новый продукт
+            {t('Добавить новый продукт')}
           </>
         }
       >
@@ -209,8 +210,8 @@ function ProductScreen() {
     <div>
       <PageHeader
         icon={Package}
-        title="Продукты"
-        description="Номенклатура товаров, цены и штрихкоды"
+        title={t('Продукты')}
+        description={t('Номенклатура товаров, цены и штрихкоды')}
       />
       <ProductTab />
     </div>

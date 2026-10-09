@@ -1,5 +1,6 @@
 import { API_BASE } from '../config/api'
 import { addCustomer } from '../customers/CustomerApi'
+import { t } from '../i18n'
 
 const BASE = `${API_BASE}/master-order`
 
@@ -10,7 +11,7 @@ async function request(url, options) {
 
     if (!response.ok) {
         const message = Array.isArray(data?.message) ? data.message.join(', ') : data?.message
-        throw new Error(message || 'Ошибка сервера')
+        throw new Error(message || t('Ошибка сервера'))
     }
     return data
 }
@@ -59,12 +60,12 @@ async function findCustomerByPhone(phone) {
 /** Kontragent yaratadi (mavjud `addCustomer` orqali) va yaratilgan yozuvni qaytaradi. */
 async function createCustomerFromOrder(username, surname, phone) {
     const response = await addCustomer(username, surname, phone)
-    if (!response) throw new Error('Не удалось подключиться к серверу')
+    if (!response) throw new Error(t('Не удалось подключиться к серверу'))
 
     const data = await response.json().catch(() => null)
     if (!response.ok) {
         const message = Array.isArray(data?.message) ? data.message.join(', ') : data?.message
-        throw new Error(message || 'Не удалось создать контрагента')
+        throw new Error(message || t('Не удалось создать контрагента'))
     }
     return data
 }

@@ -1,3 +1,5 @@
+import { locale, t } from '../i18n'
+
 /** Donut uchun eng ko'pi 5 ta rangli segment; qolganlari bitta kulrang "Другие" ga yig'iladi. */
 export const MAX_COLORED = 5
 
@@ -28,7 +30,7 @@ export function toSegments(rows, { total, order } = {}) {
   let remainder = (total ?? 0) - rowsSum
   if (remainder <= Math.max(1, positive.length)) remainder = 0
 
-  const members = remainder > 0 ? [...folded, { key: '__rest__', label: 'Прочие', value: remainder }] : folded
+  const members = remainder > 0 ? [...folded, { key: '__rest__', label: t('Прочие'), value: remainder }] : folded
   const segments = colored.map((row, index) => ({ ...row, slot: index }))
   if (members.length === 1 && folded.length === 1) {
     // Bitta ortiqcha nom uchun "Другие" yaratmaymiz — o'z nomi bilan, kulrangda.
@@ -36,7 +38,7 @@ export function toSegments(rows, { total, order } = {}) {
   } else if (members.length) {
     segments.push({
       key: '__other__',
-      label: folded.length ? 'Другие' : 'Прочее',
+      label: folded.length ? t('Другие') : t('Прочее'),
       value: sum(members),
       slot: null,
       members: folded.length ? members : [],
@@ -50,5 +52,5 @@ export const share = (value, total) => (total > 0 ? (value / total) * 100 : 0)
 export const formatShare = (value, total) => {
   const pct = share(value, total)
   if (pct > 0 && pct < 0.1) return '<0,1%'
-  return `${pct.toLocaleString('ru-RU', { maximumFractionDigits: pct < 10 ? 1 : 0 })}%`
+  return `${pct.toLocaleString(locale, { maximumFractionDigits: pct < 10 ? 1 : 0 })}%`
 }

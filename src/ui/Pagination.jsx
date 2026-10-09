@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { cn } from '../lib/cn'
+import { t } from '../i18n'
 
 /** Joriy sahifa atrofida oyna + chetlarda ellipsis bilan sahifa raqamlari. */
 function buildPages(page, pageCount, siblings = 1) {
@@ -36,7 +37,7 @@ function Pagination({ page, pageCount: rawPageCount, onChange, siblings = 1, cla
 
   return (
     <nav
-      aria-label="Постраничная навигация"
+      aria-label={t('Постраничная навигация')}
       className={cn(
         'inline-flex items-center gap-1 rounded-xl border border-line bg-surface p-1 shadow-soft',
         className,
@@ -45,7 +46,7 @@ function Pagination({ page, pageCount: rawPageCount, onChange, siblings = 1, cla
     >
       <button
         type="button"
-        aria-label="Первая страница"
+        aria-label={t('Первая страница')}
         disabled={page === 1}
         onClick={() => go(1)}
         className={cn(cellBase, 'text-subtle hover:bg-surface-2 hover:text-fg')}
@@ -54,7 +55,7 @@ function Pagination({ page, pageCount: rawPageCount, onChange, siblings = 1, cla
       </button>
       <button
         type="button"
-        aria-label="Предыдущая страница"
+        aria-label={t('Предыдущая страница')}
         disabled={page === 1}
         onClick={() => go(page - 1)}
         className={cn(cellBase, 'text-subtle hover:bg-surface-2 hover:text-fg')}
@@ -88,7 +89,7 @@ function Pagination({ page, pageCount: rawPageCount, onChange, siblings = 1, cla
 
       <button
         type="button"
-        aria-label="Следующая страница"
+        aria-label={t('Следующая страница')}
         disabled={page === pageCount}
         onClick={() => go(page + 1)}
         className={cn(cellBase, 'text-subtle hover:bg-surface-2 hover:text-fg')}
@@ -97,7 +98,7 @@ function Pagination({ page, pageCount: rawPageCount, onChange, siblings = 1, cla
       </button>
       <button
         type="button"
-        aria-label="Последняя страница"
+        aria-label={t('Последняя страница')}
         disabled={page === pageCount}
         onClick={() => go(pageCount)}
         className={cn(cellBase, 'text-subtle hover:bg-surface-2 hover:text-fg')}

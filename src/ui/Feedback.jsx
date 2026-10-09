@@ -1,5 +1,6 @@
 import { Inbox } from 'lucide-react'
 import { cn } from '../lib/cn'
+import { t } from '../i18n'
 
 const spinnerSizes = {
   xs: 'size-3 border-[1.5px]',
@@ -17,7 +18,7 @@ const spinnerTones = {
 }
 
 /** Aylanuvchi yuklanish indikatori. */
-function Spinner({ size = 'md', variant = 'primary', className, label = 'Загрузка', ...props }) {
+function Spinner({ size = 'md', variant = 'primary', className, label = t('Загрузка'), ...props }) {
   return (
     <span
       role="status"

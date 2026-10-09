@@ -20,25 +20,26 @@ import {
   importCustomers,
   updateCustomer,
 } from './CustomerApi'
+import { t } from '../i18n'
 
 const CUSTOMER_IMPORT_FIELDS = [
-  { key: 'username', label: 'Имя', required: true, aliases: ['имя', 'name', 'firstname'] },
-  { key: 'surname', label: 'Фамилия', required: true, aliases: ['фамилия', 'surname', 'lastname'] },
+  { key: 'username', label: t('Имя'), required: true, aliases: ['имя', 'name', 'firstname', 'ism'] },
+  { key: 'surname', label: t('Фамилия'), required: true, aliases: ['фамилия', 'surname', 'lastname', 'familiya'] },
   {
     key: 'phone',
-    label: 'Телефон',
+    label: t('Телефон'),
     required: true,
-    aliases: ['телефон', 'тел', 'phone', 'номер', 'номер телефона'],
+    aliases: ['телефон', 'тел', 'phone', 'номер', 'номер телефона', 'telefon', 'raqam', 'telefon raqami'],
   },
 ]
 
 const CUSTOMER_EXPORT_COLUMNS = [
-  { key: 'username', label: 'Имя' },
-  { key: 'surname', label: 'Фамилия' },
-  { key: 'phone', label: 'Телефон' },
+  { key: 'username', label: t('Имя') },
+  { key: 'surname', label: t('Фамилия') },
+  { key: 'phone', label: t('Телефон') },
   {
     key: 'createdAt',
-    label: 'Дата регистрации',
+    label: t('Дата регистрации'),
     value: (row) => new Date(row.createdAt).toLocaleString('UZ'),
   },
 ]
@@ -49,7 +50,7 @@ function CustomerListGroup(props) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
-  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResAlert, setShowResAlert] = useState(false)
 
   const [userName, setUserName] = useState('')
@@ -106,7 +107,7 @@ function CustomerListGroup(props) {
           return result?.data ?? []
         },
         columns: CUSTOMER_EXPORT_COLUMNS,
-        fileName: 'Клиенты.xlsx',
+        fileName: t('Клиенты.xlsx'),
       })
     } catch (error) {
       console.log(error.message)
@@ -125,7 +126,7 @@ function CustomerListGroup(props) {
             setActive(1)
           }}
           onClear={() => setSearchTerm('')}
-          placeholder="Поиск по имени, фамилии или телефону..."
+          placeholder={t('Поиск по имени, фамилии или телефону...')}
           className="flex-1"
         />
         <ImportExportMenu
@@ -138,8 +139,8 @@ function CustomerListGroup(props) {
       {customerList.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="Клиенты не найдены"
-          description="Измените условия поиска или добавьте нового клиента на соседней вкладке."
+          title={t('Клиенты не найдены')}
+          description={t('Измените условия поиска или добавьте нового клиента на соседней вкладке.')}
         />
       ) : (
         <ListGroup as="ol">
@@ -184,7 +185,7 @@ function CustomerListGroup(props) {
                       setPhone(customer.phone)
                     }}
                   >
-                    <Pencil /> Изменить
+                    <Pencil /> {t('Изменить')}
                   </Dropdown.Item>
                   <Dropdown.Item
                     variant="danger"
@@ -193,7 +194,7 @@ function CustomerListGroup(props) {
                       setUid(customer.id)
                     }}
                   >
-                    <Trash2 /> Удалить
+                    <Trash2 /> {t('Удалить')}
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -209,32 +210,32 @@ function CustomerListGroup(props) {
       {/* Изменить */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Редактировать клиента</Modal.Title>
+          <Modal.Title>{t('Редактировать клиента')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
           <Form.Group controlId="editCustomerName">
-            <Form.Label>Имя</Form.Label>
+            <Form.Label>{t('Имя')}</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Введите имя"
+              placeholder={t('Введите имя')}
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="editCustomerSurname">
-            <Form.Label>Фамилия</Form.Label>
+            <Form.Label>{t('Фамилия')}</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Введите фамилию"
+              placeholder={t('Введите фамилию')}
               value={surName}
               onChange={(e) => setSurname(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="editCustomerPhone">
-            <Form.Label>Телефон</Form.Label>
+            <Form.Label>{t('Телефон')}</Form.Label>
             <Form.Control
               type="tel"
-              placeholder="Введите номер телефона"
+              placeholder={t('Введите номер телефона')}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -242,7 +243,7 @@ function CustomerListGroup(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
@@ -250,7 +251,7 @@ function CustomerListGroup(props) {
               setShowResAlert(false)
               setShowEdit(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await updateCustomer(uid, userName, surName, phone)
               const data = await res.json()
@@ -261,7 +262,7 @@ function CustomerListGroup(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResAlert(true)
-                setShowResTitle('Клиент успешно обновлён')
+                setShowResTitle(t('Клиент успешно обновлён'))
               }
 
               setShowRes(true)
@@ -270,7 +271,7 @@ function CustomerListGroup(props) {
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -278,18 +279,18 @@ function CustomerListGroup(props) {
       {/* Удалить */}
       <Modal show={showDel} onHide={() => setShowDel(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить</Modal.Title>
+          <Modal.Title>{t('Удалить')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Body>{t('Вы уверены, что хотите его удалить?')}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="danger"
             onClick={async () => {
               setShowResAlert(false)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
               setShowDel(false)
               setShowLoad(true)
 
@@ -298,7 +299,7 @@ function CustomerListGroup(props) {
 
               setShowResAlert(res.ok)
 
-              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
               setTimeout(() => {
                 setShowLoad(false)
                 setShowResTitle(deleteResponse.message)
@@ -307,7 +308,7 @@ function CustomerListGroup(props) {
             }}
           >
             <Trash2 />
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -324,7 +325,7 @@ function CustomerListGroup(props) {
       {showImport && (
         <ImportModal
           onHide={() => setShowImport(false)}
-          entityTitle="клиенты"
+          entityTitle={t('клиенты')}
           fields={CUSTOMER_IMPORT_FIELDS}
           onImportChunk={handleImportChunk}
           onFinished={() => setReloadKey((k) => k + 1)}

@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, Info, X, XCircle } from 'lucide-react'
 import { cn } from '../lib/cn'
+import { t } from '../i18n'
 
 const variants = {
   success: {
@@ -50,7 +51,7 @@ function Alert({
       {dismissible && (
         <button
           type="button"
-          aria-label="Закрыть"
+          aria-label={t('Закрыть')}
           onClick={onClose}
           className="-mr-1 -mt-0.5 shrink-0 rounded-md p-1 opacity-60 transition hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
         >

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CalendarClock, ChevronRight, Inbox, Percent } from 'lucide-react'
 import { Badge, EmptyState, SearchField } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { t } from '../i18n'
 
 const paidOf = (sale) => sale.payments.reduce((sum, item) => sum + item.amount, 0)
 
@@ -19,7 +20,7 @@ function TransactionList({
   activeTab,
   setSelectedSale,
   setActiveTab,
-  emptyText = 'Операций пока нет',
+  emptyText = t('Операций пока нет'),
 }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -101,7 +102,7 @@ function TransactionList({
                       <CalendarClock className="size-3" />
                       {new Date(sale.date).toLocaleString('UZ')}
                       {/* Список продаж ichidan qilingan qaytarish */}
-                      {sale.sale && <span className="ml-1">· из продажи #{sale.sale.id}</span>}
+                      {sale.sale && <span className="ml-1">{t('· из продажи #{id}', { id: sale.sale.id })}</span>}
                     </p>
                   </div>
 
@@ -114,7 +115,7 @@ function TransactionList({
 
                   {inDebt && (
                     <Badge bg="danger" dot>
-                      В долг
+                      {t('В долг')}
                     </Badge>
                   )}
 

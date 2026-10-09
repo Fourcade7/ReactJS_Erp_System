@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api'
+import { t } from '../i18n'
 
 
 
@@ -209,7 +210,7 @@ async function importProducts(items, createMissingCategories, warehouseId) {
             ? result.message.join(", ")
             : result?.message;
 
-        throw new Error(message || "Ошибка сервера");
+        throw new Error(message || t('Ошибка сервера'));
     }
 
     return result;

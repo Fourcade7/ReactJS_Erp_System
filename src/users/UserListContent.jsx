@@ -24,6 +24,7 @@ import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
 import { deleteUser, getAllUsersPaginationSearch, updateUser } from './UserApi'
 import { roleOptions } from './roles'
+import { t } from '../i18n'
 
 function UserListGroup(props) {
   const [showEdit, setShowEdit] = useState(false)
@@ -31,7 +32,7 @@ function UserListGroup(props) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
-  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResAlert, setShowResAlert] = useState(false)
 
   const [userName, setUserName] = useState('')
@@ -83,14 +84,14 @@ function UserListGroup(props) {
           setActive(1)
         }}
         onClear={() => setSearchTerm('')}
-        placeholder="Поиск сотрудника..."
+        placeholder={t('Поиск сотрудника...')}
       />
 
       {userList.length === 0 ? (
         <EmptyState
           icon={UserRound}
-          title="Сотрудники не найдены"
-          description="Измените условия поиска или добавьте сотрудника на соседней вкладке."
+          title={t('Сотрудники не найдены')}
+          description={t('Измените условия поиска или добавьте сотрудника на соседней вкладке.')}
         />
       ) : (
         <ListGroup as="ol">
@@ -143,7 +144,7 @@ function UserListGroup(props) {
                       setRole(user.role)
                     }}
                   >
-                    <Pencil /> Изменить
+                    <Pencil /> {t('Изменить')}
                   </Dropdown.Item>
                   <Dropdown.Item
                     variant="danger"
@@ -152,7 +153,7 @@ function UserListGroup(props) {
                       setUid(user.id)
                     }}
                   >
-                    <Trash2 /> Удалить
+                    <Trash2 /> {t('Удалить')}
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -168,51 +169,51 @@ function UserListGroup(props) {
       {/* Изменить */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Редактировать сотрудника</Modal.Title>
+          <Modal.Title>{t('Редактировать сотрудника')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <Form.Group controlId="editUserName">
-              <Form.Label>Имя</Form.Label>
+              <Form.Label>{t('Имя')}</Form.Label>
               <Form.Control
-                placeholder="Введите имя"
+                placeholder={t('Введите имя')}
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
             </Form.Group>
             <Form.Group controlId="editUserSurname">
-              <Form.Label>Фамилия</Form.Label>
+              <Form.Label>{t('Фамилия')}</Form.Label>
               <Form.Control
-                placeholder="Введите фамилию"
+                placeholder={t('Введите фамилию')}
                 value={surName}
                 onChange={(e) => setSurname(e.target.value)}
               />
             </Form.Group>
           </div>
           <Form.Group controlId="editUserPhone">
-            <Form.Label>Телефон</Form.Label>
+            <Form.Label>{t('Телефон')}</Form.Label>
             <Form.Control
               type="tel"
-              placeholder="Введите номер телефона"
+              placeholder={t('Введите номер телефона')}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="editUserEmail">
-            <Form.Label>Электронная почта</Form.Label>
+            <Form.Label>{t('Электронная почта')}</Form.Label>
             <Form.Control
               type="email"
-              placeholder="Введите адрес электронной почты"
+              placeholder={t('Введите адрес электронной почты')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </Form.Group>
           <div className="grid gap-3 sm:grid-cols-2">
             <Form.Group controlId="editUserRole">
-              <Form.Label>Роль</Form.Label>
+              <Form.Label>{t('Роль')}</Form.Label>
               <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
                 <option value="" disabled>
-                  Выберите роль
+                  {t('Выберите роль')}
                 </option>
                 {roleOptions(role).map((option) => (
                   <option key={option.value} value={option.value}>
@@ -222,10 +223,10 @@ function UserListGroup(props) {
               </Form.Select>
             </Form.Group>
             <Form.Group controlId="editUserPassword">
-              <Form.Label>Новый пароль</Form.Label>
+              <Form.Label>{t('Новый пароль')}</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Введите пароль"
+                placeholder={t('Введите пароль')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -234,7 +235,7 @@ function UserListGroup(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
@@ -242,7 +243,7 @@ function UserListGroup(props) {
               setShowResAlert(false)
               setShowEdit(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await updateUser(uid, userName, surName, phone, email, role, password)
               const data = await res.json()
@@ -253,7 +254,7 @@ function UserListGroup(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResAlert(true)
-                setShowResTitle('Сотрудник успешно обновлён')
+                setShowResTitle(t('Сотрудник успешно обновлён'))
               }
 
               setShowRes(true)
@@ -262,7 +263,7 @@ function UserListGroup(props) {
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -270,18 +271,18 @@ function UserListGroup(props) {
       {/* Удалить */}
       <Modal show={showDel} onHide={() => setShowDel(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить</Modal.Title>
+          <Modal.Title>{t('Удалить')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Body>{t('Вы уверены, что хотите его удалить?')}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="danger"
             onClick={async () => {
               setShowResAlert(false)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
               setShowDel(false)
               setShowLoad(true)
 
@@ -289,7 +290,7 @@ function UserListGroup(props) {
               const deleteResponse = await res.json()
               setShowResAlert(res.ok)
 
-              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
               setTimeout(() => {
                 setShowLoad(false)
                 setShowResTitle(deleteResponse.message)
@@ -298,7 +299,7 @@ function UserListGroup(props) {
             }}
           >
             <Trash2 />
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>

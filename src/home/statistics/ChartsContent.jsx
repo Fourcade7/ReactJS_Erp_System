@@ -11,8 +11,9 @@ import {
   YAxis,
 } from 'recharts'
 import { useTheme } from '../../theme/ThemeProvider'
+import { t } from '../../i18n'
 
-const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+const WEEK_DAYS = [t('Пн'), t('Вт'), t('Ср'), t('Чт'), t('Пт'), t('Сб'), t('Вс')]
 
 /**
  * Grafiklar uchun rang to'plami. Recharts SVG atributlariga haqiqiy rang
@@ -139,7 +140,7 @@ function ChartLinearEdited({ monthSaleList = [] }) {
           />
           <Tooltip
             cursor={{ stroke: c.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
-            content={<ChartTooltip unit="День" />}
+            content={<ChartTooltip unit={t('День')} />}
           />
           <Area
             type="monotone"

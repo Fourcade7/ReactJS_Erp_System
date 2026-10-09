@@ -25,6 +25,7 @@ import {
   getAllWareHouse,
   updateWareHouse,
 } from './WareHouseApi'
+import { t } from '../i18n'
 
 function WarehouseListGroup(props) {
   const [showEdit, setShowEdit] = useState(false)
@@ -32,7 +33,7 @@ function WarehouseListGroup(props) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
-  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResTypeAlert, setShowResTypeAlert] = useState(false)
 
   const [wid, setWid] = useState(-1)
@@ -63,8 +64,8 @@ function WarehouseListGroup(props) {
       {wList.length === 0 ? (
         <EmptyState
           icon={Warehouse}
-          title="Складов пока нет"
-          description="Создайте склад, чтобы распределять по нему остатки товаров."
+          title={t('Складов пока нет')}
+          description={t('Создайте склад, чтобы распределять по нему остатки товаров.')}
         />
       ) : (
         <ListGroup as="ol">
@@ -105,7 +106,7 @@ function WarehouseListGroup(props) {
                       setWeight(whouse.weight)
                     }}
                   >
-                    Изменить
+                    {t('Изменить')}
                   </Dropdown.Item>
                   <Dropdown.Item
                     variant="danger"
@@ -114,7 +115,7 @@ function WarehouseListGroup(props) {
                       setWid(whouse.id)
                     }}
                   >
-                    Удалить
+                    {t('Удалить')}
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -126,23 +127,23 @@ function WarehouseListGroup(props) {
       {/* Изменить */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Редактировать</Modal.Title>
+          <Modal.Title>{t('Редактировать')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
           <Form.Group controlId="editWarehouseName">
-            <Form.Label>Название склада</Form.Label>
+            <Form.Label>{t('Название склада')}</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Введите имя"
+              placeholder={t('Введите имя')}
               value={wName}
               onChange={(e) => setWname(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="editWarehouseWeight">
-            <Form.Label>Объём</Form.Label>
+            <Form.Label>{t('Объём')}</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Введите объём"
+              placeholder={t('Введите объём')}
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
@@ -150,7 +151,7 @@ function WarehouseListGroup(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
@@ -158,7 +159,7 @@ function WarehouseListGroup(props) {
               setShowResTypeAlert(false)
               setShowEdit(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await updateWareHouse(wid, wName, weight)
               const data = await res.json()
@@ -169,14 +170,14 @@ function WarehouseListGroup(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResTypeAlert(true)
-                setShowResTitle('Склад успешно обновлён')
+                setShowResTitle(t('Склад успешно обновлён'))
               }
 
               setShowRes(true)
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -184,18 +185,18 @@ function WarehouseListGroup(props) {
       {/* Удалить */}
       <Modal show={showDel} onHide={() => setShowDel(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить</Modal.Title>
+          <Modal.Title>{t('Удалить')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Body>{t('Вы уверены, что хотите его удалить?')}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="danger"
             onClick={async () => {
               setShowResTypeAlert(false)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
               setShowDel(false)
               setShowLoad(true)
 
@@ -204,7 +205,7 @@ function WarehouseListGroup(props) {
 
               setShowResTypeAlert(res.ok)
 
-              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
               setTimeout(() => {
                 setShowLoad(false)
                 setShowResTitle(deleteResponse.message)
@@ -212,7 +213,7 @@ function WarehouseListGroup(props) {
               }, 2000)
             }}
           >
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -254,13 +255,13 @@ function WareHouseAdd(props) {
       } else {
         setShowSuccess(true)
         psetShow(false)
-        setAlertMessage('Успешно...')
+        setAlertMessage(t('Успешно...'))
         const timer = setTimeout(() => props.tabChange('home'), 2000)
         return () => clearTimeout(timer)
       }
     } catch {
       setShowDanger(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
       psetShow(false)
     }
   }
@@ -284,28 +285,28 @@ function WareHouseAdd(props) {
         className="flex flex-col gap-3"
       >
         <Form.Group controlId="newWarehouseName">
-          <Form.Label>Название склада</Form.Label>
+          <Form.Label>{t('Название склада')}</Form.Label>
           <Form.Control
             type="text"
             value={wname}
             onChange={(e) => setWname(e.target.value)}
-            placeholder="Введите имя"
+            placeholder={t('Введите имя')}
           />
         </Form.Group>
 
         <Form.Group controlId="newWarehouseWeight">
-          <Form.Label>Объём</Form.Label>
+          <Form.Label>{t('Объём')}</Form.Label>
           <Form.Control
             type="text"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            placeholder="Введите объём"
+            placeholder={t('Введите объём')}
           />
         </Form.Group>
 
         <Button type="submit" loading={pshow} block>
           {!pshow && <Save />}
-          Сохранить
+          {t('Сохранить')}
         </Button>
       </Form>
     </div>
@@ -322,7 +323,7 @@ function WareHouseTab() {
         title={
           <>
             <Warehouse />
-            Список складов
+            {t('Список складов')}
           </>
         }
       >
@@ -334,7 +335,7 @@ function WareHouseTab() {
         title={
           <>
             <Plus />
-            Добавить новый склад
+            {t('Добавить новый склад')}
           </>
         }
       >
@@ -349,8 +350,8 @@ function WareHouseScreen() {
     <div>
       <PageHeader
         icon={Warehouse}
-        title="Склад"
-        description="Места хранения, по которым распределяются остатки"
+        title={t('Склад')}
+        description={t('Места хранения, по которым распределяются остатки')}
       />
       <WareHouseTab />
     </div>

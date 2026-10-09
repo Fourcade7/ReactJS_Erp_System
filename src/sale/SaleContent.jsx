@@ -19,16 +19,17 @@ import {
   getSaleDetail,
   returnFromSale,
 } from './SaleApi'
+import { t } from '../i18n'
 
 const SALE_CONFIG = {
   Icon: ShoppingBag,
-  title: 'Продажа',
-  description: 'Оформление продаж, печать чека и контроль долга',
-  label: 'Продажа',
-  listTitle: 'Список продаж',
-  newTitle: 'Новая продажа',
-  detailTitle: 'Детали продажи',
-  checkoutTitle: 'Оформление продажи',
+  title: t('Продажа'),
+  description: t('Оформление продаж, печать чека и контроль долга'),
+  label: t('Продажа'),
+  listTitle: t('Список продаж'),
+  newTitle: t('Новая продажа'),
+  detailTitle: t('Детали продажи'),
+  checkoutTitle: t('Оформление продажи'),
   tone: 'primary',
   priceField: 'buyPrice',
   limitByStock: true,
@@ -60,18 +61,18 @@ function SaleTabForHome() {
         title={
           <>
             <Wallet />
-            Продажи с задолженностью
+            {t('Продажи с задолженностью')}
           </>
         }
       >
         <TransactionList
           fetchAll={getAllSaleDebtList}
-          label="Продажа"
+          label={t('Продажа')}
           icon={ShoppingBag}
           activeTab={activeTab}
           setSelectedSale={setSelectedSale}
           setActiveTab={setActiveTab}
-          emptyText="Долгов нет — все продажи оплачены"
+          emptyText={t('Долгов нет — все продажи оплачены')}
         />
       </Tab>
 
@@ -81,7 +82,7 @@ function SaleTabForHome() {
           title={
             <>
               <Info />
-              Детали продажи
+              {t('Детали продажи')}
             </>
           }
         >
@@ -91,7 +92,7 @@ function SaleTabForHome() {
             addNewPayment={addNewPayment}
             fetchDetail={getSaleDetail}
             returnFromSale={returnFromSale}
-            label="Продажа"
+            label={t('Продажа')}
             icon={ShoppingBag}
           />
         </Tab>

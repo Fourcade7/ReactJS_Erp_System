@@ -1,15 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronDown, LifeBuoy, LogOut, Menu, Sparkles, UserRound } from 'lucide-react'
-import { BrandMark, Button, Container, Dropdown, ThemeToggle } from '../ui'
+import { BrandMark, Button, Container, Dropdown, LanguageToggle, ThemeToggle } from '../ui'
 import ServerSettings from './ServerSettings'
 import { clearLocalData } from '../config/api'
+import { t } from '../i18n'
 
 /** Brend belgisi — logotip va nom. */
 function Brand({ to = '/', subtitle }) {
   return (
     <Link to={to} className="group flex items-center gap-2.5">
       <BrandMark className="transition-transform duration-150 group-hover:scale-105" />
-      <span className="leading-tight">
+      <span className="hidden leading-tight min-[420px]:block">
         <span className="block text-[13px] font-semibold tracking-tight text-fg">
           5858 UZ
         </span>
@@ -31,7 +32,7 @@ function initialsOf(name = '', surname = '') {
  */
 function NavbarScreen({ onMenuClick }) {
   const navigate = useNavigate()
-  const username = localStorage.getItem('username') || 'Пользователь'
+  const username = localStorage.getItem('username') || t('Пользователь')
   const surname = localStorage.getItem('surname') || ''
   const role = localStorage.getItem('role') || '—'
 
@@ -42,7 +43,7 @@ function NavbarScreen({ onMenuClick }) {
           <button
             type="button"
             onClick={onMenuClick}
-            aria-label="Открыть меню"
+            aria-label={t('Открыть меню')}
             className="inline-flex size-9 items-center justify-center rounded-lg border border-line bg-surface text-muted transition hover:bg-surface-2 hover:text-fg lg:hidden"
           >
             <Menu className="size-4" />
@@ -56,20 +57,23 @@ function NavbarScreen({ onMenuClick }) {
             href="#support"
             className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
           >
-            Поддержка
+            {t('Поддержка')}
           </a>
           <a
             href="#plans"
             className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
           >
-            Планы
+            {t('Планы')}
           </a>
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
           <ServerSettings />
 
-          <ThemeToggle />
+          <LanguageToggle />
+
+          <ThemeToggle className="hidden sm:inline-flex" />
+          <ThemeToggle compact className="sm:hidden" />
 
           <Dropdown>
             <Dropdown.Toggle
@@ -94,15 +98,15 @@ function NavbarScreen({ onMenuClick }) {
                   <p className="truncate text-[13px] font-medium text-fg">
                     {username} {surname}
                   </p>
-                  <p className="truncate text-[11px] text-subtle">Роль: {role}</p>
+                  <p className="truncate text-[11px] text-subtle">{t('Роль: {role}', { role })}</p>
                 </div>
               </div>
               <Dropdown.Divider />
               <Dropdown.Item>
-                <UserRound /> Профиль
+                <UserRound /> {t('Профиль')}
               </Dropdown.Item>
               <Dropdown.Item>
-                <LifeBuoy /> Поддержка
+                <LifeBuoy /> {t('Поддержка')}
               </Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item
@@ -112,7 +116,7 @@ function NavbarScreen({ onMenuClick }) {
                   navigate('/login')
                 }}
               >
-                <LogOut /> Выйти
+                <LogOut /> {t('Выйти')}
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
@@ -130,10 +134,11 @@ function NavbarScreenFourAuth() {
         <Brand to="/" subtitle="ID Group" />
         <div className="ml-auto flex items-center gap-2">
           <ServerSettings />
+          <LanguageToggle />
           <ThemeToggle compact />
-          <Button as={Link} to="/register" variant="outline-primary" size="sm">
+          <Button as={Link} to="/register" variant="outline-primary" size="sm" aria-label={t('Регистрация')}>
             <Sparkles />
-            Регистрация
+            <span className="hidden sm:inline">{t('Регистрация')}</span>
           </Button>
         </div>
       </Container>

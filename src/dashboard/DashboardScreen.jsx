@@ -37,6 +37,7 @@ import {
   isValidDate,
   percentChange,
 } from './range'
+import { locale, t, td } from '../i18n'
 
 // ------------------------------------------------------------------ kichik qismlar
 
@@ -47,7 +48,7 @@ import {
 function Delta({ current, previous, good = 'up', suffix }) {
   const change = percentChange(current, previous)
   if (change === null) {
-    return <span className="text-[11px] text-subtle">нет данных для сравнения{suffix ? ` ${suffix}` : ''}</span>
+    return <span className="text-[11px] text-subtle">{t('нет данных для сравнения{v}', { v: suffix ? ` ${suffix}` : '' })}</span>
   }
   const flat = Math.abs(change) < 0.05
   const up = change > 0
@@ -58,17 +59,17 @@ function Delta({ current, previous, good = 'up', suffix }) {
     <span className={cn('inline-flex items-center gap-0.5 text-[11px] font-medium', tone)}>
       <Icon className="size-3.5" aria-hidden="true" />
       {up ? '+' : flat ? '' : '−'}
-      {Math.abs(change).toLocaleString('ru-RU', { maximumFractionDigits: 1 })}%
+      {Math.abs(change).toLocaleString(locale, { maximumFractionDigits: 1 })}%
       {suffix && <span className="ml-1 font-normal text-subtle">{suffix}</span>}
     </span>
   )
 }
 
 const KPI_LABELS = {
-  day: { title: 'Сегодня', vs: 'к вчера' },
-  week: { title: 'Эта неделя', vs: 'к прошлой неделе' },
-  month: { title: 'Этот месяц', vs: 'к прошлому месяцу' },
-  year: { title: 'Этот год', vs: 'к прошлому году' },
+  day: { title: t('Сегодня'), vs: t('к вчера') },
+  week: { title: t('Эта неделя'), vs: t('к прошлой неделе') },
+  month: { title: t('Этот месяц'), vs: t('к прошлому месяцу') },
+  year: { title: t('Этот год'), vs: t('к прошлому году') },
 }
 
 function KpiTiles({ kpis }) {
@@ -81,11 +82,11 @@ function KpiTiles({ kpis }) {
             <p className="text-xs font-medium text-muted">{label.title}</p>
             <p className="mt-2 truncate text-xl font-semibold tracking-tight text-fg">
               {p ? formatMoney(p.revenue) : '—'}
-              <span className="ml-1 text-xs font-medium text-subtle">сум</span>
+              <span className="ml-1 text-xs font-medium text-subtle">{t('сум')}</span>
             </p>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
               {p && (
-                <span title="Сравнение с тем же отрезком прошлого периода">
+                <span title={t('Сравнение с тем же отрезком прошлого периода')}>
                   <Delta current={p.revenue} previous={p.previous.revenue} suffix={label.vs} />
                 </span>
               )}
@@ -98,7 +99,7 @@ function KpiTiles({ kpis }) {
   )
 }
 
-function MetricTile({ label, value, previous, good, hint, unit = 'сум', format = formatMoney }) {
+function MetricTile({ label, value, previous, good, hint, unit = t('сум'), format = formatMoney }) {
   return (
     <Card padded={false} className="p-4">
       <p className="text-xs font-medium text-muted">{label}</p>
@@ -160,14 +161,14 @@ function PeriodTable({ series, granularity }) {
     <Table wrapperClassName="max-h-[28rem] overflow-y-auto">
       <thead className="sticky top-0">
         <tr>
-          <th>Период</th>
-          <th className="text-right">Выручка</th>
-          <th className="text-right">Рост</th>
-          <th className="text-right">Продаж</th>
-          <th className="text-right">Поступления</th>
-          <th className="text-right">Валовая прибыль</th>
-          {withExpenses && <th className="text-right">Расходы</th>}
-          {withExpenses && <th className="text-right">Чистая прибыль</th>}
+          <th>{t('Период')}</th>
+          <th className="text-right">{t('Выручка')}</th>
+          <th className="text-right">{t('Рост')}</th>
+          <th className="text-right">{t('Продаж')}</th>
+          <th className="text-right">{t('Поступления')}</th>
+          <th className="text-right">{t('Валовая прибыль')}</th>
+          {withExpenses && <th className="text-right">{t('Расходы')}</th>}
+          {withExpenses && <th className="text-right">{t('Чистая прибыль')}</th>}
         </tr>
       </thead>
       <tbody>
@@ -196,7 +197,7 @@ function PeriodTable({ series, granularity }) {
   )
 }
 
-function SimpleTable({ columns, rows, empty = 'Нет данных' }) {
+function SimpleTable({ columns, rows, empty = t('Нет данных') }) {
   if (!rows.length) return <p className="py-6 text-center text-xs text-subtle">{empty}</p>
   return (
     // Tor ekranda jadval kartani kengaytirmaydi — o'zi gorizontal suriladi.
@@ -231,18 +232,25 @@ function SimpleTable({ columns, rows, empty = 'Нет данных' }) {
 // ------------------------------------------------------------------ tarix
 
 const HISTORY_TYPES = [
-  { key: '', label: 'Все' },
-  { key: 'sale', label: 'Продажи' },
-  { key: 'return', label: 'Возвраты' },
-  { key: 'purchase', label: 'Приходы' },
-  { key: 'expense', label: 'Расходы' },
+  { key: '', label: t('Все') },
+  { key: 'sale', label: t('Продажи') },
+  { key: 'return', label: t('Возвраты') },
+  { key: 'purchase', label: t('Приходы') },
+  { key: 'expense', label: t('Расходы') },
 ]
 
 const EVENT = {
-  sale: { label: 'Продажа', Icon: ShoppingBag, sign: '+' },
-  return: { label: 'Возврат', Icon: Undo2, sign: '−' },
-  purchase: { label: 'Приход', Icon: ArrowDownLeft, sign: '−' },
-  expense: { label: 'Расход', Icon: ReceiptText, sign: '−' },
+  sale: { label: t('Продажа'), Icon: ShoppingBag, sign: '+' },
+  return: { label: t('Возврат'), Icon: Undo2, sign: '−' },
+  purchase: { label: t('Приход'), Icon: ArrowDownLeft, sign: '−' },
+  expense: { label: t('Расход'), Icon: ReceiptText, sign: '−' },
+}
+
+/** Backend izohni ruscha yozadi ("Из продажи #5", "за 10.2026") — ekranda tilga qarab tarjima qilinadi. */
+function historyNote(note) {
+  return note
+    .replace(/^Из продажи #(\d+)/, (_, id) => t('Из продажи #{id}', { id }))
+    .replace(/^за (\d{2}\.\d{4})/, (_, month) => t('за {month}', { month }))
 }
 
 function HistoryCard({ from, to }) {
@@ -261,13 +269,13 @@ function HistoryCard({ from, to }) {
     <Card padded={false}>
       <Card.Header>
         <div>
-          <Card.Title>История операций</Card.Title>
+          <Card.Title>{t('История операций')}</Card.Title>
           <Card.Subtitle className="mt-0.5">
             {formatDate(from)} — {formatDate(to)}
             {result ? ` · ${plural(result.meta.total, RECORDS)}` : ''}
           </Card.Subtitle>
         </div>
-        <Segmented options={HISTORY_TYPES} value={type} onChange={setType} label="Тип операции" />
+        <Segmented options={HISTORY_TYPES} value={type} onChange={setType} label={t('Тип операции')} />
       </Card.Header>
       {error && <Alert variant="danger" className="m-4 w-auto">{error.message}</Alert>}
       {!result && loading ? (
@@ -289,22 +297,22 @@ function HistoryCard({ from, to }) {
                     {row.counterparty && <span className="font-normal text-muted"> · {row.counterparty}</span>}
                   </p>
                   <p className="truncate text-[11px] text-subtle">
-                    {new Date(row.date).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}
+                    {new Date(row.date).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' })}
                     {row.who && ` · ${row.who}`}
-                    {row.note && ` · ${row.note}`}
+                    {row.note && ` · ${historyNote(row.note)}`}
                   </p>
                 </div>
                 <span className="shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg">
                   {event.sign}
                   {formatMoney(row.amount)}
-                  <span className="ml-1 text-[11px] font-normal text-subtle">сум</span>
+                  <span className="ml-1 text-[11px] font-normal text-subtle">{t('сум')}</span>
                 </span>
               </li>
             )
           })}
         </ul>
       ) : (
-        <EmptyState icon={History} title="Операций за период нет" className="m-4 border-0" />
+        <EmptyState icon={History} title={t('Операций за период нет')} className="m-4 border-0" />
       )}
       {result?.meta.totalPages > 1 && (
         <div className="flex justify-center border-t border-line py-3">
@@ -369,20 +377,20 @@ function DashboardScreen() {
 
   const trendSeries = useMemo(
     () => [
-      { key: 'revenue', label: 'Выручка', color: colors.series[0] },
-      { key: 'grossProfit', label: 'Валовая прибыль', color: colors.series[2] },
-      { key: 'cashIn', label: 'Поступления', color: colors.series[1] },
+      { key: 'revenue', label: t('Выручка'), color: colors.series[0] },
+      { key: 'grossProfit', label: t('Валовая прибыль'), color: colors.series[2] },
+      { key: 'cashIn', label: t('Поступления'), color: colors.series[1] },
     ],
     [colors],
   )
   const profitSeries = useMemo(
     () => [
-      { key: 'grossProfit', label: 'Валовая прибыль', color: colors.series[0] },
-      { key: 'expenses', label: 'Расходы', color: colors.series[1] },
+      { key: 'grossProfit', label: t('Валовая прибыль'), color: colors.series[0] },
+      { key: 'expenses', label: t('Расходы'), color: colors.series[1] },
     ],
     [colors],
   )
-  const countSeries = useMemo(() => [{ key: 'salesCount', label: 'Продаж', color: colors.series[0] }], [colors])
+  const countSeries = useMemo(() => [{ key: 'salesCount', label: t('Продаж'), color: colors.series[0] }], [colors])
 
   if (signedIn && role === 'User') {
     return (
@@ -391,12 +399,12 @@ function DashboardScreen() {
         <Container className="py-10">
           <EmptyState
             icon={BarChart3}
-            title="Недостаточно прав"
-            description="Дашборд доступен только администратору."
+            title={t('Недостаточно прав')}
+            description={t('Дашборд доступен только администратору.')}
             action={
               <Button as={Link} to="/home" variant="outline-primary">
                 <ArrowLeft />
-                Вернуться в систему
+                {t('Вернуться в систему')}
               </Button>
             }
           />
@@ -419,21 +427,20 @@ function DashboardScreen() {
               <BarChart3 className="size-4" />
             </span>
             <div>
-              <h1 className="text-base font-semibold tracking-tight text-fg">Дашборд</h1>
+              <h1 className="text-base font-semibold tracking-tight text-fg">{t('Дашборд')}</h1>
               <p className="mt-0.5 text-xs text-subtle">
-                Выручка, прибыль, расходы и динамика продаж
-                {kpis && ` · время ${kpis.timezone}`}
+                {t('Выручка, прибыль, расходы и динамика продаж {v}', { v: kpis && t(' · время {timezone}', { timezone: kpis.timezone }) })}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button as={Link} to="/home" variant="outline-secondary" size="sm">
               <ArrowLeft />
-              В систему
+              {t('В систему')}
             </Button>
             <Button variant="outline-secondary" size="sm" onClick={() => setReload((n) => n + 1)} loading={loading}>
               <RefreshCw />
-              Обновить
+              {t('Обновить')}
             </Button>
           </div>
         </div>
@@ -442,7 +449,7 @@ function DashboardScreen() {
 
         {/* O'z yil tanlovi bor, pastdagi davr filtriga bog'liq emas. Kunni bosish — pastdagi hammasi shu kunga o'tadi. */}
         {kpis && (
-          <ChartCard title="Календарь продаж" subtitle="Активность по дням за год — нажмите на день, чтобы открыть его статистику">
+          <ChartCard title={t('Календарь продаж')} subtitle={t('Активность по дням за год — нажмите на день, чтобы открыть его статистику')}>
             <YearCalendar
               initialYear={Number(kpis.today.slice(0, 4))}
               onSelectDay={(date) => {
@@ -459,7 +466,7 @@ function DashboardScreen() {
           className="flex scroll-mt-20 flex-wrap items-center gap-2 rounded-card border border-line bg-surface p-2 shadow-soft"
         >
           <Segmented
-            label="Период"
+            label={t('Период')}
             value={presetDef ? preset : 'custom'}
             options={PRESETS.map((item) => ({ key: item.key, label: item.label }))}
             onChange={(key) => update({ p: key, from: null, to: null, g: null })}
@@ -468,7 +475,7 @@ function DashboardScreen() {
             <Form.Control
               type="date"
               size="sm"
-              aria-label="С даты"
+              aria-label={t('С даты')}
               className="w-36"
               value={from ?? ''}
               max={today}
@@ -478,7 +485,7 @@ function DashboardScreen() {
             <Form.Control
               type="date"
               size="sm"
-              aria-label="По дату"
+              aria-label={t('По дату')}
               className="w-36"
               value={to ?? ''}
               max={today}
@@ -487,7 +494,7 @@ function DashboardScreen() {
           </div>
           <div className="ml-auto">
             <Segmented
-              label="Шаг"
+              label={t('Шаг')}
               value={granularity}
               options={GRANULARITIES.map((g) => ({
                 key: g.key,
@@ -499,7 +506,7 @@ function DashboardScreen() {
           </div>
         </div>
 
-        {!validRange && today && <Alert variant="warning">Выберите корректный период: дата начала не позже даты окончания.</Alert>}
+        {!validRange && today && <Alert variant="warning">{t('Выберите корректный период: дата начала не позже даты окончания.')}</Alert>}
         {error && (
           <Alert variant="danger" dismissible onClose={() => setDismissedError(failure)}>
             {error}
@@ -511,7 +518,7 @@ function DashboardScreen() {
             {failure ? (
               <Button variant="outline-primary" onClick={() => setReload((n) => n + 1)}>
                 <RefreshCw />
-                Повторить
+                {t('Повторить')}
               </Button>
             ) : (
               <Spinner size="lg" />
@@ -524,25 +531,25 @@ function DashboardScreen() {
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="text-xs font-medium text-muted">
-                    Выручка за период · {formatDate(data.range.from)} — {formatDate(data.range.to)} ({data.range.days} дн.)
+                    {t('Выручка за период · {from} — {to} ({days} дн.)', { from: formatDate(data.range.from), to: formatDate(data.range.to), days: data.range.days })}
                   </p>
                   <p className="mt-1 text-5xl font-semibold tracking-tight text-fg">
                     {formatMoney(s.revenue)}
-                    <span className="ml-2 text-lg font-medium text-subtle">сум</span>
+                    <span className="ml-2 text-lg font-medium text-subtle">{t('сум')}</span>
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <Delta current={s.revenue} previous={p.revenue} suffix="к предыдущему периоду" />
+                    <Delta current={s.revenue} previous={p.revenue} suffix={t('к предыдущему периоду')} />
                     <span className="text-[11px] text-subtle">
-                      {formatDate(data.previousRange.from)} — {formatDate(data.previousRange.to)}: {formatMoney(p.revenue)} сум
+                      {t('{from} — {to}: {amount} сум', { from: formatDate(data.previousRange.from), to: formatDate(data.previousRange.to), amount: formatMoney(p.revenue) })}
                     </span>
                   </div>
                 </div>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
                   {[
-                    ['Продажи', s.gross],
-                    ['Скидки', s.discount],
-                    ['Возвраты', s.returns],
-                    ['Себестоимость ≈', s.cogs],
+                    [t('Продажи'), s.gross],
+                    [t('Скидки'), s.discount],
+                    [t('Возвраты'), s.returns],
+                    [t('Себестоимость ≈'), s.cogs],
                   ].map(([label, value]) => (
                     <div key={label}>
                       <dt className="text-subtle">{label}</dt>
@@ -554,33 +561,33 @@ function DashboardScreen() {
             </Card>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-              <MetricTile label="Поступления в кассу" value={s.cashIn} previous={p.cashIn} hint="оплаты по продажам" />
-              <MetricTile label="Валовая прибыль ≈" value={s.grossProfit} previous={p.grossProfit} hint="по текущей закупочной цене" />
-              <MetricTile label="Расходы" value={s.expenses} previous={p.expenses} good="down" hint={`${plural(s.expensesCount, RECORDS)}, по месяцам`} />
-              <MetricTile label="Чистая прибыль ≈" value={s.netProfit} previous={p.netProfit} hint="валовая − расходы" />
-              <MetricTile label="Средний чек" value={s.averageCheck} previous={p.averageCheck} />
-              <MetricTile label="Продаж" value={s.salesCount} previous={p.salesCount} unit="" hint={`клиентов: ${s.customers}`} />
-              <MetricTile label="Продано единиц" value={s.itemsSold} previous={p.itemsSold} unit="" format={(v) => v.toLocaleString('ru-RU')} />
-              <MetricTile label="Возвраты" value={s.returns} previous={p.returns} good="down" hint={`${s.returnsCount} шт.`} />
-              <MetricTile label="Закупки" value={s.purchases} previous={p.purchases} good={null} hint={plural(s.purchasesCount, ['приход', 'прихода', 'приходов'])} />
-              <MetricTile label="Долг клиентов" value={data.debt.amount} hint={`${plural(data.debt.sales, SALES)} в долг · сейчас`} />
+              <MetricTile label={t('Поступления в кассу')} value={s.cashIn} previous={p.cashIn} hint={t('оплаты по продажам')} />
+              <MetricTile label={t('Валовая прибыль ≈')} value={s.grossProfit} previous={p.grossProfit} hint={t('по текущей закупочной цене')} />
+              <MetricTile label={t('Расходы')} value={s.expenses} previous={p.expenses} good="down" hint={t('{count}, по месяцам', { count: plural(s.expensesCount, RECORDS) })} />
+              <MetricTile label={t('Чистая прибыль ≈')} value={s.netProfit} previous={p.netProfit} hint={t('валовая − расходы')} />
+              <MetricTile label={t('Средний чек')} value={s.averageCheck} previous={p.averageCheck} />
+              <MetricTile label={t('Продаж')} value={s.salesCount} previous={p.salesCount} unit="" hint={t('клиентов: {customers}', { customers: s.customers })} />
+              <MetricTile label={t('Продано единиц')} value={s.itemsSold} previous={p.itemsSold} unit="" format={(v) => v.toLocaleString(locale)} />
+              <MetricTile label={t('Возвраты')} value={s.returns} previous={p.returns} good="down" hint={t('{returnsCount} шт.', { returnsCount: s.returnsCount })} />
+              <MetricTile label={t('Закупки')} value={s.purchases} previous={p.purchases} good={null} hint={plural(s.purchasesCount, ['приход', 'прихода', 'приходов'])} />
+              <MetricTile label={t('Долг клиентов')} value={data.debt.amount} hint={t('{count} в долг · сейчас', { count: plural(data.debt.sales, SALES) })} />
             </div>
 
             <ChartCard
-              title="Динамика выручки"
-              subtitle={`Шаг: ${GRANULARITIES.find((g) => g.key === granularity).label.toLowerCase()}`}
+              title={t('Динамика выручки')}
+              subtitle={t('Шаг: {step}', { step: GRANULARITIES.find((g) => g.key === granularity).label.toLowerCase() })}
               legend={<ChartLegend items={trendSeries} />}
             >
               <TrendChart data={data.series} granularity={granularity} series={trendSeries} />
             </ChartCard>
 
             <div className="grid gap-5 xl:grid-cols-2">
-              <ChartCard title="Количество продаж" subtitle="Чеков за каждый период">
+              <ChartCard title={t('Количество продаж')} subtitle={t('Чеков за каждый период')}>
                 <ColumnChart data={data.series} granularity={granularity} series={countSeries} unit="" />
               </ChartCard>
               <ChartCard
-                title="Прибыль и расходы"
-                subtitle="Расходы учитываются по месяцу, за который они внесены"
+                title={t('Прибыль и расходы')}
+                subtitle={t('Расходы учитываются по месяцу, за который они внесены')}
                 legend={monthly && <ChartLegend items={profitSeries} shape="rect" />}
               >
                 {monthly ? (
@@ -588,12 +595,12 @@ function DashboardScreen() {
                 ) : (
                   <EmptyState
                     icon={ReceiptText}
-                    title="Расходы ведутся по месяцам"
-                    description="Чтобы сравнить прибыль с расходами, выберите шаг «Месяц»."
+                    title={t('Расходы ведутся по месяцам')}
+                    description={t('Чтобы сравнить прибыль с расходами, выберите шаг «Месяц».')}
                     action={
                       granularityAllowed('month', data.range.from, data.range.to) && (
                         <Button variant="outline-primary" size="sm" onClick={() => update({ g: 'month' })}>
-                          Показать по месяцам
+                          {t('Показать по месяцам')}
                         </Button>
                       )
                     }
@@ -603,95 +610,95 @@ function DashboardScreen() {
               </ChartCard>
             </div>
 
-            <ChartCard title="По периодам" subtitle="Таблица к графикам выше, рост — к предыдущей строке">
+            <ChartCard title={t('По периодам')} subtitle={t('Таблица к графикам выше, рост — к предыдущей строке')}>
               <PeriodTable series={data.series} granularity={granularity} />
             </ChartCard>
 
             <div className="grid gap-5 xl:grid-cols-2">
-              <ChartCard title="Структура выручки" subtitle="Доля категорий товаров">
+              <ChartCard title={t('Структура выручки')} subtitle={t('Доля категорий товаров')}>
                 <DonutChart
-                  centerLabel="Выручка"
+                  centerLabel={t('Выручка')}
                   total={s.salesNet}
                   rows={data.categories.map((row) => ({ key: String(row.id ?? row.name), label: row.name, value: row.revenue }))}
-                  emptyText="Продаж за период нет"
+                  emptyText={t('Продаж за период нет')}
                 />
               </ChartCard>
-              <ChartCard title="Способы оплаты" subtitle="Поступления по продажам">
+              <ChartCard title={t('Способы оплаты')} subtitle={t('Поступления по продажам')}>
                 <DonutChart
-                  centerLabel="Поступления"
+                  centerLabel={t('Поступления')}
                   total={s.cashIn}
                   order={PAYMENT_ORDER}
-                  rows={data.paymentMethods.map((row) => ({ key: row.method, label: row.method, value: row.amount }))}
-                  emptyText="Оплат за период нет"
+                  rows={data.paymentMethods.map((row) => ({ key: row.method, label: td(row.method), value: row.amount }))}
+                  emptyText={t('Оплат за период нет')}
                 />
               </ChartCard>
-              <ChartCard title="Структура расходов" subtitle="Расходы учитываются по месяцу">
+              <ChartCard title={t('Структура расходов')} subtitle={t('Расходы учитываются по месяцу')}>
                 <DonutChart
-                  centerLabel="Расходы"
+                  centerLabel={t('Расходы')}
                   total={s.expenses}
                   rows={data.expensesByCategory.map((row) => ({ key: row.category, label: row.category, value: row.amount }))}
-                  emptyText="Расходов за период нет"
+                  emptyText={t('Расходов за период нет')}
                 />
               </ChartCard>
-              <ChartCard title="Доля кассиров" subtitle="Выручка по сотрудникам">
+              <ChartCard title={t('Доля кассиров')} subtitle={t('Выручка по сотрудникам')}>
                 <DonutChart
-                  centerLabel="Выручка"
+                  centerLabel={t('Выручка')}
                   total={s.salesNet}
                   rows={data.cashiers.map((row) => ({ key: String(row.id), label: row.name ?? '—', value: row.revenue }))}
-                  emptyText="Продаж за период нет"
+                  emptyText={t('Продаж за период нет')}
                 />
               </ChartCard>
             </div>
 
-            <ChartCard title="Топ товаров" subtitle="По выручке с учётом скидки на чек">
+            <ChartCard title={t('Топ товаров')} subtitle={t('По выручке с учётом скидки на чек')}>
               <SimpleTable
                 rows={data.topProducts}
                 columns={[
                   { key: 'n', label: '#', render: (_, i) => <span className="text-subtle">{i + 1}</span> },
-                  { key: 'name', label: 'Товар', className: 'max-w-72 truncate font-medium text-fg' },
-                  { key: 'quantity', label: 'Кол-во', align: 'right', render: (r) => `${r.quantity.toLocaleString('ru-RU')} ${r.unit}` },
-                  { key: 'revenue', label: 'Выручка', align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
+                  { key: 'name', label: t('Товар'), className: 'max-w-72 truncate font-medium text-fg' },
+                  { key: 'quantity', label: t('Кол-во'), align: 'right', render: (r) => `${r.quantity.toLocaleString(locale)} ${td(r.unit)}` },
+                  { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
                   {
                     key: 'share',
-                    label: 'Доля',
+                    label: t('Доля'),
                     align: 'right',
                     render: (r) => <span className="text-muted">{formatShare(r.revenue, s.salesNet)}</span>,
                   },
-                  { key: 'profit', label: 'Прибыль ≈', align: 'right', render: (r) => formatMoney(r.profit) },
+                  { key: 'profit', label: t('Прибыль ≈'), align: 'right', render: (r) => formatMoney(r.profit) },
                 ]}
               />
             </ChartCard>
 
             <div className="grid gap-5 xl:grid-cols-3">
-              <ChartCard title="Топ клиентов">
+              <ChartCard title={t('Топ клиентов')}>
                 <SimpleTable
                   rows={data.topCustomers}
                   columns={[
-                    { key: 'name', label: 'Клиент', className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'salesCount', label: 'Продаж', align: 'right' },
-                    { key: 'revenue', label: 'Выручка', align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
+                    { key: 'name', label: t('Клиент'), className: 'max-w-40 truncate font-medium text-fg' },
+                    { key: 'salesCount', label: t('Продаж'), align: 'right' },
+                    { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
                   ]}
-                  empty="Продаж с контрагентом нет"
+                  empty={t('Продаж с контрагентом нет')}
                 />
               </ChartCard>
-              <ChartCard title="Должники" subtitle="Текущий долг, за всё время">
+              <ChartCard title={t('Должники')} subtitle={t('Текущий долг, за всё время')}>
                 <SimpleTable
                   rows={data.debtors}
                   columns={[
-                    { key: 'name', label: 'Клиент', className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'phone', label: 'Телефон', className: 'whitespace-nowrap text-muted' },
-                    { key: 'debt', label: 'Долг', align: 'right', strong: true, render: (r) => formatMoney(r.debt) },
+                    { key: 'name', label: t('Клиент'), className: 'max-w-40 truncate font-medium text-fg' },
+                    { key: 'phone', label: t('Телефон'), className: 'whitespace-nowrap text-muted' },
+                    { key: 'debt', label: t('Долг'), align: 'right', strong: true, render: (r) => formatMoney(r.debt) },
                   ]}
-                  empty="Долгов нет"
+                  empty={t('Долгов нет')}
                 />
               </ChartCard>
-              <ChartCard title="Кассиры">
+              <ChartCard title={t('Кассиры')}>
                 <SimpleTable
                   rows={data.cashiers}
                   columns={[
-                    { key: 'name', label: 'Сотрудник', className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'salesCount', label: 'Продаж', align: 'right' },
-                    { key: 'revenue', label: 'Выручка', align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
+                    { key: 'name', label: t('Сотрудник'), className: 'max-w-40 truncate font-medium text-fg' },
+                    { key: 'salesCount', label: t('Продаж'), align: 'right' },
+                    { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
                   ]}
                 />
               </ChartCard>
@@ -700,8 +707,7 @@ function DashboardScreen() {
             <HistoryCard from={data.range.from} to={data.range.to} />
 
             <p className="text-center text-[11px] text-subtle">
-              Прибыль ≈ — оценка: себестоимость считается по текущей закупочной цене товара.
-              Сравнение — с предыдущим периодом такой же длины. Компактные числа: {formatCompact(1_250_000)} = 1 250 000.
+              {t('Прибыль ≈ — оценка: себестоимость считается по текущей закупочной цене товара. Сравнение — с предыдущим периодом такой же длины. Компактные числа: {formatCompact} = 1 250 000.', { formatCompact: formatCompact(1_250_000) })}
             </p>
           </div>
         )}

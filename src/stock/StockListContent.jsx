@@ -15,13 +15,14 @@ import {
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
 import { deleteStock, getAllStockPaginationSearch, getAllWareHouse, updateStock } from './StockApi'
+import { t, td } from '../i18n'
 
 function StockListGroup(props) {
   const [showDel, setShowDel] = useState(false)
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
-  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResAlert, setShowResAlert] = useState(false)
 
   const [showStockAlert, setShowStockAlert] = useState(false)
@@ -76,14 +77,14 @@ function StockListGroup(props) {
           setActive(1)
         }}
         onClear={() => setSearchTerm('')}
-        placeholder="Поиск по названию или штрихкоду..."
+        placeholder={t('Поиск по названию или штрихкоду...')}
       />
 
       {productList.length === 0 ? (
         <EmptyState
           icon={Boxes}
-          title="Остатки не найдены"
-          description="Остатки появятся после оформления прихода товара на склад."
+          title={t('Остатки не найдены')}
+          description={t('Остатки появятся после оформления прихода товара на склад.')}
         />
       ) : (
         <ListGroup as="ol">
@@ -122,7 +123,7 @@ function StockListGroup(props) {
                 >
                   <span tabIndex={0}>
                     <Badge bg={low ? 'danger' : 'success'} className="tabular-nums">
-                      {stock.quantity} {stock.product.unit}
+                      {stock.quantity} {td(stock.product.unit)}
                     </Badge>
                   </span>
                 </OverlayTrigger>
@@ -150,7 +151,7 @@ function StockListGroup(props) {
                         setQuantity(stock.quantity)
                       }}
                     >
-                      <Pencil /> Изменить
+                      <Pencil /> {t('Изменить')}
                     </Dropdown.Item>
                     <Dropdown.Item
                       variant="danger"
@@ -160,7 +161,7 @@ function StockListGroup(props) {
                         setPid(stock.product.id)
                       }}
                     >
-                      <Trash2 /> Удалить
+                      <Trash2 /> {t('Удалить')}
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -177,26 +178,26 @@ function StockListGroup(props) {
       {/* Изменить */}
       <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Редактировать остаток</Modal.Title>
+          <Modal.Title>{t('Редактировать остаток')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
           <Form.Group controlId="editStockQuantity">
-            <Form.Label>Остаток</Form.Label>
+            <Form.Label>{t('Остаток')}</Form.Label>
             <Form.Control
               type="number"
-              placeholder="Введите остаток"
+              placeholder={t('Введите остаток')}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="editStockWarehouse">
-            <Form.Label>Склад</Form.Label>
+            <Form.Label>{t('Склад')}</Form.Label>
             <Form.Select
               value={wareHouseId}
               onChange={(e) => setWareHouseId(Number(e.target.value))}
             >
               <option value={-1} disabled>
-                Выберите склад
+                {t('Выберите склад')}
               </option>
               {wareHouseList?.map((wareHouse) => (
                 <option key={wareHouse.id} value={wareHouse.id}>
@@ -208,14 +209,14 @@ function StockListGroup(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowStockAlert(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
             onClick={async () => {
               setShowResAlert(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await updateStock(sid, pid, wareHouseId, Number(quantity))
               const data = await res.json()
@@ -227,7 +228,7 @@ function StockListGroup(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResAlert(true)
-                setShowResTitle('Остаток успешно обновлён')
+                setShowResTitle(t('Остаток успешно обновлён'))
               }
 
               setShowRes(true)
@@ -236,7 +237,7 @@ function StockListGroup(props) {
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -244,18 +245,18 @@ function StockListGroup(props) {
       {/* Удалить */}
       <Modal show={showDel} onHide={() => setShowDel(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить</Modal.Title>
+          <Modal.Title>{t('Удалить')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Body>{t('Вы уверены, что хотите его удалить?')}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="danger"
             onClick={async () => {
               setShowResAlert(false)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
               setShowDel(false)
               setShowLoad(true)
 
@@ -263,7 +264,7 @@ function StockListGroup(props) {
               const deleteResponse = await res.json()
               setShowResAlert(res.ok)
 
-              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
               setTimeout(() => {
                 setShowLoad(false)
                 setShowResTitle(deleteResponse.message)
@@ -272,7 +273,7 @@ function StockListGroup(props) {
             }}
           >
             <Trash2 />
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>

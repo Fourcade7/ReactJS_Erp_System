@@ -1,12 +1,14 @@
+import { t } from '../i18n'
+
 /**
  * Xodim rollari — qo'shish va tahrirlash shakllarida bir xil ro'yxat.
  * Qiymatlar ilova bo'ylab shu ko'rinishda tekshiriladi (`role === 'User'` — cheklangan menyu,
  * Android ilovaga faqat `Master` kiradi), shuning uchun yozilishi aynan shunday bo'lishi shart.
  */
 export const ROLES = [
-  { value: 'User', label: 'User — продавец / кассир' },
-  { value: 'Admin', label: 'Admin — полный доступ' },
-  { value: 'Master', label: 'Master — мастер (мобильное приложение)' },
+  { value: 'User', label: t('User — продавец / кассир') },
+  { value: 'Admin', label: t('Admin — полный доступ') },
+  { value: 'Master', label: t('Master — мастер (мобильное приложение)') },
 ]
 
 export const DEFAULT_ROLE = 'User'
@@ -17,5 +19,5 @@ export const DEFAULT_ROLE = 'User'
  */
 export function roleOptions(current) {
   if (!current || ROLES.some((role) => role.value === current)) return ROLES
-  return [...ROLES, { value: current, label: `${current} (текущая)` }]
+  return [...ROLES, { value: current, label: t('{current} (текущая)', { current }) }]
 }

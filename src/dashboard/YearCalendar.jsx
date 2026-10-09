@@ -8,22 +8,23 @@ import { getCalendar } from './DashboardApi'
 import { buildYearGrid, levelScale, MONTH_LABELS } from './calendarGrid'
 import { useChartColors } from './chartColors'
 import { formatDate } from './range'
+import { locale, t } from '../i18n'
 
-const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+const WEEKDAYS = [t('Пн'), t('Вт'), t('Ср'), t('Чт'), t('Пт'), t('Сб'), t('Вс')]
 const METRICS = [
-  { key: 'salesCount', label: 'Продажи' },
-  { key: 'revenue', label: 'Выручка' },
+  { key: 'salesCount', label: t('Продажи') },
+  { key: 'revenue', label: t('Выручка') },
 ]
 /** Bitta rang, och → to'q (ketma-ket shkala). 0-daraja — neytral katak. */
 const LEVEL_ALPHA = [0, 0.25, 0.48, 0.72, 1]
 
 const weekdayName = (date) =>
-  new Date(`${date}T00:00:00Z`).toLocaleDateString('ru-RU', { weekday: 'short', timeZone: 'UTC' })
+  new Date(`${date}T00:00:00Z`).toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' })
 
 function describe(date, day) {
   const head = `${weekdayName(date)}, ${formatDate(date)}`
-  if (!day || (!day.salesCount && !day.revenue)) return `${head} — продаж нет`
-  return `${head} — ${plural(day.salesCount, SALES)} · ${formatMoney(day.revenue)} сум`
+  if (!day || (!day.salesCount && !day.revenue)) return t('{head} — продаж нет', { head })
+  return t('{head} — {count} · {amount} сум', { head, count: plural(day.salesCount, SALES), amount: formatMoney(day.revenue) })
 }
 
 /**
@@ -69,8 +70,8 @@ function YearCalendar({ initialYear, onSelectDay }) {
   const canPrev = shown ? year > shown.firstYear : false
   const canNext = shown ? year < shown.lastYear : false
   // Nofaol tugmada title ko'rinmasligi mumkin — izoh o'rab turgan span'da.
-  const prevHint = canPrev ? 'Предыдущий год' : shown ? `Продаж раньше ${shown.firstYear} г. нет` : ''
-  const nextHint = canNext ? 'Следующий год' : 'Следующий год ещё не наступил'
+  const prevHint = canPrev ? t('Предыдущий год') : shown ? t('Продаж раньше {firstYear} г. нет', { firstYear: shown.firstYear }) : ''
+  const nextHint = canNext ? t('Следующий год') : t('Следующий год ещё не наступил')
 
   return (
     <div className="flex flex-col gap-3">
@@ -81,7 +82,7 @@ function YearCalendar({ initialYear, onSelectDay }) {
               variant="outline-secondary"
               size="sm"
               icon
-              aria-label="Предыдущий год"
+              aria-label={t('Предыдущий год')}
               disabled={!canPrev || loading}
               onClick={() => setYear((y) => y - 1)}
             >
@@ -96,7 +97,7 @@ function YearCalendar({ initialYear, onSelectDay }) {
               variant="outline-secondary"
               size="sm"
               icon
-              aria-label="Следующий год"
+              aria-label={t('Следующий год')}
               disabled={!canNext || loading}
               onClick={() => setYear((y) => y + 1)}
             >
@@ -105,7 +106,7 @@ function YearCalendar({ initialYear, onSelectDay }) {
           </span>
         </div>
 
-        <div role="group" aria-label="Показатель" className="inline-flex rounded-lg border border-line bg-surface-2 p-0.5">
+        <div role="group" aria-label={t('Показатель')} className="inline-flex rounded-lg border border-line bg-surface-2 p-0.5">
           {METRICS.map((m) => (
             <button
               key={m.key}
@@ -126,13 +127,16 @@ function YearCalendar({ initialYear, onSelectDay }) {
 
         {/* Ikkala tugma ham nofaol bo'lsa — sababi ko'rinsin (xato emas). */}
         {shown && !canPrev && !canNext && (
-          <span className="text-[11px] text-subtle">Прошлых лет с продажами нет</span>
+          <span className="text-[11px] text-subtle">{t('Прошлых лет с продажами нет')}</span>
         )}
 
         {shown && (
           <p className="ml-auto text-xs text-muted">
-            {plural(shown.totals.salesCount, SALES)} · {formatMoney(shown.totals.revenue)} сум ·{' '}
-            {plural(shown.totals.activeDays, ['активный день', 'активных дня', 'активных дней'])}
+            {t('{sales} · {revenue} сум · {days}', {
+              sales: plural(shown.totals.salesCount, SALES),
+              revenue: formatMoney(shown.totals.revenue),
+              days: plural(shown.totals.activeDays, ['активный день', 'активных дня', 'активных дней']),
+            })}
           </p>
         )}
       </div>
@@ -142,7 +146,7 @@ function YearCalendar({ initialYear, onSelectDay }) {
       <div className={cn('overflow-x-auto pb-1 transition-opacity', loading && 'opacity-60')}>
         <div
           role="img"
-          aria-label={`Календарь продаж за ${year} год. Значения по месяцам — в таблице ниже.`}
+          aria-label={t('Календарь продаж за {year} год. Значения по месяцам — в таблице ниже.', { year })}
           className="grid min-w-[42rem] gap-[3px]"
           style={{ gridTemplateColumns: `1.75rem repeat(${grid.weeks.length}, minmax(0, 1fr))` }}
         >
@@ -197,11 +201,11 @@ function YearCalendar({ initialYear, onSelectDay }) {
         <span className="min-h-4 text-muted" aria-live="polite">
           {focus ??
             (best
-              ? `Лучший день: ${describe(best.date, best)}. Нажмите на день, чтобы открыть его статистику.`
-              : 'Нажмите на день, чтобы открыть его статистику.')}
+              ? t('Лучший день: {day}. Нажмите на день, чтобы открыть его статистику.', { day: describe(best.date, best) })
+              : t('Нажмите на день, чтобы открыть его статистику.'))}
         </span>
         <span className="inline-flex items-center gap-1">
-          Меньше
+          {t('Меньше')}
           {LEVEL_ALPHA.map((alpha, lvl) => (
             <span
               key={lvl}
@@ -210,21 +214,21 @@ function YearCalendar({ initialYear, onSelectDay }) {
               style={{ background: fill(lvl) }}
             />
           ))}
-          Больше
+          {t('Больше')}
         </span>
       </div>
 
       <details className="group rounded-lg border border-line">
         <summary className="cursor-pointer list-none px-3 py-2 text-xs text-muted transition hover:text-fg">
-          Таблица по месяцам за {year}
+          {t('Таблица по месяцам за {year}', { year })}
         </summary>
         <table className="w-full border-t border-line text-[12px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wider text-subtle">
-              <th className="px-3 py-1.5 text-left font-semibold">Месяц</th>
-              <th className="px-3 py-1.5 text-right font-semibold">Продаж</th>
-              <th className="px-3 py-1.5 text-right font-semibold">Выручка</th>
-              <th className="px-3 py-1.5 text-right font-semibold">Активных дней</th>
+              <th className="px-3 py-1.5 text-left font-semibold">{t('Месяц')}</th>
+              <th className="px-3 py-1.5 text-right font-semibold">{t('Продаж')}</th>
+              <th className="px-3 py-1.5 text-right font-semibold">{t('Выручка')}</th>
+              <th className="px-3 py-1.5 text-right font-semibold">{t('Активных дней')}</th>
             </tr>
           </thead>
           <tbody>

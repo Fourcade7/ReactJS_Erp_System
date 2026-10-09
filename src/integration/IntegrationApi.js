@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api'
+import { t } from '../i18n'
 const BASE = `${API_BASE}/telegram`
 
 async function request(url, options) {
@@ -8,7 +9,7 @@ async function request(url, options) {
     if (!response.ok) {
         // ValidationPipe `message` ni massiv qilib qaytaradi.
         const message = Array.isArray(data?.message) ? data.message.join(', ') : data?.message
-        throw new Error(message || 'Ошибка сервера')
+        throw new Error(message || t('Ошибка сервера'))
     }
     return data
 }

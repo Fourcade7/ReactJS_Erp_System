@@ -5,6 +5,7 @@ import { NavbarScreenFourAuth } from '../navbar/NavbarContent'
 import { Button, Collapse, Form } from '../ui'
 import { AlertDismissibleDanger, ProgressDismissible } from '../utils/UtilsContent'
 import { loginUser } from './AuthApi'
+import { t } from '../i18n'
 
 function LoginForm({ clickLogin, busy }) {
   const [login, setLogin] = useState('')
@@ -16,24 +17,24 @@ function LoginForm({ clickLogin, busy }) {
   return (
     <Form onSubmit={submit} className="flex flex-col gap-4">
       <Form.Group controlId="loginEmail">
-        <Form.Label>Логин</Form.Label>
+        <Form.Label>{t('Логин')}</Form.Label>
         <Form.Control
           type="email"
           autoComplete="username"
-          placeholder="Введите адрес электронной почты"
+          placeholder={t('Введите адрес электронной почты')}
           value={login}
           onChange={(e) => setLogin(e.target.value)}
         />
-        <Form.Text>Мы никогда не будем делиться вашим адресом ни с кем другим.</Form.Text>
+        <Form.Text>{t('Мы никогда не будем делиться вашим адресом ни с кем другим.')}</Form.Text>
       </Form.Group>
 
       <Form.Group controlId="loginPassword">
-        <Form.Label>Пароль</Form.Label>
+        <Form.Label>{t('Пароль')}</Form.Label>
         <div className="relative">
           <Form.Control
             type={visible ? 'text' : 'password'}
             autoComplete="current-password"
-            placeholder="Введите пароль"
+            placeholder={t('Введите пароль')}
             className="pr-10"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -41,7 +42,7 @@ function LoginForm({ clickLogin, busy }) {
           <button
             type="button"
             onClick={() => setVisible((v) => !v)}
-            aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'}
+            aria-label={visible ? t('Скрыть пароль') : t('Показать пароль')}
             className="absolute right-1 top-1/2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-subtle transition hover:bg-surface-2 hover:text-fg"
           >
             {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -50,19 +51,19 @@ function LoginForm({ clickLogin, busy }) {
       </Form.Group>
 
       <div className="flex items-center justify-between">
-        <Form.Check type="checkbox" label="Запомните меня" id="rememberMe" />
+        <Form.Check type="checkbox" label={t('Запомните меня')} id="rememberMe" />
         <a href="#recover" className="text-xs text-primary transition hover:underline">
-          Забыли пароль?
+          {t('Забыли пароль?')}
         </a>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <Button as={Link} to="/register" variant="outline-secondary">
-          Регистрация
+          {t('Регистрация')}
         </Button>
         <Button type="submit" loading={busy} onClick={submit}>
           {!busy && <LogIn />}
-          Вход
+          {t('Вход')}
         </Button>
       </div>
     </Form>
@@ -101,7 +102,7 @@ function LoginScreen() {
     } catch {
       psetShow(false)
       setShow(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
     }
   }
 
@@ -114,13 +115,13 @@ function LoginScreen() {
           <div className="mb-6 text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-medium text-muted shadow-soft">
               <ShieldCheck className="size-3.5 text-primary" />
-              Защищённый вход
+              {t('Защищённый вход')}
             </span>
             <h1 className="mt-4 text-xl font-semibold tracking-tight text-fg">
-              Добро пожаловать в систему
+              {t('Добро пожаловать в систему')}
             </h1>
             <p className="mt-1 text-[13px] text-muted">
-              Войдите, чтобы продолжить работу в{' '}
+              {t('Войдите, чтобы продолжить работу в')}{' '}
               <span className="font-semibold text-primary">ERP</span>
             </p>
           </div>
@@ -138,7 +139,7 @@ function LoginScreen() {
           </div>
 
           <p className="mt-5 text-center text-[11px] text-subtle">
-            Продолжая, вы соглашаетесь с условиями использования системы.
+            {t('Продолжая, вы соглашаетесь с условиями использования системы.')}
           </p>
         </div>
       </main>

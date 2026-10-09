@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Collapse, ProgressBar, Spinner } from '../ui'
+import { t } from '../i18n'
 
 /** Ochilish animatsiyasi bilan chiqadigan, yopish mumkin boʻlgan ogohlantirish. */
 function DismissibleAlert({ variant, alertMsg }) {
@@ -30,7 +31,7 @@ function AlertDismissibleSuccess(props) {
 }
 
 /** Soʻrov bajarilayotganini bildiruvchi indikator. */
-function ProgressDismissible({ label = 'Пожалуйста, подождите' }) {
+function ProgressDismissible({ label = t('Пожалуйста, подождите') }) {
   return (
     <div className="flex flex-col items-center gap-3 py-3">
       <Spinner size="md" />

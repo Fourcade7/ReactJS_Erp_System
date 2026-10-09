@@ -14,31 +14,32 @@ import {
 } from 'lucide-react'
 import { Button, Dropdown, Form, Modal, ProgressBar, Spinner, Table } from '../ui'
 import { detectHeaderRow, guessColumn, readWorkbook } from './ExcelUtils'
+import { t } from '../i18n'
 
 const SOURCE_SYSTEMS = [
   {
     key: '1c',
-    label: '1С',
+    label: t('1С'),
     icon: Building2,
-    hint: 'Выгрузите список из 1С в Excel (.xlsx) или CSV и загрузите файл ниже.',
+    hint: t('Выгрузите список из 1С в Excel (.xlsx) или CSV и загрузите файл ниже.'),
   },
   {
     key: 'moysklad',
-    label: 'МойСклад',
+    label: t('МойСклад'),
     icon: Warehouse,
-    hint: 'Экспортируйте данные из МойСклад в Excel и загрузите файл ниже.',
+    hint: t('Экспортируйте данные из МойСклад в Excel и загрузите файл ниже.'),
   },
   {
     key: 'bitrix24',
     label: 'Bitrix24',
     icon: Layers,
-    hint: 'Экспортируйте данные из Bitrix24 в Excel/CSV и загрузите файл ниже.',
+    hint: t('Экспортируйте данные из Bitrix24 в Excel/CSV и загрузите файл ниже.'),
   },
   {
     key: 'excel',
-    label: 'Excel / CSV файл',
+    label: t('Excel / CSV файл'),
     icon: FileSpreadsheet,
-    hint: 'Выберите готовый файл Excel (.xlsx, .xls) или CSV.',
+    hint: t('Выберите готовый файл Excel (.xlsx, .xls) или CSV.'),
   },
 ]
 
@@ -78,7 +79,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
 
   const headers = Array.from({ length: columnCount }, (_, i) => {
     const label = cellText(sheetRows[headerRowIndex]?.[i])
-    return label || `Столбец ${i + 1}`
+    return label || t('Столбец {v}', { v: i + 1 })
   })
 
   const dataRows = sheetRows
@@ -99,7 +100,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
   // Sarlavha qatori almashsa, ustunlar nomi ham oʻzgaradi — moslik qaytadan taxmin qilinadi.
   const chooseHeaderRow = (rows, index) => {
     const labels = Array.from({ length: rows.reduce((max, r) => Math.max(max, r.length), 0) }, (_, i) =>
-      cellText(rows[index]?.[i]) || `Столбец ${i + 1}`,
+      cellText(rows[index]?.[i]) || t('Столбец {v}', { v: i + 1 }),
     )
 
     const guessed = {}
@@ -122,7 +123,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
       const rows = await readWorkbook(file)
 
       if (rows.length < 2) {
-        setError('В файле не найдено данных. Нужна строка с названиями столбцов и хотя бы одна строка данных.')
+        setError(t('В файле не найдено данных. Нужна строка с названиями столбцов и хотя бы одна строка данных.'))
         return
       }
 
@@ -130,7 +131,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
       chooseHeaderRow(rows, detectHeaderRow(rows))
       setStep('mapping')
     } catch (err) {
-      setError(err.message || 'Не удалось прочитать файл')
+      setError(err.message || t('Не удалось прочитать файл'))
     }
   }
 
@@ -177,13 +178,13 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
         for (const rowError of result?.errors ?? []) {
           failed.push({
             index: excelRow(start + rowError.index),
-            message: rowError.message || 'Ошибка импорта',
+            message: rowError.message || t('Ошибка импорта'),
           })
         }
       } catch (err) {
         // Butun paket yiqilsa (tarmoq/validatsiya), undagi har bir qator xato deb belgilanadi.
         chunk.forEach((_, i) =>
-          failed.push({ index: excelRow(start + i), message: err.message || 'Ошибка импорта' }),
+          failed.push({ index: excelRow(start + i), message: err.message || t('Ошибка импорта') }),
         )
       }
 
@@ -198,7 +199,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
   return (
     <Modal show onHide={handleClose} size="lg" centered>
       <Modal.Header closeButton={step !== 'importing'}>
-        <Modal.Title>Импорт: {entityTitle}</Modal.Title>
+        <Modal.Title>{t('Импорт: {entityTitle}', { entityTitle })}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
@@ -230,18 +231,18 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
               onClick={() => setStep('source')}
               className="inline-flex w-fit items-center gap-1 text-[11px] font-medium text-subtle hover:text-fg"
             >
-              <ArrowLeft className="size-3.5" /> Назад к выбору источника
+              <ArrowLeft className="size-3.5" /> {t('Назад к выбору источника')}
             </button>
 
             <p className="text-[13px] text-muted">{source.hint}</p>
 
             <Form.Group controlId="importFile">
-              <Form.Label>Файл ({source.label})</Form.Label>
+              <Form.Label>{t('Файл ({label})', { label: source.label })}</Form.Label>
               <Form.Control type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} />
             </Form.Group>
 
             {fileName && !error && (
-              <p className="text-[11px] text-subtle">Выбран файл: {fileName}</p>
+              <p className="text-[11px] text-subtle">{t('Выбран файл: {fileName}', { fileName })}</p>
             )}
             {error && (
               <p className="flex items-center gap-1.5 text-[12px] text-danger-soft-fg">
@@ -254,8 +255,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
         {step === 'mapping' && (
           <div className="flex flex-col gap-4">
             <p className="text-[13px] text-muted">
-              Укажите, какому столбцу из файла соответствует каждое поле. Найдено строк:{' '}
-              {dataRows.length}.
+              {t('Укажите, какому столбцу из файла соответствует каждое поле. Найдено строк: {length}.', { length: dataRows.length })}
             </p>
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -270,7 +270,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
                       setMapping((prev) => ({ ...prev, [field.key]: e.target.value }))
                     }
                   >
-                    <option value="">— не импортировать —</option>
+                    <option value="">{t('— не импортировать —')}</option>
                     {headers.map((h, i) => (
                       <option key={i} value={i}>
                         {h}
@@ -279,7 +279,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
                   </Form.Select>
                   {mapping[field.key] !== '' && mapping[field.key] != null ? (
                     <Form.Text className="truncate">
-                      Пример: {columnSamples(Number(mapping[field.key])).join(', ') || '— пусто —'}
+                      {t('Пример: {v}', { v: columnSamples(Number(mapping[field.key])).join(', ') || t('— пусто —') })}
                     </Form.Text>
                   ) : (
                     field.hint && <Form.Text>{field.hint}</Form.Text>
@@ -292,7 +292,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
 
             <div>
               <p className="mb-1.5 text-[11px] font-medium text-subtle">
-                Предпросмотр (первые {Math.min(5, dataRows.length)} строк)
+                {t('Предпросмотр (первые {min} строк)', { min: Math.min(5, dataRows.length) })}
               </p>
               <Table>
                 <thead>
@@ -325,7 +325,7 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
           <div className="flex flex-col items-center gap-3 py-6">
             <Spinner size="lg" />
             <p className="text-[13px] text-muted">
-              Импортировано {progress.done} из {progress.total}
+              {t('Импортировано {done} из {total}', { done: progress.done, total: progress.total })}
             </p>
             <ProgressBar now={progress.done} max={progress.total || 1} className="w-full" />
           </div>
@@ -338,21 +338,21 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
                 <CheckCircle2 className="size-4" />
               </span>
               <p className="text-[13px] text-fg">
-                Успешно импортировано: <strong>{results.okCount}</strong> из {dataRows.length}
+                {t('Успешно импортировано:')} <strong>{results.okCount}</strong> {t('из {length}', { length: dataRows.length })}
               </p>
             </div>
 
             {results.failed.length > 0 && (
               <div>
                 <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-danger-soft-fg">
-                  <XCircle className="size-3.5" /> Не удалось импортировать: {results.failed.length}
+                  <XCircle className="size-3.5" /> {t('Не удалось импортировать: {length}', { length: results.failed.length })}
                 </p>
                 <div className="max-h-48 overflow-y-auto rounded-xl border border-line">
                   <Table hover={false}>
                     <thead>
                       <tr>
-                        <th>Строка</th>
-                        <th>Причина</th>
+                        <th>{t('Строка')}</th>
+                        <th>{t('Причина')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -375,19 +375,19 @@ function ImportModal({ onHide, entityTitle, fields, options, onImportChunk, onFi
         {step === 'mapping' && (
           <>
             <Button variant="outline-secondary" onClick={() => setStep('upload')}>
-              Назад
+              {t('Назад')}
             </Button>
             <Button onClick={runImport} disabled={!canImport}>
-              <Upload /> Импортировать
+              <Upload /> {t('Импортировать')}
             </Button>
           </>
         )}
         {(step === 'source' || step === 'upload') && (
           <Button variant="outline-secondary" onClick={handleClose}>
-            Отмена
+            {t('Отмена')}
           </Button>
         )}
-        {step === 'result' && <Button onClick={handleClose}>Готово</Button>}
+        {step === 'result' && <Button onClick={handleClose}>{t('Готово')}</Button>}
       </Modal.Footer>
     </Modal>
   )
@@ -401,17 +401,17 @@ function ImportExportMenu({ onImport, onExport, exporting }) {
         variant="outline-secondary"
         icon
         caret={false}
-        aria-label="Настройки"
-        title="Настройки"
+        aria-label={t('Настройки')}
+        title={t('Настройки')}
       >
         <Settings />
       </Dropdown.Toggle>
       <Dropdown.Menu align="end">
         <Dropdown.Item onClick={onImport}>
-          <Upload /> Импорт
+          <Upload /> {t('Импорт')}
         </Dropdown.Item>
         <Dropdown.Item onClick={onExport} disabled={exporting}>
-          <Download /> {exporting ? 'Экспорт...' : 'Экспорт в Excel'}
+          <Download /> {exporting ? t('Экспорт...') : t('Экспорт в Excel')}
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '../lib/cn'
+import { t } from '../i18n'
 
 /** `Modal.Header closeButton` yopish funksiyasini shu kontekstdan oladi. */
 const ModalContext = createContext({ onHide: undefined })
@@ -145,7 +146,7 @@ function ModalHeader({ closeButton, onHide, className, children, ...props }) {
       {closeButton && (
         <button
           type="button"
-          aria-label="Закрыть"
+          aria-label={t('Закрыть')}
           onClick={() => close?.()}
           data-modal-close="true"
           className="-mr-1 -mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md text-subtle transition hover:bg-surface-2 hover:text-fg"

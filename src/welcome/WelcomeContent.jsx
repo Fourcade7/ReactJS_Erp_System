@@ -12,44 +12,45 @@ import {
 } from 'lucide-react'
 import { NavbarScreenFourAuth } from '../navbar/NavbarContent'
 import { Button, Container } from '../ui'
+import { t } from '../i18n'
 
 const FEATURES = [
   {
     Icon: Boxes,
-    title: 'Складской учёт',
-    text: 'Остатки по складам обновляются автоматически при каждом приходе, продаже и возврате.',
+    title: t('Складской учёт'),
+    text: t('Остатки по складам обновляются автоматически при каждом приходе, продаже и возврате.'),
   },
   {
     Icon: ShoppingBag,
-    title: 'Продажи и возвраты',
-    text: 'Оформление чека, печать документа и контроль долга покупателя в одном окне.',
+    title: t('Продажи и возвраты'),
+    text: t('Оформление чека, печать документа и контроль долга покупателя в одном окне.'),
   },
   {
     Icon: Users,
-    title: 'Клиенты и сотрудники',
-    text: 'Единая база контрагентов с ролями доступа и историей операций по каждому.',
+    title: t('Клиенты и сотрудники'),
+    text: t('Единая база контрагентов с ролями доступа и историей операций по каждому.'),
   },
   {
     Icon: Banknote,
-    title: 'Платежи',
-    text: 'Приём оплат, частичное погашение и прозрачная картина дебиторской задолженности.',
+    title: t('Платежи'),
+    text: t('Приём оплат, частичное погашение и прозрачная картина дебиторской задолженности.'),
   },
   {
     Icon: BarChart3,
-    title: 'Аналитика',
-    text: 'Выручка за день, неделю и месяц в наглядных графиках — без выгрузок в таблицы.',
+    title: t('Аналитика'),
+    text: t('Выручка за день, неделю и месяц в наглядных графиках — без выгрузок в таблицы.'),
   },
   {
     Icon: PlugZap,
-    title: 'Интеграции',
-    text: 'Подключение внешних сервисов и обмен данными через открытый программный интерфейс.',
+    title: t('Интеграции'),
+    text: t('Подключение внешних сервисов и обмен данными через открытый программный интерфейс.'),
   },
 ]
 
 const STATS = [
-  { value: '12+', label: 'модулей учёта' },
-  { value: '99.9%', label: 'доступность' },
-  { value: '24/7', label: 'поддержка' },
+  { value: '12+', label: t('модулей учёта') },
+  { value: '99.9%', label: t('доступность') },
+  { value: '24/7', label: t('поддержка') },
 ]
 
 function Hero() {
@@ -59,29 +60,27 @@ function Hero() {
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-medium text-muted shadow-soft">
             <ShieldCheck className="size-3.5 text-primary" />
-            Управление бизнесом в одной системе
+            {t('Управление бизнесом в одной системе')}
           </span>
 
           <h1 className="mt-5 text-3xl font-semibold leading-[1.15] tracking-tight text-fg sm:text-[42px]">
-            Добро пожаловать в{' '}
+            {t('Добро пожаловать в')}{' '}
             <span className="bg-gradient-to-r from-primary to-info bg-clip-text text-transparent">
-              ERP-систему
+              {t('ERP-систему')}
             </span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-xl text-[13px] leading-relaxed text-muted sm:text-sm">
-            ERP объединяет склад, продажи, закупки, финансы и кадры в единый контур.
-            Продажа товара сразу обновляет остатки и финансовые отчёты — меньше ручной
-            работы, меньше ошибок.
+            {t('ERP объединяет склад, продажи, закупки, финансы и кадры в единый контур. Продажа товара сразу обновляет остатки и финансовые отчёты — меньше ручной работы, меньше ошибок.')}
           </p>
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
             <Button as={Link} to="/login" size="lg">
-              Начать работу
+              {t('Начать работу')}
               <ArrowRight />
             </Button>
             <Button as="a" href="#features" variant="outline-secondary" size="lg">
-              Тарифы
+              {t('Тарифы')}
             </Button>
           </div>
 
@@ -102,7 +101,7 @@ function Hero() {
           <div className="absolute inset-x-8 -bottom-4 h-16 rounded-full bg-primary/20 blur-3xl" />
           <img
             src="https://static.vecteezy.com/system/resources/previews/024/218/792/non_2x/erp-enterprise-resource-planning-system-illustration-with-business-integration-productivity-and-company-enhancement-in-hand-drawn-templates-vector.jpg"
-            alt="Схема работы ERP-системы"
+            alt={t('Схема работы ERP-системы')}
             width={700}
             height={700}
             loading="lazy"
@@ -120,11 +119,10 @@ function Features() {
       <Container className="py-16">
         <div className="max-w-xl">
           <h2 className="text-xl font-semibold tracking-tight text-fg sm:text-2xl">
-            Всё, что нужно для ежедневного учёта
+            {t('Всё, что нужно для ежедневного учёта')}
           </h2>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">
-            Каждый модуль работает с общими данными, поэтому отчёты сходятся без сверок
-            между отделами.
+            {t('Каждый модуль работает с общими данными, поэтому отчёты сходятся без сверок между отделами.')}
           </p>
         </div>
 
@@ -154,28 +152,28 @@ function FooterScreen() {
         <div>
           <p className="text-[13px] font-semibold text-fg">5858 UZ — ERP System</p>
           <p className="mt-2 max-w-xs text-xs leading-relaxed text-subtle">
-            Учётная система для торговых и складских операций.
+            {t('Учётная система для торговых и складских операций.')}
           </p>
         </div>
 
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
-            Разделы
+            {t('Разделы')}
           </p>
           <ul className="mt-3 flex flex-col gap-2 text-xs text-muted">
             <li>
               <Link to="/" className="transition hover:text-fg">
-                Главная
+                {t('Главная')}
               </Link>
             </li>
             <li>
               <a href="#features" className="transition hover:text-fg">
-                Возможности
+                {t('Возможности')}
               </a>
             </li>
             <li>
               <Link to="/login" className="transition hover:text-fg">
-                Вход в систему
+                {t('Вход в систему')}
               </Link>
             </li>
           </ul>
@@ -183,17 +181,17 @@ function FooterScreen() {
 
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
-            Компания
+            {t('Компания')}
           </p>
           <ul className="mt-3 flex flex-col gap-2 text-xs text-muted">
             <li>
               <a href="#support" className="transition hover:text-fg">
-                Поддержка
+                {t('Поддержка')}
               </a>
             </li>
             <li>
               <a href="#plans" className="transition hover:text-fg">
-                Тарифы
+                {t('Тарифы')}
               </a>
             </li>
           </ul>
@@ -204,25 +202,25 @@ function FooterScreen() {
           className="sm:col-span-2 lg:col-span-1"
         >
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
-            Рассылка
+            {t('Рассылка')}
           </p>
           <div className="mt-3 flex gap-2">
             <input
               type="email"
-              placeholder="Email адрес"
-              aria-label="Email адрес"
+              placeholder={t('Email адрес')}
+              aria-label={t('Email адрес')}
               className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 text-xs text-fg outline-none transition placeholder:text-subtle focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
             />
             <Button type="submit" size="sm">
-              Подписаться
+              {t('Подписаться')}
             </Button>
           </div>
         </form>
       </Container>
 
       <Container className="flex flex-wrap items-center justify-between gap-2 border-t border-line py-5 text-[11px] text-subtle">
-        <span>© {new Date().getFullYear()} ID Group. Все права защищены.</span>
-        <span>Сделано для эффективного учёта</span>
+        <span>{t('© {year} ID Group. Все права защищены.', { year: new Date().getFullYear() })}</span>
+        <span>{t('Сделано для эффективного учёта')}</span>
       </Container>
     </footer>
   )

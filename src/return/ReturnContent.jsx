@@ -7,16 +7,17 @@ import {
   getAllProductPaginationSearch,
   getAllReturnsListPaginationSearch,
 } from './ReturnApi'
+import { t } from '../i18n'
 
 const RETURN_CONFIG = {
   Icon: Undo2,
-  title: 'Возврат',
-  description: 'Возврат товаров от покупателей',
-  label: 'Возврат',
-  listTitle: 'Список возвратов',
-  newTitle: 'Новый возврат',
-  detailTitle: 'Детали возврата',
-  checkoutTitle: 'Оформление возврата',
+  title: t('Возврат'),
+  description: t('Возврат товаров от покупателей'),
+  label: t('Возврат'),
+  listTitle: t('Список возвратов'),
+  newTitle: t('Новый возврат'),
+  detailTitle: t('Детали возврата'),
+  checkoutTitle: t('Оформление возврата'),
   tone: 'warning',
   priceField: 'buyPrice',
   limitByStock: false,

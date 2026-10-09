@@ -1,12 +1,13 @@
 import { cn } from '../lib/cn'
 import { formatMoney } from '../lib/format'
+import { t } from '../i18n'
 
 /**
  * Gorizontal ustunlar ro'yxati (bitta seriya → bitta rang). Qiymat har doim matn
  * bo'lib ustun oxirida turadi, shuning uchun tooltip shart emas va rang yolg'iz
  * ma'no tashimaydi. Ustun: 10px qalinlik, chap tomonda to'g'ri, oxiri 4px yumaloq.
  */
-function BarList({ items, format = formatMoney, emptyText = 'Нет данных', className }) {
+function BarList({ items, format = formatMoney, emptyText = t('Нет данных'), className }) {
   if (!items.length) {
     return <p className={cn('py-6 text-center text-xs text-subtle', className)}>{emptyText}</p>
   }

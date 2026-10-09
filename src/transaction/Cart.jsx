@@ -5,6 +5,7 @@ import { EmptyState } from '../ui'
 import { copyCartImage } from './cartImage'
 import { priceChange, stockOf, unitPrice } from './pricing'
 import { parseQty, roundQty } from '../lib/quantity'
+import { t, td } from '../i18n'
 
 const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString('uz')}`
 
@@ -22,7 +23,7 @@ function QuantityInput({ value, overStock, onSave }) {
     return (
       <button
         type="button"
-        title="Изменить количество (можно дробное, например 12,5)"
+        title={t('Изменить количество (можно дробное, например 12,5)')}
         onClick={() => {
           setDraft(String(value))
           setInvalid(false)
@@ -49,7 +50,7 @@ function QuantityInput({ value, overStock, onSave }) {
     <input
       autoFocus
       inputMode="decimal"
-      title="Enter — сохранить, Esc — отмена. До 3 знаков после запятой"
+      title={t('Enter — сохранить, Esc — отмена. До 3 знаков после запятой')}
       value={draft}
       onChange={(e) => {
         setDraft(e.target.value.replace(/[^\d.,]/g, ''))
@@ -95,8 +96,8 @@ function PriceInput({ product, price, onSave }) {
   const save = () => {
     const value = Math.round(Number(draft.replace(/[\s,]/g, '')))
     if (value === price) return setEditing(false)
-    if (!Number.isFinite(value) || value <= 0) return setError('Введите цену')
-    if (value < min) return setError(`Не ниже оптовой: ${min.toLocaleString('uz')}`)
+    if (!Number.isFinite(value) || value <= 0) return setError(t('Введите цену'))
+    if (value < min) return setError(t('Не ниже оптовой: {price}', { price: min.toLocaleString('uz') }))
     onSave(value)
     setEditing(false)
   }
@@ -105,7 +106,7 @@ function PriceInput({ product, price, onSave }) {
     return (
       <button
         type="button"
-        title="Изменить цену в этой продаже"
+        title={t('Изменить цену в этой продаже')}
         onClick={() => {
           setDraft(String(price))
           setError('')
@@ -124,7 +125,7 @@ function PriceInput({ product, price, onSave }) {
       <input
         autoFocus
         inputMode="numeric"
-        title="Enter — сохранить, Esc — отмена"
+        title={t('Enter — сохранить, Esc — отмена')}
         value={draft}
         onChange={(e) => {
           setDraft(e.target.value.replace(/[^\d\s]/g, ''))
@@ -203,18 +204,18 @@ function Cart({
   return (
     <section className="flex min-w-0 flex-col gap-2">
       <div className="flex h-6 items-center justify-between">
-        <h3 className="text-[13px] font-semibold text-fg">Корзина</h3>
+        <h3 className="text-[13px] font-semibold text-fg">{t('Корзина')}</h3>
         <div className="flex items-center gap-2">
           {count > 0 && (
             <span className="rounded-full bg-primary-soft px-2 text-[11px] font-medium tabular-nums text-primary-soft-fg">
-              {orderList.length} тов. · {count} шт.
+              {t('{length} тов. · {count} шт.', { length: orderList.length, count })}
             </span>
           )}
           {orderList.length > 0 && (
             <button
               type="button"
               onClick={copyAsImage}
-              title="Скопировать корзину как изображение"
+              title={t('Скопировать корзину как изображение')}
               className={cn(
                 'inline-flex items-center gap-1 text-[11px] transition',
                 copyState === 'done' && 'text-success-soft-fg',
@@ -223,7 +224,7 @@ function Cart({
               )}
             >
               {copyState === 'done' ? <Check className="size-3" /> : <Copy className="size-3" />}
-              {copyState === 'done' ? 'Скопировано' : copyState === 'error' ? 'Ошибка' : 'Копировать'}
+              {copyState === 'done' ? t('Скопировано') : copyState === 'error' ? t('Ошибка') : t('Копировать')}
             </button>
           )}
           {orderList.length > 0 && (
@@ -232,7 +233,7 @@ function Cart({
               onClick={() => setOrderList([])}
               className="text-[11px] text-subtle transition hover:text-danger-soft-fg"
             >
-              Очистить
+              {t('Очистить')}
             </button>
           )}
         </div>
@@ -241,8 +242,8 @@ function Cart({
       {orderList.length === 0 ? (
         <EmptyState
           icon={ShoppingCart}
-          title="Корзина пуста"
-          description="Нажмите на товар в списке или отсканируйте штрихкод."
+          title={t('Корзина пуста')}
+          description={t('Нажмите на товар в списке или отсканируйте штрихкод.')}
           className="py-14"
         />
       ) : (
@@ -255,7 +256,7 @@ function Cart({
             const available = stockOf(product)
             const overStock = limitByStock && product.quantity > available
             const stockHint = overStock
-              ? `На складе только ${available} ${product.unit} — лишних ${roundQty(product.quantity - available)}`
+              ? t('На складе только {available} {unit} — лишних {roundQty}', { available, unit: td(product.unit), roundQty: roundQty(product.quantity - available) })
               : undefined
 
             return (
@@ -286,7 +287,7 @@ function Cart({
                   <button
                     type="button"
                     onClick={() => decrease(product.id)}
-                    aria-label="Уменьшить"
+                    aria-label={t('Уменьшить')}
                     className="inline-flex size-6 items-center justify-center rounded-l-md text-muted transition hover:bg-surface-3 hover:text-fg"
                   >
                     <Minus className="size-3" />
@@ -299,7 +300,7 @@ function Cart({
                   <button
                     type="button"
                     onClick={() => increase(product.id)}
-                    aria-label="Увеличить"
+                    aria-label={t('Увеличить')}
                     className="inline-flex size-6 items-center justify-center rounded-r-md text-muted transition hover:bg-surface-3 hover:text-fg"
                   >
                     <Plus className="size-3" />
@@ -315,7 +316,7 @@ function Cart({
                       customPrice: undefined,
                     }))
                   }
-                  title="Применить оптовую цену"
+                  title={t('Применить оптовую цену')}
                   className={cn(
                     'shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition',
                     product.checkPrice
@@ -323,7 +324,7 @@ function Cart({
                       : 'border-line text-subtle hover:text-fg',
                   )}
                 >
-                  Опт
+                  {t('Опт')}
                 </button>
 
                 <div className="flex shrink-0 items-center justify-end gap-1 @lg:min-w-[5.5rem]">
@@ -348,15 +349,15 @@ function Cart({
                   {change !== 0 && (
                     <>
                       <span
-                        title={`Цена изменена: ${Number(product[priceField]).toLocaleString('uz')} → ${price.toLocaleString('uz')}`}
+                        title={t('Цена изменена: {from} → {to}', { from: Number(product[priceField]).toLocaleString('uz'), to: price.toLocaleString('uz') })}
                         className="text-[11px] tabular-nums text-warning-soft-fg"
                       >
                         {signed(change)}
                       </span>
                       <button
                         type="button"
-                        title="Вернуть обычную цену"
-                        aria-label="Вернуть обычную цену"
+                        title={t('Вернуть обычную цену')}
+                        aria-label={t('Вернуть обычную цену')}
                         onClick={() => update(product.id, (item) => ({ ...item, customPrice: undefined }))}
                         className="inline-flex size-4 items-center justify-center rounded text-subtle transition hover:bg-surface-2 hover:text-fg"
                       >
@@ -373,7 +374,7 @@ function Cart({
                 <button
                   type="button"
                   onClick={() => remove(product.id)}
-                  aria-label="Удалить из корзины"
+                  aria-label={t('Удалить из корзины')}
                   className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-subtle transition hover:bg-danger-soft hover:text-danger-soft-fg"
                 >
                   <Trash2 className="size-3.5" />

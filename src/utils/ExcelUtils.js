@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { t } from '../i18n'
 
 function normalize(text) {
   return text
@@ -50,7 +51,7 @@ function detectHeaderRow(rows) {
 function readWorkbook(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('Не удалось прочитать файл'))
+    reader.onerror = () => reject(new Error(t('Не удалось прочитать файл')))
     reader.onload = () => {
       try {
         const data = new Uint8Array(reader.result)
@@ -59,7 +60,7 @@ function readWorkbook(file) {
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: '' })
         resolve(rows)
       } catch {
-        reject(new Error('Файл повреждён или имеет неверный формат'))
+        reject(new Error(t('Файл повреждён или имеет неверный формат')))
       }
     }
     reader.readAsArrayBuffer(file)
@@ -77,7 +78,7 @@ async function exportToExcel({ fetchRows, columns, fileName }) {
   )
   const sheet = XLSX.utils.json_to_sheet(mapped)
   const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, sheet, 'Данные')
+  XLSX.utils.book_append_sheet(workbook, sheet, t('Данные'))
   XLSX.writeFile(workbook, fileName)
 }
 

@@ -8,6 +8,7 @@ import {
 } from '../utils/UtilsContent'
 import { CustomerListGroup } from './CustomerListContent'
 import { addCustomer } from './CustomerApi'
+import { t } from '../i18n'
 
 function CustomerForm({ handleRegister, busy }) {
   const [username, setUsername] = useState('')
@@ -20,17 +21,17 @@ function CustomerForm({ handleRegister, busy }) {
     <Form onSubmit={submit} className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <Form.Group controlId="customerName">
-          <Form.Label>Имя</Form.Label>
+          <Form.Label>{t('Имя')}</Form.Label>
           <Form.Control
-            placeholder="Введите имя"
+            placeholder={t('Введите имя')}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
         </Form.Group>
         <Form.Group controlId="customerSurname">
-          <Form.Label>Фамилия</Form.Label>
+          <Form.Label>{t('Фамилия')}</Form.Label>
           <Form.Control
-            placeholder="Введите фамилию"
+            placeholder={t('Введите фамилию')}
             value={surname}
             onChange={(e) => setSurname(e.target.value)}
           />
@@ -38,10 +39,10 @@ function CustomerForm({ handleRegister, busy }) {
       </div>
 
       <Form.Group controlId="customerPhone">
-        <Form.Label>Телефон</Form.Label>
+        <Form.Label>{t('Телефон')}</Form.Label>
         <Form.Control
           type="tel"
-          placeholder="Введите номер телефона"
+          placeholder={t('Введите номер телефона')}
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
@@ -49,7 +50,7 @@ function CustomerForm({ handleRegister, busy }) {
 
       <Button type="submit" loading={busy} block>
         {!busy && <Save />}
-        Сохранить
+        {t('Сохранить')}
       </Button>
     </Form>
   )
@@ -78,14 +79,14 @@ function AddNewCustomer(props) {
         psetShow(false)
       } else {
         setShowSuccess(true)
-        setAlertMessage('Успешно...')
+        setAlertMessage(t('Успешно...'))
         psetShow(false)
         const timer = setTimeout(() => props.tabChange('home'), 2000)
         return () => clearTimeout(timer)
       }
     } catch {
       setShowDanger(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
       psetShow(false)
     }
   }
@@ -114,7 +115,7 @@ function CustomerTabs() {
         title={
           <>
             <Users />
-            Список клиентов
+            {t('Список клиентов')}
           </>
         }
       >
@@ -125,7 +126,7 @@ function CustomerTabs() {
         title={
           <>
             <UserPlus />
-            Добавить нового клиента
+            {t('Добавить нового клиента')}
           </>
         }
       >
@@ -140,8 +141,8 @@ function CustomerScreen() {
     <div>
       <PageHeader
         icon={Users}
-        title="Клиенты"
-        description="База покупателей и их контактные данные"
+        title={t('Клиенты')}
+        description={t('База покупателей и их контактные данные')}
       />
       <CustomerTabs />
     </div>

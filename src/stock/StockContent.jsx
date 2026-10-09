@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Boxes, ListOrdered } from 'lucide-react'
 import { PageHeader, Tab, Tabs } from '../ui'
 import { StockListGroup } from './StockListContent'
+import { t } from '../i18n'
 
 function StockTab() {
   const [activeTab, setActiveTab] = useState('home')
@@ -13,7 +14,7 @@ function StockTab() {
         title={
           <>
             <ListOrdered />
-            Список остатков
+            {t('Список остатков')}
           </>
         }
       >
@@ -28,8 +29,8 @@ function StockScreen() {
     <div>
       <PageHeader
         icon={Boxes}
-        title="Остатки"
-        description="Количество товаров на каждом складе"
+        title={t('Остатки')}
+        description={t('Количество товаров на каждом складе')}
       />
       <StockTab />
     </div>

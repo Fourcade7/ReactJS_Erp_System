@@ -1,10 +1,12 @@
+import { locale, t } from '../i18n'
+
 /** Davr va qadam hisobi. Sanalar — "YYYY-MM-DD" satrlari, vaqt mintaqasiz (backend biznes mintaqasida o'qiydi). */
 
 export const GRANULARITIES = [
-  { key: 'day', label: 'День', days: 1 },
-  { key: 'week', label: 'Неделя', days: 7 },
-  { key: 'month', label: 'Месяц', days: 28 },
-  { key: 'year', label: 'Год', days: 365 },
+  { key: 'day', label: t('День'), days: 1 },
+  { key: 'week', label: t('Неделя'), days: 7 },
+  { key: 'month', label: t('Месяц'), days: 28 },
+  { key: 'year', label: t('Год'), days: 365 },
 ]
 
 /** Backend bilan bir xil chegara (stats.service MAX_BUCKETS). */
@@ -46,18 +48,18 @@ export function autoGranularity(from, to) {
 
 /** Tayyor davrlar `today` (backend aytgan biznes sanasi) dan hisoblanadi. */
 export const PRESETS = [
-  { key: '7d', label: '7 дней', range: (t) => [shiftDays(t, -6), t] },
-  { key: '30d', label: '30 дней', range: (t) => [shiftDays(t, -29), t] },
-  { key: 'month', label: 'Этот месяц', range: (t) => [monthStart(t), t] },
-  { key: 'prev-month', label: 'Прошлый месяц', range: (t) => [addMonths(t, -1), shiftDays(monthStart(t), -1)] },
-  { key: '90d', label: '90 дней', range: (t) => [shiftDays(t, -89), t] },
-  { key: 'year', label: 'Этот год', range: (t) => [`${t.slice(0, 4)}-01-01`, t] },
-  { key: '12m', label: '12 месяцев', range: (t) => [addMonths(t, -11), t] },
+  { key: '7d', label: t('7 дней'), range: (today) => [shiftDays(today, -6), today] },
+  { key: '30d', label: t('30 дней'), range: (today) => [shiftDays(today, -29), today] },
+  { key: 'month', label: t('Этот месяц'), range: (today) => [monthStart(today), today] },
+  { key: 'prev-month', label: t('Прошлый месяц'), range: (today) => [addMonths(today, -1), shiftDays(monthStart(today), -1)] },
+  { key: '90d', label: t('90 дней'), range: (today) => [shiftDays(today, -89), today] },
+  { key: 'year', label: t('Этот год'), range: (today) => [`${today.slice(0, 4)}-01-01`, today] },
+  { key: '12m', label: t('12 месяцев'), range: (today) => [addMonths(today, -11), today] },
 ]
 
-const fmt = (date, options) => new Date(`${date}T00:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'UTC', ...options })
+const fmt = (date, options) => new Date(`${date}T00:00:00Z`).toLocaleDateString(locale, { timeZone: 'UTC', ...options })
 
-const MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const MONTHS_SHORT = [t('янв'), t('фев'), t('мар'), t('апр'), t('май'), t('июн'), t('июл'), t('авг'), t('сен'), t('окт'), t('ноя'), t('дек')]
 
 /** O'q belgisi (qisqa): "09.10", "окт 26", "2026". */
 export function bucketTick(bucket, granularity) {
@@ -68,12 +70,12 @@ export function bucketTick(bucket, granularity) {
 
 /** Tooltip va jadval uchun to'liq nom. */
 export function bucketLabel(bucket, granularity) {
-  if (granularity === 'year') return `${bucket.slice(0, 4)} год`
+  if (granularity === 'year') return t('{year} год', { year: bucket.slice(0, 4) })
   if (granularity === 'month') {
-    const label = fmt(bucket, { month: 'long', year: 'numeric' }).replace(' г.', '')
+    const label = fmt(bucket, { month: 'long', year: 'numeric' }).replace(' г.', '').replace(',', '')
     return label.charAt(0).toUpperCase() + label.slice(1)
   }
-  if (granularity === 'week') return `Неделя с ${fmt(bucket, { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+  if (granularity === 'week') return t('Неделя с {date}', { date: fmt(bucket, { day: '2-digit', month: '2-digit', year: 'numeric' }) })
   return fmt(bucket, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 

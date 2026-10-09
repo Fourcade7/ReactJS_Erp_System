@@ -34,6 +34,7 @@ import { IntegrationScreen } from '../integration/IntegrationContent'
 import { MasterOrderScreen } from '../masterorder/MasterOrderContent'
 import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
 import { ExpenseScreen } from '../expense/ExpenseContent'
+import { t } from '../i18n'
 
 /**
  * Menyu tuzilmasi. `key` qiymatlari eski `eventKey` lar bilan bir xil saqlangan,
@@ -42,38 +43,38 @@ import { ExpenseScreen } from '../expense/ExpenseContent'
  */
 const NAV_GROUPS = [
   {
-    label: 'Обзор',
+    label: t('Обзор'),
     items: [
-      { key: 'first', label: 'Главная страница', Icon: LayoutDashboard, adminOnly: true },
+      { key: 'first', label: t('Главная страница'), Icon: LayoutDashboard, adminOnly: true },
       // Alohida sahifa (/dashboard) — tab emas, o'tish.
-      { key: 'dashboard', label: 'Дашборд', Icon: BarChart3, adminOnly: true, href: '/dashboard' },
+      { key: 'dashboard', label: t('Дашборд'), Icon: BarChart3, adminOnly: true, href: '/dashboard' },
     ],
   },
   {
-    label: 'Справочники',
+    label: t('Справочники'),
     items: [
-      { key: 'second', label: 'Сотрудники', Icon: UserRound, adminOnly: true },
-      { key: 'thrid', label: 'Клиенты', Icon: Users, adminOnly: true },
-      { key: 'fourth', label: 'Склад', Icon: Warehouse, adminOnly: true },
-      { key: 'fifth', label: 'Категория', Icon: Tags },
-      { key: 'seventh', label: 'Продукты', Icon: Package },
-      { key: 'eighth', label: 'Остатки', Icon: Boxes, adminOnly: true },
+      { key: 'second', label: t('Сотрудники'), Icon: UserRound, adminOnly: true },
+      { key: 'thrid', label: t('Клиенты'), Icon: Users, adminOnly: true },
+      { key: 'fourth', label: t('Склад'), Icon: Warehouse, adminOnly: true },
+      { key: 'fifth', label: t('Категория'), Icon: Tags },
+      { key: 'seventh', label: t('Продукты'), Icon: Package },
+      { key: 'eighth', label: t('Остатки'), Icon: Boxes, adminOnly: true },
     ],
   },
   {
-    label: 'Операции',
+    label: t('Операции'),
     items: [
-      { key: 'nineth', label: 'Приход', Icon: ArrowDownLeft, adminOnly: true },
-      { key: 'teenth', label: 'Продажа', Icon: ShoppingBag },
-      { key: 'masters', label: 'Заказы мастеров', Icon: HardHat, badgeKey: 'newMasterOrders' },
-      { key: 'elevn', label: 'Возврат', Icon: Undo2 },
-      { key: 'twelw', label: 'Платеж', Icon: Banknote, adminOnly: true },
-      { key: 'expenses', label: 'Расходы', Icon: ReceiptText, adminOnly: true },
+      { key: 'nineth', label: t('Приход'), Icon: ArrowDownLeft, adminOnly: true },
+      { key: 'teenth', label: t('Продажа'), Icon: ShoppingBag },
+      { key: 'masters', label: t('Заказы мастеров'), Icon: HardHat, badgeKey: 'newMasterOrders' },
+      { key: 'elevn', label: t('Возврат'), Icon: Undo2 },
+      { key: 'twelw', label: t('Платеж'), Icon: Banknote, adminOnly: true },
+      { key: 'expenses', label: t('Расходы'), Icon: ReceiptText, adminOnly: true },
     ],
   },
   {
-    label: 'Система',
-    items: [{ key: 'integration', label: 'Интеграция', Icon: PlugZap, adminOnly: true }],
+    label: t('Система'),
+    items: [{ key: 'integration', label: t('Интеграция'), Icon: PlugZap, adminOnly: true }],
   },
 ]
 
@@ -229,12 +230,12 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
       >
         <div className="mb-4 flex items-center justify-between">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
-            Навигация
+            {t('Навигация')}
           </p>
           <button
             type="button"
             onClick={onCloseMobile}
-            aria-label="Закрыть меню"
+            aria-label={t('Закрыть меню')}
             className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-2 hover:text-fg"
           >
             <X className="size-4" />

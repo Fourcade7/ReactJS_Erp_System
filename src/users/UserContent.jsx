@@ -3,6 +3,7 @@ import { UserPlus, UserRound, Users } from 'lucide-react'
 import { PageHeader, Tab, Tabs } from '../ui'
 import { RegisterScreenforTab } from '../auth/RegisterContent'
 import { UserListGroup } from './UserListContent'
+import { t } from '../i18n'
 
 function UserTabs() {
   const [activeTab, setActiveTab] = useState('home')
@@ -14,7 +15,7 @@ function UserTabs() {
         title={
           <>
             <Users />
-            Список сотрудников
+            {t('Список сотрудников')}
           </>
         }
       >
@@ -25,7 +26,7 @@ function UserTabs() {
         title={
           <>
             <UserPlus />
-            Добавить нового сотрудника
+            {t('Добавить нового сотрудника')}
           </>
         }
       >
@@ -40,8 +41,8 @@ function UserScreen() {
     <div>
       <PageHeader
         icon={UserRound}
-        title="Сотрудники"
-        description="Учётные записи и роли доступа"
+        title={t('Сотрудники')}
+        description={t('Учётные записи и роли доступа')}
       />
       <UserTabs />
     </div>

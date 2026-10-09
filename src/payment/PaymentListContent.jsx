@@ -3,14 +3,15 @@ import { ArrowDownLeft, Banknote, CalendarClock, ChevronRight, ShoppingBag, Undo
 import { Badge, EmptyState, SearchField } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { getAllPaymentListPaginationSearch } from './PaymentApi'
+import { t } from '../i18n'
 
 const paidOf = (record) => record.payments.reduce((sum, item) => sum + item.amount, 0)
 
 /** Toʻlov qaysi operatsiyaga tegishli ekanini aniqlaydi. */
 function sourceOf(payment) {
-  if (payment.sale) return { record: payment.sale, label: 'Продажа', Icon: ShoppingBag, tone: 'primary' }
-  if (payment.purchase) return { record: payment.purchase, label: 'Приход', Icon: ArrowDownLeft, tone: 'info' }
-  if (payment.returns) return { record: payment.returns, label: 'Возврат', Icon: Undo2, tone: 'warning' }
+  if (payment.sale) return { record: payment.sale, label: t('Продажа'), Icon: ShoppingBag, tone: 'primary' }
+  if (payment.purchase) return { record: payment.purchase, label: t('Приход'), Icon: ArrowDownLeft, tone: 'info' }
+  if (payment.returns) return { record: payment.returns, label: t('Возврат'), Icon: Undo2, tone: 'warning' }
   return null
 }
 
@@ -54,7 +55,7 @@ function PaymentListGroup(props) {
       />
 
       {paymentList.length === 0 ? (
-        <EmptyState icon={Banknote} title="Платежей пока нет" />
+        <EmptyState icon={Banknote} title={t('Платежей пока нет')} />
       ) : (
         <ul className="m-0 list-none divide-y divide-line overflow-hidden rounded-card border border-line bg-surface p-0 shadow-soft">
           {paymentList.map((payment, index) => {
@@ -86,7 +87,7 @@ function PaymentListGroup(props) {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">Платеж #{payment.id}</p>
+                    <p className="truncate text-[13px] font-medium text-fg">{t('Платеж #{id}', { id: payment.id })}</p>
                     <p className="flex items-center gap-1 text-[11px] text-subtle">
                       <CalendarClock className="size-3" />
                       {new Date(payment.date).toLocaleString('UZ')}
@@ -100,12 +101,12 @@ function PaymentListGroup(props) {
                   )}
                   {record && record.discount > 0 && (
                     <Badge className="hidden lg:inline-flex">
-                      Скидка {record.discount.toLocaleString('uz')}
+                      {t('Скидка {amount}', { amount: record.discount.toLocaleString('uz') })}
                     </Badge>
                   )}
                   {inDebt && (
                     <Badge bg="danger" dot>
-                      В долг
+                      {t('В долг')}
                     </Badge>
                   )}
 

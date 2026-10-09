@@ -11,6 +11,7 @@ import {
   getAllSaleWeek,
 } from './statistics/HomeApi'
 import { SaleTabForHome } from '../sale/SaleContent'
+import { locale, t } from '../i18n'
 
 const sum = (list, pick) => list.reduce((acc, item) => acc + pick(item), 0)
 
@@ -48,8 +49,8 @@ function StatCard({ icon: Icon, label, value, hint, tone = 'primary' }) {
 
 function HomeScreen() {
   const today = new Date()
-  const monthName = today.toLocaleString('ru-RU', { month: 'long' })
-  const todayLabel = today.toLocaleDateString('ru-RU')
+  const monthName = today.toLocaleString(locale, { month: 'long' })
+  const todayLabel = today.toLocaleDateString(locale)
 
   const [todaySaleList, setTodaySaleList] = useState([])
   const [weekSaleList, setWeekSaleList] = useState([])
@@ -85,28 +86,28 @@ function HomeScreen() {
       icon: CalendarDays,
       tone: 'success',
       hint: todayLabel,
-      label: 'Сумма сегодняшних продаж',
+      label: t('Сумма сегодняшних продаж'),
       value: sum(todaySaleList, (i) => i.total),
     },
     {
       icon: CalendarRange,
       tone: 'primary',
-      hint: 'Неделя',
-      label: 'Еженедельная сумма продаж',
+      hint: t('Неделя'),
+      label: t('Еженедельная сумма продаж'),
       value: sum(weekSaleList, (i) => i.total),
     },
     {
       icon: TrendingUp,
       tone: 'info',
       hint: monthName,
-      label: 'Ежемесячная сумма продаж',
+      label: t('Ежемесячная сумма продаж'),
       value: sum(monthSaleList, (i) => i.total),
     },
     {
       icon: Wallet,
       tone: 'danger',
-      hint: 'Долг',
-      label: 'Сумма продажи долгов',
+      hint: t('Долг'),
+      label: t('Сумма продажи долгов'),
       value: sum(allSaleDebtList, (i) => i.total - i.totalPaid),
     },
   ]
@@ -115,12 +116,12 @@ function HomeScreen() {
     <div className="flex flex-col gap-6">
       <PageHeader
         icon={LayoutDashboard}
-        title="Главная страница"
-        description="Сводка продаж и задолженности по компании"
+        title={t('Главная страница')}
+        description={t('Сводка продаж и задолженности по компании')}
         actions={
           <Button as={Link} to="/dashboard" variant="outline-primary" size="sm">
             <BarChart3 />
-            Полная статистика
+            {t('Полная статистика')}
           </Button>
         }
       />
@@ -135,7 +136,7 @@ function HomeScreen() {
         <Card padded={false} className="lg:col-span-2">
           <Card.Header>
             <div>
-              <Card.Title>Продажи за месяц</Card.Title>
+              <Card.Title>{t('Продажи за месяц')}</Card.Title>
               <Card.Subtitle className="mt-0.5 capitalize">{monthName}</Card.Subtitle>
             </div>
           </Card.Header>
@@ -147,8 +148,8 @@ function HomeScreen() {
         <Card padded={false}>
           <Card.Header>
             <div>
-              <Card.Title>Продажи за неделю</Card.Title>
-              <Card.Subtitle className="mt-0.5">По дням недели</Card.Subtitle>
+              <Card.Title>{t('Продажи за неделю')}</Card.Title>
+              <Card.Subtitle className="mt-0.5">{t('По дням недели')}</Card.Subtitle>
             </div>
           </Card.Header>
           <Card.Body className="pl-1 pr-3">

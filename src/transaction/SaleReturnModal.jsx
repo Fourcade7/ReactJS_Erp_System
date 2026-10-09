@@ -3,6 +3,7 @@ import { Banknote, CreditCard, Minus, Plus, Undo2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Button, Form, Modal } from '../ui'
 import { parseQty, roundQty } from '../lib/quantity'
+import { t, td } from '../i18n'
 
 const REFUND_METHODS = [
   { value: 'Наличные', Icon: Banknote },
@@ -51,7 +52,7 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
 
   const submit = async () => {
     if (!validQty) {
-      setError(`Введите количество до ${returnable} (не более 3 знаков после запятой)`)
+      setError(t('Введите количество до {returnable} (не более 3 знаков после запятой)', { returnable }))
       return
     }
     setSaving(true)
@@ -70,7 +71,7 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
       }
       onDone(result)
     } catch {
-      setError('Не удалось подключиться к серверу')
+      setError(t('Не удалось подключиться к серверу'))
     } finally {
       setSaving(false)
     }
@@ -79,25 +80,24 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
   return (
     <Modal show onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Возврат товара</Modal.Title>
+        <Modal.Title>{t('Возврат товара')}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="flex flex-col gap-4">
         <div>
           <p className="text-[13px] font-medium text-fg">{item.product?.name}</p>
           <p className="mt-0.5 text-[11px] tabular-nums text-subtle">
-            Продано: {item.quantity} шт. × {Number(item.price).toLocaleString('uz')}
-            {item.returned > 0 && ` · уже возвращено: ${item.returned} шт.`}
+            {t('Продано: {quantity} шт. × {price} {v}', { quantity: item.quantity, price: Number(item.price).toLocaleString('uz'), v: item.returned > 0 && t(' · уже возвращено: {returned} шт.', { returned: item.returned }) })}
           </p>
         </div>
 
         <Form.Group controlId="saleReturnQuantity">
-          <Form.Label>Количество</Form.Label>
+          <Form.Label>{t('Количество')}</Form.Label>
           <div className="flex items-center gap-2">
             <div className="inline-flex items-center rounded-lg border border-line bg-surface-2">
               <button
                 type="button"
                 onClick={() => step(-1)}
-                aria-label="Уменьшить"
+                aria-label={t('Уменьшить')}
                 className="inline-flex size-9 items-center justify-center rounded-l-lg text-muted transition hover:bg-surface-3 hover:text-fg"
               >
                 <Minus className="size-3.5" />
@@ -111,22 +111,22 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
               <button
                 type="button"
                 onClick={() => step(1)}
-                aria-label="Увеличить"
+                aria-label={t('Увеличить')}
                 className="inline-flex size-9 items-center justify-center rounded-r-lg text-muted transition hover:bg-surface-3 hover:text-fg"
               >
                 <Plus className="size-3.5" />
               </button>
             </div>
             <Button variant="outline-secondary" size="sm" onClick={() => setQuantity(String(returnable))}>
-              Все
+              {t('Все')}
             </Button>
           </div>
-          <Form.Text>Можно вернуть: {returnable} шт.</Form.Text>
+          <Form.Text>{t('Можно вернуть: {returnable} шт.', { returnable })}</Form.Text>
         </Form.Group>
 
         {refund > 0 && (
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted">Способ возврата денег</p>
+            <p className="mb-1.5 text-xs font-medium text-muted">{t('Способ возврата денег')}</p>
             <div className="grid grid-cols-3 gap-1.5">
               {REFUND_METHODS.map((option) => {
                 const selected = method === option.value
@@ -144,7 +144,7 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
                     )}
                   >
                     <option.Icon className="size-4" />
-                    <span className="line-clamp-1 text-center">{option.value}</span>
+                    <span className="line-clamp-1 text-center">{td(option.value)}</span>
                   </button>
                 )
               })}
@@ -154,20 +154,20 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
 
         <dl className="flex flex-col gap-1.5 rounded-lg border border-line bg-surface-2/60 px-3 py-2.5 text-[13px]">
           <div className="flex justify-between font-semibold text-fg">
-            <dt>Сумма возврата</dt>
+            <dt>{t('Сумма возврата')}</dt>
             <dd className="tabular-nums">{money(value)}</dd>
           </div>
           {sale.discount > 0 && (
-            <p className="text-[11px] text-subtle">С учётом скидки продажи</p>
+            <p className="text-[11px] text-subtle">{t('С учётом скидки продажи')}</p>
           )}
           {offset > 0 && (
             <>
               <div className="flex justify-between text-warning-soft-fg">
-                <dt>Списать с долга</dt>
+                <dt>{t('Списать с долга')}</dt>
                 <dd className="tabular-nums">{money(offset)}</dd>
               </div>
               <div className="flex justify-between text-fg">
-                <dt>Выдать клиенту</dt>
+                <dt>{t('Выдать клиенту')}</dt>
                 <dd className="tabular-nums">{money(refund)}</dd>
               </div>
             </>
@@ -178,11 +178,11 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={onHide}>
-          Отмена
+          {t('Отмена')}
         </Button>
         <Button variant="warning" loading={saving} disabled={!validQty} onClick={submit}>
           {!saving && <Undo2 />}
-          Оформить возврат
+          {t('Оформить возврат')}
         </Button>
       </Modal.Footer>
     </Modal>

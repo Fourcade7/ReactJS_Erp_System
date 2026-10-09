@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api'
+import { t } from '../i18n'
 
 
 
@@ -201,7 +202,7 @@ async function getSaleDetail(id) {
 
     const response = await fetch(`${API_BASE}/sale/detail/${id}`);
 
-    if (!response.ok) throw new Error("Ошибка сервера");
+    if (!response.ok) throw new Error(t('Ошибка сервера'));
 
     return response.json();
 }

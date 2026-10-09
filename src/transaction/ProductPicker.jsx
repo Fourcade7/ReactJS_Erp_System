@@ -8,6 +8,7 @@ import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { ResultModal } from '../utils/StatusModals'
 import { stockOf } from './pricing'
 import { roundQty } from '../lib/quantity'
+import { t, td } from '../i18n'
 
 /**
  * Savatga qoʻshish uchun mahsulot tanlagich.
@@ -116,7 +117,7 @@ function ProductPicker({
   return (
     <section className="flex min-w-0 flex-col gap-2">
       <div className="flex h-6 items-center justify-between">
-        <h3 className="text-[13px] font-semibold text-fg">Товары</h3>
+        <h3 className="text-[13px] font-semibold text-fg">{t('Товары')}</h3>
         {showLoad && <Spinner size="sm" />}
       </div>
 
@@ -128,19 +129,19 @@ function ProductPicker({
             setActive(1)
           }}
           onClear={() => setSearchTerm('')}
-          placeholder="Название или штрихкод..."
+          placeholder={t('Название или штрихкод...')}
           className="flex-1"
         />
         <div className="w-40 shrink-0">
           <Form.Select
-            aria-label="Категория"
+            aria-label={t('Категория')}
             value={categoryId}
             onChange={(e) => {
               setCategoryId(e.target.value)
               setActive(1)
             }}
           >
-            <option value="">Все категории</option>
+            <option value="">{t('Все категории')}</option>
             {categoryList.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -153,10 +154,10 @@ function ProductPicker({
       {visible.length === 0 && !showLoad ? (
         <EmptyState
           icon={PackageSearch}
-          title="Ничего не найдено"
+          title={t('Ничего не найдено')}
           description={
             onlyStocked
-              ? 'Здесь показываются только товары, привязанные к складу. Добавьте их на склад в разделе «Продукты».'
+              ? t('Здесь показываются только товары, привязанные к складу. Добавьте их на склад в разделе «Продукты».')
               : undefined
           }
           className="py-8"
@@ -223,7 +224,7 @@ function ProductPicker({
                         totalStock < 10 ? 'text-danger-soft-fg' : 'text-subtle',
                       )}
                     >
-                      {totalStock} {product.unit}
+                      {totalStock} {td(product.unit)}
                     </span>
                   </div>
 
@@ -245,7 +246,7 @@ function ProductPicker({
         show={showRes}
         onHide={() => setShowRes(false)}
         success={false}
-        message="Не удалось подключиться к серверу"
+        message={t('Не удалось подключиться к серверу')}
       />
     </section>
   )

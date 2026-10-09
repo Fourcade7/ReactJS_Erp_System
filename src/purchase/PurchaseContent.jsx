@@ -7,16 +7,17 @@ import {
   getAllProductPaginationSearch,
   getAllPurchaseListPaginationSearch,
 } from './PurchaseApi'
+import { t } from '../i18n'
 
 const PURCHASE_CONFIG = {
   Icon: ArrowDownLeft,
-  title: 'Приход',
-  description: 'Поступление товаров от поставщиков на склад',
-  label: 'Приход',
-  listTitle: 'Список приходов',
-  newTitle: 'Новый приход',
-  detailTitle: 'Детали прихода',
-  checkoutTitle: 'Оформление прихода',
+  title: t('Приход'),
+  description: t('Поступление товаров от поставщиков на склад'),
+  label: t('Приход'),
+  listTitle: t('Список приходов'),
+  newTitle: t('Новый приход'),
+  detailTitle: t('Детали прихода'),
+  checkoutTitle: t('Оформление прихода'),
   tone: 'info',
   priceField: 'price',
   limitByStock: false,

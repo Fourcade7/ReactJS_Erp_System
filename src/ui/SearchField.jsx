@@ -1,8 +1,9 @@
 import { Search, X } from 'lucide-react'
 import { cn } from '../lib/cn'
+import { t } from '../i18n'
 
 /** Ikonka va tozalash tugmasi bilan qidiruv maydoni. */
-function SearchField({ value, onChange, onClear, placeholder = 'Поиск...', className, ...props }) {
+function SearchField({ value, onChange, onClear, placeholder = t('Поиск...'), className, ...props }) {
   return (
     <div className={cn('relative w-full', className)}>
       <Search
@@ -27,7 +28,7 @@ function SearchField({ value, onChange, onClear, placeholder = 'Поиск...', 
         <button
           type="button"
           onClick={onClear}
-          aria-label="Очистить"
+          aria-label={t('Очистить')}
           className="absolute right-1.5 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-subtle transition hover:bg-surface-2 hover:text-fg"
         >
           <X className="size-3.5" />

@@ -13,6 +13,7 @@ import {
   getExpenses,
   updateExpense,
 } from './ExpenseApi'
+import { t, td } from '../i18n'
 
 const OTHER = '__other__'
 const EMPTY_CATEGORIES = { defaults: [], custom: [] }
@@ -77,19 +78,19 @@ function ExpenseModal({ expense, categories, onHide, onSaved }) {
   return (
     <Modal show onHide={onHide} centered size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>{expense ? 'Изменить расход' : 'Новый расход'}</Modal.Title>
+        <Modal.Title>{expense ? t('Изменить расход') : t('Новый расход')}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="flex flex-col gap-4">
         <div>
-          <p className="mb-2 text-xs font-medium text-muted">Вид расхода</p>
+          <p className="mb-2 text-xs font-medium text-muted">{t('Вид расхода')}</p>
           <div className="flex flex-wrap gap-1.5">
             {known.map((name) => (
               <Chip key={name} active={choice === name} onClick={() => { setChoice(name); setErrors({}) }}>
-                {name}
+                {td(name)}
               </Chip>
             ))}
             <Chip active={choice === OTHER} onClick={() => { setChoice(OTHER); setErrors({}) }}>
-              Другое…
+              {t('Другое…')}
             </Chip>
           </div>
           {choice === OTHER && (
@@ -100,19 +101,19 @@ function ExpenseModal({ expense, categories, onHide, onSaved }) {
               value={custom}
               isInvalid={errors.category}
               onChange={(e) => setCustom(e.target.value)}
-              placeholder="Название расхода, например «Вывоз мусора»"
+              placeholder={t('Название расхода, например «Вывоз мусора»')}
             />
           )}
-          {errors.category && <Form.Text className="text-danger">Выберите или впишите вид расхода</Form.Text>}
+          {errors.category && <Form.Text className="text-danger">{t('Выберите или впишите вид расхода')}</Form.Text>}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Form.Group controlId="expenseMonth">
-            <Form.Label>За какой месяц</Form.Label>
+            <Form.Label>{t('За какой месяц')}</Form.Label>
             <Form.Control type="month" value={month} isInvalid={errors.month} onChange={(e) => setMonth(e.target.value)} />
           </Form.Group>
           <Form.Group controlId="expenseAmount">
-            <Form.Label>Сумма, сум</Form.Label>
+            <Form.Label>{t('Сумма, сум')}</Form.Label>
             <Form.Control
               inputMode="numeric"
               value={amount}
@@ -123,19 +124,19 @@ function ExpenseModal({ expense, categories, onHide, onSaved }) {
               }}
               placeholder="0"
             />
-            {errors.amount && <Form.Text className="text-danger">Введите сумму больше нуля</Form.Text>}
+            {errors.amount && <Form.Text className="text-danger">{t('Введите сумму больше нуля')}</Form.Text>}
           </Form.Group>
         </div>
 
         <Form.Group controlId="expenseComment">
-          <Form.Label>Комментарий</Form.Label>
+          <Form.Label>{t('Комментарий')}</Form.Label>
           <Form.Control
             as="textarea"
             rows={3}
             maxLength={1000}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Например: счёт №123, оплачено наличными"
+            placeholder={t('Например: счёт №123, оплачено наличными')}
           />
         </Form.Group>
 
@@ -143,10 +144,10 @@ function ExpenseModal({ expense, categories, onHide, onSaved }) {
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={onHide}>
-          Отмена
+          {t('Отмена')}
         </Button>
         <Button loading={saving} onClick={save}>
-          Сохранить
+          {t('Сохранить')}
         </Button>
       </Modal.Footer>
     </Modal>
@@ -196,18 +197,18 @@ function ExpenseScreen() {
   }
 
   const summary = result?.summary
-  const periodLabel = allMonths ? 'за всё время' : formatMonth(month).toLowerCase()
+  const periodLabel = allMonths ? t('за всё время') : formatMonth(month).toLowerCase()
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
         icon={ReceiptText}
-        title="Расходы"
-        description="Газ, свет, вода, аренда, зарплата и другие расходы — по месяцам"
+        title={t('Расходы')}
+        description={t('Газ, свет, вода, аренда, зарплата и другие расходы — по месяцам')}
         actions={
           <Button onClick={() => setEditing('new')}>
             <Plus />
-            Добавить расход
+            {t('Добавить расход')}
           </Button>
         }
       />
@@ -216,7 +217,7 @@ function ExpenseScreen() {
         <div className="flex items-center gap-2">
           <Form.Control
             type="month"
-            aria-label="Месяц"
+            aria-label={t('Месяц')}
             className="w-44"
             value={month}
             disabled={allMonths}
@@ -227,7 +228,7 @@ function ExpenseScreen() {
           />
           <Form.Check
             type="switch"
-            label="Все месяцы"
+            label={t('Все месяцы')}
             checked={allMonths}
             onChange={(e) => {
               setAllMonths(e.target.checked)
@@ -237,17 +238,17 @@ function ExpenseScreen() {
         </div>
         <div className="w-52">
           <Form.Select
-            aria-label="Вид расхода"
+            aria-label={t('Вид расхода')}
             value={category}
             onChange={(e) => {
               setCategory(e.target.value)
               setPage(1)
             }}
           >
-            <option value="">Все виды</option>
+            <option value="">{t('Все виды')}</option>
             {[...categories.defaults, ...categories.custom].map((name) => (
               <option key={name} value={name}>
-                {name}
+                {td(name)}
               </option>
             ))}
           </Form.Select>
@@ -257,7 +258,7 @@ function ExpenseScreen() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
-          placeholder="Поиск по виду или комментарию..."
+          placeholder={t('Поиск по виду или комментарию...')}
         />
       </div>
 
@@ -271,22 +272,22 @@ function ExpenseScreen() {
         <Card padded={false}>
           <Card.Header>
             <div>
-              <Card.Title>Итого {periodLabel}</Card.Title>
+              <Card.Title>{t('Итого {periodLabel}', { periodLabel })}</Card.Title>
               <Card.Subtitle className="mt-0.5">{summary ? plural(summary.count, RECORDS) : '—'}</Card.Subtitle>
             </div>
           </Card.Header>
           <Card.Body className="flex flex-col gap-4">
             <p className="text-2xl font-semibold tracking-tight text-fg">
               {formatMoney(summary?.amount ?? 0)}
-              <span className="ml-1.5 text-sm font-medium text-subtle">сум</span>
+              <span className="ml-1.5 text-sm font-medium text-subtle">{t('сум')}</span>
             </p>
             <BarList
               items={(summary?.byCategory ?? []).map((row) => ({
                 key: row.category,
-                label: row.category,
+                label: td(row.category),
                 value: row.amount,
               }))}
-              emptyText="Расходов нет"
+              emptyText={t('Расходов нет')}
             />
           </Card.Body>
         </Card>
@@ -300,12 +301,12 @@ function ExpenseScreen() {
             <Table>
               <thead>
                 <tr>
-                  <th>Месяц</th>
-                  <th>Вид</th>
-                  <th className="text-right">Сумма</th>
-                  <th>Комментарий</th>
-                  <th>Кто</th>
-                  <th aria-label="Действия" />
+                  <th>{t('Месяц')}</th>
+                  <th>{t('Вид')}</th>
+                  <th className="text-right">{t('Сумма')}</th>
+                  <th>{t('Комментарий')}</th>
+                  <th>{t('Кто')}</th>
+                  <th aria-label={t('Действия')} />
                 </tr>
               </thead>
               <tbody>
@@ -317,7 +318,7 @@ function ExpenseScreen() {
                         {formatMonth(row.period.slice(0, 7))}
                       </span>
                     </td>
-                    <td className="font-medium text-fg">{row.category}</td>
+                    <td className="font-medium text-fg">{td(row.category)}</td>
                     <td className="whitespace-nowrap text-right font-semibold tabular-nums text-fg">
                       {formatMoney(row.amount)}
                     </td>
@@ -328,10 +329,10 @@ function ExpenseScreen() {
                       {row.user ? `${row.user.username} ${row.user.surname}`.trim() : '—'}
                     </td>
                     <td className="whitespace-nowrap text-right">
-                      <Button variant="ghost" size="sm" icon title="Изменить" aria-label="Изменить" onClick={() => setEditing(row)}>
+                      <Button variant="ghost" size="sm" icon title={t('Изменить')} aria-label={t('Изменить')} onClick={() => setEditing(row)}>
                         <Pencil />
                       </Button>
-                      <Button variant="ghost" size="sm" icon title="Удалить" aria-label="Удалить" onClick={() => setDeleting(row)}>
+                      <Button variant="ghost" size="sm" icon title={t('Удалить')} aria-label={t('Удалить')} onClick={() => setDeleting(row)}>
                         <Trash2 />
                       </Button>
                     </td>
@@ -340,7 +341,7 @@ function ExpenseScreen() {
               </tbody>
             </Table>
           ) : (
-            <EmptyState icon={ReceiptText} title={`Расходов ${periodLabel} нет`} description="Нажмите «Добавить расход»." />
+            <EmptyState icon={ReceiptText} title={t('Расходов {periodLabel} нет', { periodLabel })} description={t('Нажмите «Добавить расход».')} />
           )}
 
           <div className="flex justify-center">
@@ -363,17 +364,17 @@ function ExpenseScreen() {
 
       <Modal show={Boolean(deleting)} onHide={() => setDeleting(null)} size="sm" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить расход?</Modal.Title>
+          <Modal.Title>{t('Удалить расход?')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {deleting && `${deleting.category} · ${formatMonth(deleting.period.slice(0, 7))} · ${formatMoney(deleting.amount)} сум`}
+          {deleting && t('{category} · {month} · {amount} сум', { category: td(deleting.category), month: formatMonth(deleting.period.slice(0, 7)), amount: formatMoney(deleting.amount) })}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setDeleting(null)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>

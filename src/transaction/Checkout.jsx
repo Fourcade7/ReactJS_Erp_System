@@ -20,6 +20,7 @@ import {
 } from '../utils/UtilsContent'
 import logobgtransparent from '../assets/logobgtransparent.png'
 import { priceChange, stockOf, unitPrice } from './pricing'
+import { t, td } from '../i18n'
 
 const PAYMENTS = [
   { value: 'Наличные', Icon: Banknote },
@@ -76,7 +77,7 @@ function CustomerPicker({ fetchCustomers, setCustomerId, initialLabel = '' }) {
           setCustomerId(null)
           setOpen(true)
         }}
-        placeholder="Имя контрагента или телефон"
+        placeholder={t('Имя контрагента или телефон')}
       />
       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-subtle" />
 
@@ -133,7 +134,7 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
               <div className="flex justify-between gap-2">
                 <span className="font-semibold">{item.name}</span>
                 <span className="font-bold">
-                  {item.quantity} {item.unit}
+                  {item.quantity} {td(item.unit)}
                 </span>
               </div>
               <div className="flex justify-between gap-2 font-bold">
@@ -142,7 +143,7 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
               </div>
               {change !== 0 && (
                 <div className="flex justify-between gap-2 text-[11px]">
-                  <span>было {Number(item[priceField]).toLocaleString('uz')}</span>
+                  <span>{t('было {price}', { price: Number(item[priceField]).toLocaleString('uz') })}</span>
                   <span>{signed(Math.round(change * item.quantity))}</span>
                 </div>
               )}
@@ -154,16 +155,16 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
       <div className="mt-2">
         {changeTotal !== 0 && (
           <div className="flex justify-between">
-            <span>Изменение цены:</span>
+            <span>{t('Изменение цены:')}</span>
             <span>{signed(changeTotal)} So&apos;m</span>
           </div>
         )}
         <div className="flex justify-between">
-          <span>Скидка:</span>
+          <span>{t('Скидка:')}</span>
           <span>{discountAmount.toLocaleString('uz')} So&apos;m</span>
         </div>
         <div className="flex justify-between font-bold">
-          <span>Итого:</span>
+          <span>{t('Итого:')}</span>
           <span>{finalCost.toLocaleString('uz')} So&apos;m</span>
         </div>
       </div>
@@ -195,7 +196,7 @@ function Checkout({
   submit,
   fetchCustomers,
   priceField = 'buyPrice',
-  title = 'Оформление',
+  title = t('Оформление'),
   tone = 'primary',
   printable = false,
   maxDiscountPercent = null,
@@ -278,7 +279,7 @@ function Checkout({
 
     if (isDebt && !customerId) {
       setShowSuccess(false)
-      setAlertMessage('Для оформления в долг выберите контрагента')
+      setAlertMessage(t('Для оформления в долг выберите контрагента'))
       setShowDanger(true)
       return
     }
@@ -322,8 +323,8 @@ function Checkout({
       setShowSuccess(true)
       setAlertMessage(
         followUpFailed
-          ? 'Продажа оформлена, но заказ мастера не отмечен завершённым — откройте его и отметьте вручную'
-          : 'Успешно...',
+          ? t('Продажа оформлена, но заказ мастера не отмечен завершённым — откройте его и отметьте вручную')
+          : t('Успешно...'),
       )
       psetShow(false)
       setTimeout(() => {
@@ -333,7 +334,7 @@ function Checkout({
       }, followUpFailed ? 8000 : 3000)
     } catch {
       setShowDanger(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
       psetShow(false)
     }
   }
@@ -352,7 +353,7 @@ function Checkout({
           )}
         >
           <SlidersHorizontal className="size-3" />
-          Доп. функции
+          {t('Доп. функции')}
         </button>
       </div>
 
@@ -366,12 +367,12 @@ function Checkout({
                 className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line text-xs text-muted transition hover:bg-surface-2 hover:text-fg"
               >
                 <Printer className="size-3.5" />
-                Печать черновика
+                {t('Печать черновика')}
               </button>
             )}
 
             <div>
-              <p className="mb-1.5 text-xs font-medium text-muted">Скидка</p>
+              <p className="mb-1.5 text-xs font-medium text-muted">{t('Скидка')}</p>
               <div className="flex gap-2">
                 <Form.Control
                   type="number"
@@ -383,7 +384,7 @@ function Checkout({
                 />
                 <div className="inline-flex shrink-0 rounded-lg border border-line bg-surface-2 p-0.5">
                   {[
-                    { key: 'sum', label: 'Сум' },
+                    { key: 'sum', label: t('Сум') },
                     { key: 'percent', label: '%' },
                   ].map((opt) => (
                     <button
@@ -413,7 +414,7 @@ function Checkout({
               )}
               {maxDiscountPercent != null && (
                 <p className="mt-1 text-[11px] tabular-nums text-subtle">
-                  Макс. скидка: {maxDiscountPercent}% ({maxDiscount.toLocaleString('uz')} So&apos;m)
+                  {t("Макс. скидка: {maxDiscountPercent}% ({amount} So'm)", { maxDiscountPercent, amount: maxDiscount.toLocaleString('uz') })}
                 </p>
               )}
             </div>
@@ -421,7 +422,7 @@ function Checkout({
         </Collapse>
 
         <div>
-          <p className="mb-1.5 text-xs font-medium text-muted">Контрагент</p>
+          <p className="mb-1.5 text-xs font-medium text-muted">{t('Контрагент')}</p>
           <CustomerPicker
             fetchCustomers={fetchCustomers}
             setCustomerId={setCustomerId}
@@ -432,7 +433,7 @@ function Checkout({
         </div>
 
         <div>
-          <p className="mb-1.5 text-xs font-medium text-muted">Способ оплаты</p>
+          <p className="mb-1.5 text-xs font-medium text-muted">{t('Способ оплаты')}</p>
           <div className="grid grid-cols-3 gap-1.5">
             {PAYMENTS.map(({ value, Icon, danger }) => {
               const selected = paymentType === value
@@ -452,7 +453,7 @@ function Checkout({
                   )}
                 >
                   <Icon className="size-4" />
-                  <span className="line-clamp-1 text-center">{value}</span>
+                  <span className="line-clamp-1 text-center">{td(value)}</span>
                 </button>
               )
             })}
@@ -461,19 +462,18 @@ function Checkout({
 
         <dl className="flex flex-col gap-1 border-t border-line pt-3 text-xs">
           <div className="flex justify-between text-muted">
-            <dt>Сумма товаров</dt>
+            <dt>{t('Сумма товаров')}</dt>
             <dd className="tabular-nums">{totalCost.toLocaleString('uz')}</dd>
           </div>
           <div className="flex justify-between text-muted">
-            <dt>Скидка</dt>
+            <dt>{t('Скидка')}</dt>
             <dd className="tabular-nums">−{Number(discountAmount || 0).toLocaleString('uz')}</dd>
           </div>
         </dl>
 
         {overStockItems.length > 0 && (
           <p className="rounded-lg border border-danger/30 bg-danger-soft px-2.5 py-2 text-[11.5px] leading-snug text-danger-soft-fg">
-            Недостаточно товара на складе: {overStockItems.map((item) => item.name).join(', ')}.
-            Уменьшите количество до остатка.
+            {t('Недостаточно товара на складе:')} {overStockItems.map((item) => item.name).join(', ')}{t('. Уменьшите количество до остатка.')}
           </p>
         )}
         {showDanger && <AlertDismissibleDanger alertMsg={alertMessage} />}
@@ -500,7 +500,7 @@ function Checkout({
           )}
         >
           <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">
-            {isDebt ? 'Оформить в долг' : 'Итого к оплате'}
+            {isDebt ? t('Оформить в долг') : t('Итого к оплате')}
           </span>
           <span className="text-lg font-semibold tabular-nums">
             {finalCost.toLocaleString('uz')} UZS
@@ -512,7 +512,7 @@ function Checkout({
         <details className="group rounded-card border border-line bg-surface shadow-soft">
           <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs text-muted transition hover:text-fg">
             <Receipt className="size-3.5" />
-            Предпросмотр чека
+            {t('Предпросмотр чека')}
             <ChevronDown className="ml-auto size-3.5 transition group-open:rotate-180" />
           </summary>
           <div className="border-t border-line p-2">

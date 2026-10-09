@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api'
+import { t } from '../i18n'
 
 const BASE = `${API_BASE}/stats`
 
@@ -7,7 +8,7 @@ async function request(url) {
     const data = await response.json().catch(() => null)
     if (!response.ok) {
         const message = Array.isArray(data?.message) ? data.message.join(', ') : data?.message
-        throw new Error(message || 'Ошибка сервера')
+        throw new Error(message || t('Ошибка сервера'))
     }
     return data
 }

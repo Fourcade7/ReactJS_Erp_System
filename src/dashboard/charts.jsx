@@ -19,6 +19,7 @@ import { formatCompact, formatMoney } from '../lib/format'
 import { useChartColors } from './chartColors'
 import { bucketLabel, bucketTick } from './range'
 import { formatShare, toSegments } from './segments'
+import { t } from '../i18n'
 
 /** HTML legenda: chiziqli grafikka chiziq kaliti, ustunliga — kvadrat. */
 export function ChartLegend({ items, shape = 'line' }) {
@@ -39,7 +40,7 @@ export function ChartLegend({ items, shape = 'line' }) {
 }
 
 /** Bitta tooltip — shu nuqtadagi barcha seriyalar; qiymat qalin, nom ikkinchi darajali. */
-function SeriesTooltip({ active, payload, label, granularity, series, unit = 'сум' }) {
+function SeriesTooltip({ active, payload, label, granularity, series, unit = t('сум') }) {
   if (!active || !payload?.length) return null
   return (
     <div className="min-w-44 rounded-xl border border-line bg-surface px-3 py-2 shadow-pop">
@@ -111,7 +112,7 @@ export function TrendChart({ data, granularity, series, height = 280 }) {
 }
 
 /** Ustunli grafik: 1 yoki 2 seriya (guruhlangan), ustun ≤ 24px, oxiri 4px yumaloq. */
-export function ColumnChart({ data, granularity, series, unit = 'сум', height = 240 }) {
+export function ColumnChart({ data, granularity, series, unit = t('сум'), height = 240 }) {
   const c = useChartColors()
   return (
     <div style={{ height }} className="w-full">
@@ -161,7 +162,7 @@ export function ColumnChart({ data, granularity, series, unit = 'сум', height
  * hover/fokus — ikkalasi birga yonadi, markaz esa shu segmentni ko'rsatadi
  * (alohida tooltip markazdagi yozuvni to'sib qo'yardi).
  */
-export function DonutChart({ rows, total, order, centerLabel, emptyText = 'Нет данных' }) {
+export function DonutChart({ rows, total, order, centerLabel, emptyText = t('Нет данных') }) {
   const c = useChartColors()
   const [hover, setHover] = useState(null)
   const { segments, total: whole } = useMemo(() => toSegments(rows, { total, order }), [rows, total, order])

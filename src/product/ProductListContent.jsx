@@ -36,65 +36,66 @@ import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
 import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
 import { exportToExcel } from '../utils/ExcelUtils'
+import { t } from '../i18n'
 
 const money = (v) => `${Number(v || 0).toLocaleString('uz')} So'm`
 
 const PRODUCT_IMPORT_FIELDS = [
-  { key: 'name', label: 'Название', required: true, aliases: ['название', 'наименование', 'name', 'товар'] },
-  { key: 'category', label: 'Категория', required: true, aliases: ['категория', 'category', 'группа'] },
+  { key: 'name', label: t('Название'), required: true, aliases: ['название', 'наименование', 'name', 'товар', 'nomi', 'nom', 'tovar', 'mahsulot'] },
+  { key: 'category', label: t('Категория'), required: true, aliases: ['категория', 'category', 'группа', 'kategoriya', 'guruh'] },
   {
     key: 'buyPrice',
-    label: 'Цена продажи',
+    label: t('Цена продажи'),
     required: true,
-    aliases: ['цена', 'розница', 'розничная цена', 'цена продажи', 'продажа', 'price', 'sale price'],
+    aliases: ['цена', 'розница', 'розничная цена', 'цена продажи', 'продажа', 'price', 'sale price', 'narx', 'chakana', 'chakana narx', 'sotuv narxi', 'sotuv'],
   },
   {
     key: 'price',
-    label: 'Цена закупки',
+    label: t('Цена закупки'),
     required: false,
-    aliases: ['закупка', 'закупочная цена', 'цена закупки', 'себестоимость', 'purchase', 'cost'],
+    aliases: ['закупка', 'закупочная цена', 'цена закупки', 'себестоимость', 'purchase', 'cost', 'xarid', 'xarid narxi', 'tannarx'],
   },
   {
     key: 'bulkPrice',
-    label: 'Цена оптом',
+    label: t('Цена оптом'),
     required: false,
-    aliases: ['опт', 'оптом', 'цена оптом', 'оптовая цена', 'bulk', 'wholesale'],
-    hint: 'Если не указана — равна цене продажи.',
+    aliases: ['опт', 'оптом', 'цена оптом', 'оптовая цена', 'bulk', 'wholesale', 'ulgurji', 'ulgurji narx'],
+    hint: t('Если не указана — равна цене продажи.'),
   },
   {
     key: 'quantity',
-    label: 'Остаток',
+    label: t('Остаток'),
     required: false,
-    aliases: ['остаток', 'количество', 'кол-во', 'кол во', 'qty', 'quantity', 'stock'],
-    hint: 'Записывается на выбранный ниже склад.',
+    aliases: ['остаток', 'количество', 'кол-во', 'кол во', 'qty', 'quantity', 'stock', 'qoldiq', 'miqdor', 'soni'],
+    hint: t('Записывается на выбранный ниже склад.'),
   },
   {
     key: 'barCode',
-    label: 'Штрихкод',
+    label: t('Штрихкод'),
     required: false,
-    aliases: ['штрихкод', 'штрих-код', 'barcode', 'код'],
-    hint: 'Если столбец не указан, штрихкод будет сгенерирован автоматически.',
+    aliases: ['штрихкод', 'штрих-код', 'barcode', 'код', 'shtrix-kod', 'shtrixkod', 'kod'],
+    hint: t('Если столбец не указан, штрихкод будет сгенерирован автоматически.'),
   },
   {
     key: 'unit',
-    label: 'Единица измерения',
+    label: t('Единица измерения'),
     required: false,
-    aliases: ['единица', 'единица измерения', 'ед изм', 'unit'],
-    hint: 'По умолчанию — «Штук».',
+    aliases: ['единица', 'единица измерения', 'ед изм', 'unit', 'birlik', "o'lchov birligi"],
+    hint: t('По умолчанию — «Штук».'),
   },
 ]
 
 const PRODUCT_EXPORT_COLUMNS = [
-  { key: 'name', label: 'Название' },
-  { key: 'barCode', label: 'Штрихкод' },
-  { key: 'category', label: 'Категория', value: (row) => row.category?.name ?? '' },
-  { key: 'buyPrice', label: 'Цена продажи' },
-  { key: 'price', label: 'Цена закупки' },
-  { key: 'bulkPrice', label: 'Цена оптом' },
-  { key: 'unit', label: 'Единица измерения' },
+  { key: 'name', label: t('Название') },
+  { key: 'barCode', label: t('Штрихкод') },
+  { key: 'category', label: t('Категория'), value: (row) => row.category?.name ?? '' },
+  { key: 'buyPrice', label: t('Цена продажи') },
+  { key: 'price', label: t('Цена закупки') },
+  { key: 'bulkPrice', label: t('Цена оптом') },
+  { key: 'unit', label: t('Единица измерения') },
   {
     key: 'stock',
-    label: 'Остаток',
+    label: t('Остаток'),
     value: (row) => row.stock?.reduce((sum, s) => sum + s.quantity, 0) ?? 0,
   },
 ]
@@ -105,7 +106,7 @@ function ProductListGroup(props) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
-  const [showLoadTitle, setShowLoadTitle] = useState('Загрузка...')
+  const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResAlert, setShowResAlert] = useState(false)
 
   const [name, setName] = useState('')
@@ -206,7 +207,7 @@ function ProductListGroup(props) {
           return result?.data ?? []
         },
         columns: PRODUCT_EXPORT_COLUMNS,
-        fileName: 'Продукты.xlsx',
+        fileName: t('Продукты.xlsx'),
       })
     } catch (error) {
       console.log(error.message)
@@ -225,21 +226,21 @@ function ProductListGroup(props) {
             setActive(1)
           }}
           onClear={() => setSearchTerm('')}
-          placeholder="Поиск по названию или штрихкоду..."
+          placeholder={t('Поиск по названию или штрихкоду...')}
           className="flex-1"
         />
         {!fixedCategory && (
           <>
             <div className="w-48 shrink-0">
               <Form.Select
-                aria-label="Категория"
+                aria-label={t('Категория')}
                 value={categoryId}
                 onChange={(e) => {
                   setCategoryId(e.target.value)
                   setActive(1)
                 }}
               >
-                <option value="">Все категории</option>
+                <option value="">{t('Все категории')}</option>
                 {categoryList.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -259,8 +260,8 @@ function ProductListGroup(props) {
       {productList.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="Продукты не найдены"
-          description="Измените условия поиска или добавьте новый продукт."
+          title={t('Продукты не найдены')}
+          description={t('Измените условия поиска или добавьте новый продукт.')}
         />
       ) : (
         <ListGroup as="ol">
@@ -317,9 +318,9 @@ function ProductListGroup(props) {
                   overlay={
                     <Tooltip>
                       <div className="grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 tabular-nums">
-                        <span className="text-subtle">Закупка</span>
+                        <span className="text-subtle">{t('Закупка')}</span>
                         <span className="text-right font-medium">{money(product.price)}</span>
-                        <span className="text-subtle">Оптом</span>
+                        <span className="text-subtle">{t('Оптом')}</span>
                         <span className="text-right font-medium">{money(product.bulkPrice)}</span>
                       </div>
                     </Tooltip>
@@ -334,7 +335,7 @@ function ProductListGroup(props) {
                 </OverlayTrigger>
 
                 <Badge bg={isNew ? 'warning' : 'success'} className="tabular-nums">
-                  {isNew ? 'Новый' : totalStock}
+                  {isNew ? t('Новый') : totalStock}
                 </Badge>
 
                 <Badge className="hidden xl:inline-flex">
@@ -357,7 +358,7 @@ function ProductListGroup(props) {
                         setPid(product.id)
                       }}
                     >
-                      <PackagePlus /> Добавить начальный остаток
+                      <PackagePlus /> {t('Добавить начальный остаток')}
                     </Dropdown.Item>
                     <Dropdown.Item
                       disabled={isUser}
@@ -371,7 +372,7 @@ function ProductListGroup(props) {
                         setBuyPrice(product.buyPrice)
                       }}
                     >
-                      <Pencil /> Изменить
+                      <Pencil /> {t('Изменить')}
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item
@@ -382,7 +383,7 @@ function ProductListGroup(props) {
                         setPid(product.id)
                       }}
                     >
-                      <Trash2 /> Удалить
+                      <Trash2 /> {t('Удалить')}
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -399,29 +400,29 @@ function ProductListGroup(props) {
       {/* Изменить */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Редактировать продукт</Modal.Title>
+          <Modal.Title>{t('Редактировать продукт')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
           <Form.Group controlId="editProductName">
-            <Form.Label>Название</Form.Label>
+            <Form.Label>{t('Название')}</Form.Label>
             <Form.Control
-              placeholder="Введите имя"
+              placeholder={t('Введите имя')}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="editProductBarcode">
-            <Form.Label>Штрихкод</Form.Label>
+            <Form.Label>{t('Штрихкод')}</Form.Label>
             <Form.Control
               className="font-mono"
-              placeholder="Введите штрихкод"
+              placeholder={t('Введите штрихкод')}
               value={barCode}
               onChange={(e) => setBarcode(e.target.value)}
             />
           </Form.Group>
           <div className="grid gap-3 sm:grid-cols-3">
             <Form.Group controlId="editProductPrice">
-              <Form.Label>Закупка</Form.Label>
+              <Form.Label>{t('Закупка')}</Form.Label>
               <Form.Control
                 inputMode="decimal"
                 value={price}
@@ -429,7 +430,7 @@ function ProductListGroup(props) {
               />
             </Form.Group>
             <Form.Group controlId="editProductBulk">
-              <Form.Label>Оптом</Form.Label>
+              <Form.Label>{t('Оптом')}</Form.Label>
               <Form.Control
                 inputMode="decimal"
                 value={bulkPrice}
@@ -437,7 +438,7 @@ function ProductListGroup(props) {
               />
             </Form.Group>
             <Form.Group controlId="editProductBuy">
-              <Form.Label>Продажа</Form.Label>
+              <Form.Label>{t('Продажа')}</Form.Label>
               <Form.Control
                 inputMode="decimal"
                 value={buyPrice}
@@ -446,13 +447,13 @@ function ProductListGroup(props) {
             </Form.Group>
           </div>
           <Form.Group controlId="editProductImage">
-            <Form.Label>Изображение</Form.Label>
+            <Form.Label>{t('Изображение')}</Form.Label>
             <Form.Control type="file" accept="image/*" ref={fileInputRef} />
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="warning"
@@ -461,7 +462,7 @@ function ProductListGroup(props) {
               const file = fileInputRef.current?.files?.[0]
               setShowEdit(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await updateProductWImage(
                 pid,
@@ -480,13 +481,13 @@ function ProductListGroup(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResAlert(true)
-                setShowResTitle('Продукт успешно обновлён')
+                setShowResTitle(t('Продукт успешно обновлён'))
               }
               setShowRes(true)
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -494,26 +495,26 @@ function ProductListGroup(props) {
       {/* Начальный остаток */}
       <Modal show={showStockAlert} onHide={() => setShowStockAlert(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Добавить начальный остаток</Modal.Title>
+          <Modal.Title>{t('Добавить начальный остаток')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
           <Form.Group controlId="initialStockQuantity">
-            <Form.Label>Остаток</Form.Label>
+            <Form.Label>{t('Остаток')}</Form.Label>
             <Form.Control
               type="number"
-              placeholder="Введите остаток"
+              placeholder={t('Введите остаток')}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
           </Form.Group>
           <Form.Group controlId="initialStockWarehouse">
-            <Form.Label>Склад</Form.Label>
+            <Form.Label>{t('Склад')}</Form.Label>
             <Form.Select
               value={wareHouseId}
               onChange={(e) => setWareHouseId(Number(e.target.value))}
             >
               <option value={-1} disabled>
-                Выберите склад
+                {t('Выберите склад')}
               </option>
               {wareHouseList?.map((wareHouse) => (
                 <option key={wareHouse.id} value={wareHouse.id}>
@@ -525,13 +526,13 @@ function ProductListGroup(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowStockAlert(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             onClick={async () => {
               setShowResAlert(false)
               setShowLoad(true)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
 
               const res = await addStock(
                 pid,
@@ -548,7 +549,7 @@ function ProductListGroup(props) {
                 setShowResTitle(data.message)
               } else {
                 setShowResAlert(true)
-                setShowResTitle('Остаток успешно добавлен')
+                setShowResTitle(t('Остаток успешно добавлен'))
               }
 
               setShowRes(true)
@@ -557,7 +558,7 @@ function ProductListGroup(props) {
             }}
           >
             <Save />
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -565,18 +566,18 @@ function ProductListGroup(props) {
       {/* Удалить */}
       <Modal show={showDel} onHide={() => setShowDel(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить</Modal.Title>
+          <Modal.Title>{t('Удалить')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Вы уверены, что хотите его удалить?</Modal.Body>
+        <Modal.Body>{t('Вы уверены, что хотите его удалить?')}</Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowDel(false)}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button
             variant="danger"
             onClick={async () => {
               setShowResAlert(false)
-              setShowLoadTitle('Загрузка...')
+              setShowLoadTitle(t('Загрузка...'))
               setShowDel(false)
               setShowLoad(true)
 
@@ -584,7 +585,7 @@ function ProductListGroup(props) {
               const deleteResponse = await res.json()
               setShowResAlert(res.ok)
 
-              setTimeout(() => setShowLoadTitle('Почти готово'), 1000)
+              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
               setTimeout(() => {
                 setShowLoad(false)
                 setShowResTitle(deleteResponse.message)
@@ -593,7 +594,7 @@ function ProductListGroup(props) {
             }}
           >
             <Trash2 />
-            Удалить
+            {t('Удалить')}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -609,24 +610,24 @@ function ProductListGroup(props) {
       {showImport && (
         <ImportModal
           onHide={() => setShowImport(false)}
-          entityTitle="продукты"
+          entityTitle={t('продукты')}
           fields={PRODUCT_IMPORT_FIELDS}
           options={
             <div className="flex flex-col gap-3">
               <Form.Check
                 type="switch"
                 id="importCreateCategories"
-                label="Создавать отсутствующие категории"
+                label={t('Создавать отсутствующие категории')}
                 checked={createMissingCategories}
                 onChange={(e) => setCreateMissingCategories(e.target.checked)}
               />
               <Form.Group controlId="importWarehouse">
-                <Form.Label>Склад для остатков</Form.Label>
+                <Form.Label>{t('Склад для остатков')}</Form.Label>
                 <Form.Select
                   value={importWarehouseId}
                   onChange={(e) => setImportWarehouseId(e.target.value)}
                 >
-                  <option value="">— не привязывать к складу —</option>
+                  <option value="">{t('— не привязывать к складу —')}</option>
                   {(wareHouseList ?? []).map((w) => (
                     <option key={w.id} value={w.id}>
                       {w.name}
@@ -635,8 +636,8 @@ function ProductListGroup(props) {
                 </Form.Select>
                 <Form.Text>
                   {importWarehouseId
-                    ? 'Товары сразу появятся в «Продаже» и «Приходе».'
-                    : 'Без склада товары нельзя продать или оприходовать, пока не добавите их на склад.'}
+                    ? t('Товары сразу появятся в «Продаже» и «Приходе».')
+                    : t('Без склада товары нельзя продать или оприходовать, пока не добавите их на склад.')}
                 </Form.Text>
               </Form.Group>
             </div>

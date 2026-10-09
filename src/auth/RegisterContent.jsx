@@ -10,6 +10,7 @@ import {
 } from '../utils/UtilsContent'
 import { registerUser } from './AuthApi'
 import { DEFAULT_ROLE, ROLES } from '../users/roles'
+import { t } from '../i18n'
 
 /** Koʻrinadigan/yashirin holatni almashtiruvchi parol maydoni. */
 function PasswordField({ id, label, placeholder, value, onChange }) {
@@ -30,7 +31,7 @@ function PasswordField({ id, label, placeholder, value, onChange }) {
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'}
+          aria-label={visible ? t('Скрыть пароль') : t('Показать пароль')}
           className="absolute right-1 top-1/2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-subtle transition hover:bg-surface-2 hover:text-fg"
         >
           {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -63,22 +64,22 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
     <Form onSubmit={submit} className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <Form.Group controlId="registerName">
-          <Form.Label>Имя</Form.Label>
+          <Form.Label>{t('Имя')}</Form.Label>
           <Form.Control
             type="text"
             autoComplete="given-name"
-            placeholder="Введите имя"
+            placeholder={t('Введите имя')}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
         </Form.Group>
 
         <Form.Group controlId="registerSurname">
-          <Form.Label>Фамилия</Form.Label>
+          <Form.Label>{t('Фамилия')}</Form.Label>
           <Form.Control
             type="text"
             autoComplete="family-name"
-            placeholder="Введите фамилию"
+            placeholder={t('Введите фамилию')}
             value={surname}
             onChange={(e) => setSurname(e.target.value)}
           />
@@ -86,22 +87,22 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
       </div>
 
       <Form.Group controlId="registerPhone">
-        <Form.Label>Телефон</Form.Label>
+        <Form.Label>{t('Телефон')}</Form.Label>
         <Form.Control
           type="tel"
           autoComplete="tel"
-          placeholder="Введите номер телефона"
+          placeholder={t('Введите номер телефона')}
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
       </Form.Group>
 
       <Form.Group controlId="registerEmail">
-        <Form.Label>Электронная почта</Form.Label>
+        <Form.Label>{t('Электронная почта')}</Form.Label>
         <Form.Control
           type="email"
           autoComplete="email"
-          placeholder="Введите адрес электронной почты"
+          placeholder={t('Введите адрес электронной почты')}
           value={login}
           onChange={(e) => setLogin(e.target.value)}
         />
@@ -109,7 +110,7 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
 
       {variant === 'tab' && (
         <Form.Group controlId="registerRole">
-          <Form.Label>Роль</Form.Label>
+          <Form.Label>{t('Роль')}</Form.Label>
           <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
             {ROLES.map((option) => (
               <option key={option.value} value={option.value}>
@@ -122,8 +123,8 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
 
       <PasswordField
         id="registerPassword"
-        label="Пароль"
-        placeholder="Введите пароль"
+        label={t('Пароль')}
+        placeholder={t('Введите пароль')}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
@@ -131,29 +132,29 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
       <div>
         <PasswordField
           id="registerPassword2"
-          label="Повторите пароль"
-          placeholder="Повторите пароль"
+          label={t('Повторите пароль')}
+          placeholder={t('Повторите пароль')}
           value={password2}
           onChange={(e) => setPassword2(e.target.value)}
         />
         {mismatch && (
-          <p className="mt-1.5 text-[11px] text-danger-soft-fg">Пароли не совпадают.</p>
+          <p className="mt-1.5 text-[11px] text-danger-soft-fg">{t('Пароли не совпадают.')}</p>
         )}
       </div>
 
       {variant === 'tab' ? (
         <Button type="submit" loading={busy} block className="mt-1">
           {!busy && <Save />}
-          Сохранить
+          {t('Сохранить')}
         </Button>
       ) : (
         <div className="mt-1 grid grid-cols-2 gap-2">
           <Button as={Link} to="/login" variant="outline-secondary">
-            Вход
+            {t('Вход')}
           </Button>
           <Button type="submit" loading={busy}>
             {!busy && <UserPlus />}
-            Регистрация
+            {t('Регистрация')}
           </Button>
         </div>
       )}
@@ -188,7 +189,7 @@ function useRegisterHandler(onSuccess) {
 
       setShowSuccess(true)
       psetShow(false)
-      setAlertMessage('Успешно...')
+      setAlertMessage(t('Успешно...'))
 
       if (onSuccess) {
         const timer = setTimeout(onSuccess, 2000)
@@ -196,7 +197,7 @@ function useRegisterHandler(onSuccess) {
       }
     } catch {
       setShowDanger(true)
-      setAlertMessage('Не удалось подключиться к серверу')
+      setAlertMessage(t('Не удалось подключиться к серверу'))
       psetShow(false)
     }
   }
@@ -242,10 +243,10 @@ function RegisterScreen() {
         <div className="w-full max-w-md">
           <div className="mb-6 text-center">
             <h1 className="text-xl font-semibold tracking-tight text-fg">
-              Добро пожаловать в систему
+              {t('Добро пожаловать в систему')}
             </h1>
             <p className="mt-1 text-[13px] text-muted">
-              Создайте учётную запись для работы в{' '}
+              {t('Создайте учётную запись для работы в')}{' '}
               <span className="font-semibold text-primary">ERP</span>
             </p>
           </div>

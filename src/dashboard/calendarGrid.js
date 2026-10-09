@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 /**
  * GitHub uslubidagi yillik to'r: ustunlar — haftalar (dushanbadan), qatorlar — Пн..Вс.
  * Birinchi ustun 1-yanvar tushgan haftaning dushanbasidan, oxirgisi 31-dekabr haftasining
@@ -9,7 +11,7 @@ const iso = (ms) => new Date(ms).toISOString().slice(0, 10)
 /** 1 = dushanba … 7 = yakshanba */
 const isoWeekday = (ms) => ((new Date(ms).getUTCDay() + 6) % 7) + 1
 
-export const MONTH_LABELS = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
+export const MONTH_LABELS = [t('Янв'), t('Фев'), t('Мар'), t('Апр'), t('Май'), t('Июн'), t('Июл'), t('Авг'), t('Сен'), t('Окт'), t('Ноя'), t('Дек')]
 
 export function buildYearGrid(year) {
   const jan1 = Date.UTC(year, 0, 1)
@@ -48,6 +50,6 @@ export function levelScale(values) {
     if (!(value > 0)) return 0
     // Eng faol kun doim eng to'q — qiymatlar kam yoki bir xil bo'lsa ham.
     if (value >= max) return 4
-    return 1 + thresholds.filter((t) => value > t).length
+    return 1 + thresholds.filter((limit) => value > limit).length
   }
 }

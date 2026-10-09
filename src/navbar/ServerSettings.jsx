@@ -9,6 +9,7 @@ import {
   isValidPort,
   saveServerConfig,
 } from '../config/api'
+import { t } from '../i18n'
 
 function ModeButton({ active, onClick, children }) {
   return (
@@ -84,8 +85,8 @@ function ServerSettings() {
         variant="ghost"
         size="sm"
         onClick={openModal}
-        title="Настройки сервера"
-        aria-label="Настройки сервера"
+        title={t('Настройки сервера')}
+        aria-label={t('Настройки сервера')}
         className="gap-1.5"
       >
         <Settings />
@@ -96,7 +97,7 @@ function ServerSettings() {
 
       <Modal show={open} onHide={() => setOpen(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Настройки сервера</Modal.Title>
+          <Modal.Title>{t('Настройки сервера')}</Modal.Title>
         </Modal.Header>
 
         <form
@@ -109,7 +110,7 @@ function ServerSettings() {
           <Modal.Body className="flex flex-col gap-4">
             <div
               role="group"
-              aria-label="Сервер"
+              aria-label={t('Сервер')}
               className="flex items-center rounded-lg border border-line bg-surface-2 p-0.5"
             >
               <ModeButton active={!isApi} onClick={() => update({ mode: 'local' })}>
@@ -122,7 +123,7 @@ function ServerSettings() {
 
             {isApi && (
               <Form.Group controlId="serverHost">
-                <Form.Label>IPv4 адрес</Form.Label>
+                <Form.Label>{t('IPv4 адрес')}</Form.Label>
                 <Form.Control
                   value={draft.host}
                   isInvalid={errors.host}
@@ -133,13 +134,13 @@ function ServerSettings() {
                   autoComplete="off"
                 />
                 {errors.host && (
-                  <Form.Text className="text-danger">Введите корректный IPv4 адрес</Form.Text>
+                  <Form.Text className="text-danger">{t('Введите корректный IPv4 адрес')}</Form.Text>
                 )}
               </Form.Group>
             )}
 
             <Form.Group controlId="serverPort">
-              <Form.Label>Порт</Form.Label>
+              <Form.Label>{t('Порт')}</Form.Label>
               <Form.Control
                 value={draft[portKey]}
                 isInvalid={errors.port}
@@ -150,7 +151,7 @@ function ServerSettings() {
                 autoComplete="off"
               />
               {errors.port && (
-                <Form.Text className="text-danger">Порт должен быть от 1 до 65535</Form.Text>
+                <Form.Text className="text-danger">{t('Порт должен быть от 1 до 65535')}</Form.Text>
               )}
             </Form.Group>
 
@@ -159,19 +160,17 @@ function ServerSettings() {
             </p>
 
             <p className="text-[11px] leading-snug text-subtle">
-              {isApi
-                ? 'Запросы пойдут на указанный сервер.'
-                : 'Запросы пойдут на локальный сервер и его базу данных.'}{' '}
-              IPv4 и порты сохраняются: при переключении они не теряются. После смены
-              сервера нужно войти заново.
+              {t('{v} IPv4 и порты сохраняются: при переключении они не теряются. После смены сервера нужно войти заново.', { v: isApi
+                ? t('Запросы пойдут на указанный сервер.')
+                : t('Запросы пойдут на локальный сервер и его базу данных.') })}
             </p>
           </Modal.Body>
 
           <Modal.Footer>
             <Button variant="outline-secondary" onClick={() => setOpen(false)}>
-              Отмена
+              {t('Отмена')}
             </Button>
-            <Button type="submit">Сохранить</Button>
+            <Button type="submit">{t('Сохранить')}</Button>
           </Modal.Footer>
         </form>
       </Modal>

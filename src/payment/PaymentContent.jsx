@@ -3,6 +3,7 @@ import { Banknote, Info, ListOrdered } from 'lucide-react'
 import { PageHeader, Tab, Tabs } from '../ui'
 import TransactionDetail from '../transaction/TransactionDetail'
 import { PaymentListGroup } from './PaymentListContent'
+import { t } from '../i18n'
 
 function PaymentTab() {
   const [activeTab, setActiveTab] = useState('home')
@@ -15,7 +16,7 @@ function PaymentTab() {
         title={
           <>
             <ListOrdered />
-            Список платежей
+            {t('Список платежей')}
           </>
         }
       >
@@ -32,7 +33,7 @@ function PaymentTab() {
           title={
             <>
               <Info />
-              Детали платежа
+              {t('Детали платежа')}
             </>
           }
         >
@@ -53,8 +54,8 @@ function PaymentScreen() {
     <div>
       <PageHeader
         icon={Banknote}
-        title="Платеж"
-        description="Все поступления и выплаты по продажам, приходам и возвратам"
+        title={t('Платеж')}
+        description={t('Все поступления и выплаты по продажам, приходам и возвратам')}
       />
       <PaymentTab />
     </div>

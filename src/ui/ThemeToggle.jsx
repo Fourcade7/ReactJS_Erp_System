@@ -1,11 +1,12 @@
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { useTheme } from '../theme/ThemeProvider'
+import { t } from '../i18n'
 
 const options = [
-  { value: 'light', label: 'Светлая', Icon: Sun },
-  { value: 'dark', label: 'Тёмная', Icon: Moon },
-  { value: 'system', label: 'Системная', Icon: Monitor },
+  { value: 'light', label: t('Светлая'), Icon: Sun },
+  { value: 'dark', label: t('Тёмная'), Icon: Moon },
+  { value: 'system', label: t('Системная'), Icon: Monitor },
 ]
 
 /**
@@ -21,8 +22,8 @@ function ThemeToggle({ compact = false, className }) {
       <button
         type="button"
         onClick={toggleTheme}
-        aria-label={isDark ? 'Включить светлую тему' : 'Включить тёмную тему'}
-        title={isDark ? 'Светлая тема' : 'Тёмная тема'}
+        aria-label={isDark ? t('Включить светлую тему') : t('Включить тёмную тему')}
+        title={isDark ? t('Светлая тема') : t('Тёмная тема')}
         className={cn(
           'relative inline-flex size-9 items-center justify-center overflow-hidden rounded-lg',
           'border border-line bg-surface text-muted transition-colors hover:bg-surface-2 hover:text-fg',
@@ -48,7 +49,7 @@ function ThemeToggle({ compact = false, className }) {
   return (
     <div
       role="radiogroup"
-      aria-label="Тема оформления"
+      aria-label={t('Тема оформления')}
       className={cn(
         'inline-flex items-center gap-0.5 rounded-lg border border-line bg-surface-2 p-0.5',
         className,
