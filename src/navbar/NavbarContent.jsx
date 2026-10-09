@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronDown, LifeBuoy, LogOut, Menu, Sparkles, UserRound } from 'lucide-react'
 import { BrandMark, Button, Container, Dropdown, LanguageToggle, ThemeToggle } from '../ui'
 import ServerSettings from './ServerSettings'
+import SupportDialog from './SupportDialog'
 import { clearLocalData } from '../config/api'
 import { t } from '../i18n'
 
@@ -32,6 +34,7 @@ function initialsOf(name = '', surname = '') {
  */
 function NavbarScreen({ onMenuClick }) {
   const navigate = useNavigate()
+  const [showSupport, setShowSupport] = useState(false)
   const username = localStorage.getItem('username') || t('Пользователь')
   const surname = localStorage.getItem('surname') || ''
   const role = localStorage.getItem('role') || '—'
@@ -53,12 +56,13 @@ function NavbarScreen({ onMenuClick }) {
         <Brand to="/home" />
 
         <nav className="ml-6 hidden items-center gap-1 md:flex">
-          <a
-            href="#support"
+          <button
+            type="button"
+            onClick={() => setShowSupport(true)}
             className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
           >
             {t('Поддержка')}
-          </a>
+          </button>
           <a
             href="#plans"
             className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
@@ -105,7 +109,7 @@ function NavbarScreen({ onMenuClick }) {
               <Dropdown.Item>
                 <UserRound /> {t('Профиль')}
               </Dropdown.Item>
-              <Dropdown.Item>
+              <Dropdown.Item onClick={() => setShowSupport(true)}>
                 <LifeBuoy /> {t('Поддержка')}
               </Dropdown.Item>
               <Dropdown.Divider />
@@ -122,6 +126,8 @@ function NavbarScreen({ onMenuClick }) {
           </Dropdown>
         </div>
       </Container>
+
+      <SupportDialog show={showSupport} onHide={() => setShowSupport(false)} />
     </header>
   )
 }

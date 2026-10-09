@@ -16,6 +16,8 @@ export default {
   'Открыть меню': 'Menyuni ochish',
   'Поддержка': "Qo'llab-quvvatlash",
   'Планы': 'Rejalar',
+  'Звоните на номер {phone}. Если я не отвечаю — значит, сплю: проснусь и сам перезвоню.': "{phone} ga murojaat qiling. Agar javob bermasam, uxlab yotgan bo'laman — uyqudan turib o'zim telefon qilaman.",
+  'Если очень срочно — обратитесь к Дадахону: {phone}, {telegram}': "Judayam zarur bo'lsa, Dadaxon ga murojaat qiling: {phone}, {telegram}",
   'Роль: {role}': 'Rol: {role}',
   'Профиль': 'Profil',
   'Выйти': 'Chiqish',
