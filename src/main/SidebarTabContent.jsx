@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowDownLeft,
   Banknote,
+  BarChart3,
   Boxes,
   HardHat,
   LayoutDashboard,
   Package,
   PlugZap,
+  ReceiptText,
   ShoppingBag,
   Tags,
   Undo2,
@@ -30,6 +33,7 @@ import PaymentScreen from '../payment/PaymentContent'
 import { IntegrationScreen } from '../integration/IntegrationContent'
 import { MasterOrderScreen } from '../masterorder/MasterOrderContent'
 import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
+import { ExpenseScreen } from '../expense/ExpenseContent'
 
 /**
  * Menyu tuzilmasi. `key` qiymatlari eski `eventKey` lar bilan bir xil saqlangan,
@@ -39,7 +43,11 @@ import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
 const NAV_GROUPS = [
   {
     label: 'Обзор',
-    items: [{ key: 'first', label: 'Главная страница', Icon: LayoutDashboard, adminOnly: true }],
+    items: [
+      { key: 'first', label: 'Главная страница', Icon: LayoutDashboard, adminOnly: true },
+      // Alohida sahifa (/dashboard) — tab emas, o'tish.
+      { key: 'dashboard', label: 'Дашборд', Icon: BarChart3, adminOnly: true, href: '/dashboard' },
+    ],
   },
   {
     label: 'Справочники',
@@ -60,6 +68,7 @@ const NAV_GROUPS = [
       { key: 'masters', label: 'Заказы мастеров', Icon: HardHat, badgeKey: 'newMasterOrders' },
       { key: 'elevn', label: 'Возврат', Icon: Undo2 },
       { key: 'twelw', label: 'Платеж', Icon: Banknote, adminOnly: true },
+      { key: 'expenses', label: 'Расходы', Icon: ReceiptText, adminOnly: true },
     ],
   },
   {
@@ -81,6 +90,7 @@ const SCREENS = {
   masters: MasterOrderScreen,
   elevn: ReturnScreen,
   twelw: PaymentScreen,
+  expenses: ExpenseScreen,
   integration: IntegrationScreen,
 }
 
@@ -130,6 +140,7 @@ function NavButton({ item, active, disabled, onSelect, badge = 0 }) {
  * kichik ekranda esa chapdan chiquvchi panel (drawer) koʻrinishida ishlaydi.
  */
 function LeftTab({ mobileOpen = false, onCloseMobile }) {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState(readInitialTab)
   const isUser = localStorage.getItem('role') === 'User'
   const [newMasterOrders, setNewMasterOrders] = useState(0)
@@ -152,6 +163,11 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
   }, [])
 
   const select = (key) => {
+    const href = NAV_GROUPS.flatMap((group) => group.items).find((item) => item.key === key)?.href
+    if (href) {
+      navigate(href)
+      return
+    }
     setActiveTab(key)
     localStorage.setItem('activeTab', key)
     onCloseMobile?.()

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, CalendarRange, LayoutDashboard, TrendingUp, Wallet } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { BarChart3, CalendarDays, CalendarRange, LayoutDashboard, TrendingUp, Wallet } from 'lucide-react'
 import { cn } from '../lib/cn'
-import { Card, PageHeader } from '../ui'
+import { Button, Card, PageHeader } from '../ui'
 import { BarChartEdited, ChartLinearEdited } from './statistics/ChartsContent'
 import {
   getAllSaleDebt,
@@ -116,6 +117,12 @@ function HomeScreen() {
         icon={LayoutDashboard}
         title="Главная страница"
         description="Сводка продаж и задолженности по компании"
+        actions={
+          <Button as={Link} to="/dashboard" variant="outline-primary" size="sm">
+            <BarChart3 />
+            Полная статистика
+          </Button>
+        }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

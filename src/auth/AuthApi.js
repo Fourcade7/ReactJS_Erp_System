@@ -6,7 +6,8 @@ const urlGetALlProducts = `${API_BASE}/getallproducts`
 //const accessToken = "0401c8f573fb9123965566e3da60e6dd2fda3c1d"
 
 
-async function registerUser(username,surname,phone,email, password) {
+// Ochiq "Регистрация" sahifasi rol bermaydi — doim User. Rolni faqat "Сотрудники" bo'limi tanlaydi.
+async function registerUser(username,surname,phone,email, password, role = "User") {
     try {
         let response = await fetch(`${API_BASE}/user/add`, {
             method: "POST",
@@ -19,7 +20,7 @@ async function registerUser(username,surname,phone,email, password) {
                 phone,
                 email,
                 password: password,
-                role:"User"
+                role
             })
         });
 

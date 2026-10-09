@@ -38,14 +38,16 @@ function NavbarScreen({ onMenuClick }) {
   return (
     <header className="sticky top-0 z-[1030] border-b border-line bg-app/80 backdrop-blur-xl">
       <Container size="full" className="flex h-14 items-center gap-3">
-        <button
-          type="button"
-          onClick={onMenuClick}
-          aria-label="Открыть меню"
-          className="inline-flex size-9 items-center justify-center rounded-lg border border-line bg-surface text-muted transition hover:bg-surface-2 hover:text-fg lg:hidden"
-        >
-          <Menu className="size-4" />
-        </button>
+        {onMenuClick && (
+          <button
+            type="button"
+            onClick={onMenuClick}
+            aria-label="Открыть меню"
+            className="inline-flex size-9 items-center justify-center rounded-lg border border-line bg-surface text-muted transition hover:bg-surface-2 hover:text-fg lg:hidden"
+          >
+            <Menu className="size-4" />
+          </button>
+        )}
 
         <Brand to="/home" />
 

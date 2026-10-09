@@ -6,6 +6,13 @@ const SERVER_KEYS = [KEY_MODE, KEY_HOST, KEY_API_PORT, KEY_LOCAL_PORT]
 
 const DEFAULT_PORT = '3000'
 
+/**
+ * Build vaqtida beriladigan standart server ("IPv4:port"). Electron build
+ * (ElectronJS_ERP_System/scripts/prepare.js) uni markaziy serverga qo'yadi;
+ * veb build'da bo'sh — u holda standart rejim Local.
+ */
+const [BUILD_HOST = '', BUILD_PORT = ''] = (import.meta.env?.VITE_DEFAULT_API ?? '').split(':')
+
 // Server almashganda eski serverning foydalanuvchi ma'lumoti yaroqsiz boʻladi.
 const SESSION_KEYS = ['username', 'surname', 'userid', 'role']
 
@@ -35,11 +42,12 @@ function isValidPort(value) {
  */
 function getServerConfig() {
   // Eski versiyada faqat `apiHost` bor edi (ixtiyoriy ":port" bilan) — shuni ham tushunamiz.
-  const [host, legacyPort] = read(KEY_HOST).split(':')
+  const [savedHost, legacyPort] = read(KEY_HOST).split(':')
+  const host = savedHost || BUILD_HOST
   return {
     mode: read(KEY_MODE) || (host ? 'api' : 'local'),
-    host: host || '',
-    apiPort: read(KEY_API_PORT) || legacyPort || DEFAULT_PORT,
+    host,
+    apiPort: read(KEY_API_PORT) || legacyPort || BUILD_PORT || DEFAULT_PORT,
     localPort: read(KEY_LOCAL_PORT) || DEFAULT_PORT,
   }
 }

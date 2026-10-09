@@ -23,6 +23,7 @@ import {
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
 import { deleteUser, getAllUsersPaginationSearch, updateUser } from './UserApi'
+import { roleOptions } from './roles'
 
 function UserListGroup(props) {
   const [showEdit, setShowEdit] = useState(false)
@@ -213,9 +214,11 @@ function UserListGroup(props) {
                 <option value="" disabled>
                   Выберите роль
                 </option>
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
-                <option value="Master">Master</option>
+                {roleOptions(role).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Form.Select>
             </Form.Group>
             <Form.Group controlId="editUserPassword">

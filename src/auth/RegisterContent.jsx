@@ -9,6 +9,7 @@ import {
   ProgressDismissible,
 } from '../utils/UtilsContent'
 import { registerUser } from './AuthApi'
+import { DEFAULT_ROLE, ROLES } from '../users/roles'
 
 /** Koʻrinadigan/yashirin holatni almashtiruvchi parol maydoni. */
 function PasswordField({ id, label, placeholder, value, onChange }) {
@@ -50,10 +51,13 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [password2, setPassword2] = useState('')
+  const [role, setRole] = useState(DEFAULT_ROLE)
 
   const mismatch = password2.length > 0 && password !== password2
 
-  const submit = (e) => handleRegister(e, username, surname, phone, login, password)
+  // Rol faqat xodim qo'shish tabida tanlanadi; ochiq ro'yxatdan o'tishda — doim User.
+  const submit = (e) =>
+    handleRegister(e, username, surname, phone, login, password, variant === 'tab' ? role : DEFAULT_ROLE)
 
   return (
     <Form onSubmit={submit} className="flex flex-col gap-3">
@@ -103,6 +107,19 @@ function RegisterFields({ handleRegister, variant = 'page', busy }) {
         />
       </Form.Group>
 
+      {variant === 'tab' && (
+        <Form.Group controlId="registerRole">
+          <Form.Label>Роль</Form.Label>
+          <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
+            {ROLES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+      )}
+
       <PasswordField
         id="registerPassword"
         label="Пароль"
@@ -151,7 +168,7 @@ function useRegisterHandler(onSuccess) {
   const [showSuccess, setShowSuccess] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
 
-  const handleRegister = async (e, username, surname, phone, email, password) => {
+  const handleRegister = async (e, username, surname, phone, email, password, role) => {
     e.preventDefault()
 
     try {
@@ -159,7 +176,7 @@ function useRegisterHandler(onSuccess) {
       setShowDanger(false)
       setShowSuccess(false)
 
-      const res = await registerUser(username, surname, phone, email, password)
+      const res = await registerUser(username, surname, phone, email, password, role)
       const result = await res.json()
 
       if (!res.ok) {
