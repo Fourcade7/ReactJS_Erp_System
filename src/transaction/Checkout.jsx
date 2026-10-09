@@ -31,8 +31,8 @@ const PAYMENTS = [
 ]
 
 /** Kontragentni qidirib tanlash (combobox). */
-function CustomerPicker({ fetchCustomers, setCustomerId }) {
-  const [searchTerm, setSearchTerm] = useState('')
+function CustomerPicker({ fetchCustomers, setCustomerId, initialLabel = '' }) {
+  const [searchTerm, setSearchTerm] = useState(initialLabel)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [customerList, setCustomerList] = useState([])
   const [open, setOpen] = useState(false)
@@ -112,9 +112,8 @@ const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleS
 /** Chop etiladigan chek. Tema qanday boʻlishidan qatʼi nazar oq fonda. */
 function CheckScreen({ orderList, discountAmount, finalCost, printType, priceField }) {
   // Savatda qoʻlda oʻzgartirilgan narxlar boʻyicha jami farq (odatiy narxga nisbatan).
-  const changeTotal = orderList.reduce(
-    (sum, item) => sum + priceChange(item, priceField) * item.quantity,
-    0,
+  const changeTotal = Math.round(
+    orderList.reduce((sum, item) => sum + priceChange(item, priceField) * item.quantity, 0),
   )
 
   return (
@@ -139,12 +138,12 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
               </div>
               <div className="flex justify-between gap-2 font-bold">
                 <span>{price.toLocaleString('uz')} So&apos;m</span>
-                <span>{(item.quantity * price).toLocaleString('uz')} So&apos;m</span>
+                <span>{Math.round(item.quantity * price).toLocaleString('uz')} So&apos;m</span>
               </div>
               {change !== 0 && (
                 <div className="flex justify-between gap-2 text-[11px]">
                   <span>было {Number(item[priceField]).toLocaleString('uz')}</span>
-                  <span>{signed(change * item.quantity)}</span>
+                  <span>{signed(Math.round(change * item.quantity))}</span>
                 </div>
               )}
             </div>
@@ -201,12 +200,14 @@ function Checkout({
   printable = false,
   maxDiscountPercent = null,
   limitByStock = false,
+  initialCustomer = null,
+  onSubmitted,
 }) {
   const componentRef = useRef(null)
 
   const [userId] = useState(localStorage.getItem('userid') || 1)
   const [open, setOpen] = useState(false)
-  const [customerId, setCustomerId] = useState(null)
+  const [customerId, setCustomerId] = useState(initialCustomer?.id ?? null)
   const [printType, setPrintType] = useState(null)
 
   const [paymentType, setPaymentType] = useState('Наличные')
@@ -218,9 +219,9 @@ function Checkout({
   const [alertMessage, setAlertMessage] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const totalCost = orderList.reduce(
-    (sum, item) => sum + unitPrice(item, priceField) * item.quantity,
-    0,
+  // Miqdor o'nli bo'lishi mumkin, summalar esa bazada butun son.
+  const totalCost = Math.round(
+    orderList.reduce((sum, item) => sum + unitPrice(item, priceField) * item.quantity, 0),
   )
 
   // Backend ham xuddi shu chegarani (pastga yaxlitlangan) tekshiradi.
@@ -306,14 +307,30 @@ function Checkout({
         return
       }
 
+      // Savdo yozildi; unga bog'liq keyingi amal (masalan, ustaning zakazini yakunlash)
+      // muvaffaqiyatsiz bo'lsa ham savdo bekor bo'lmaydi — foydalanuvchiga aytiladi.
+      let followUpFailed = false
+      if (onSubmitted) {
+        try {
+          await onSubmitted(result)
+        } catch (error) {
+          console.log(error.message)
+          followUpFailed = true
+        }
+      }
+
       setShowSuccess(true)
-      setAlertMessage('Успешно...')
+      setAlertMessage(
+        followUpFailed
+          ? 'Продажа оформлена, но заказ мастера не отмечен завершённым — откройте его и отметьте вручную'
+          : 'Успешно...',
+      )
       psetShow(false)
       setTimeout(() => {
         setShowSuccess(false)
         if (printable) setPrintType('Чек')
         else window.location.reload()
-      }, 3000)
+      }, followUpFailed ? 8000 : 3000)
     } catch {
       setShowDanger(true)
       setAlertMessage('Не удалось подключиться к серверу')
@@ -405,7 +422,13 @@ function Checkout({
 
         <div>
           <p className="mb-1.5 text-xs font-medium text-muted">Контрагент</p>
-          <CustomerPicker fetchCustomers={fetchCustomers} setCustomerId={setCustomerId} />
+          <CustomerPicker
+            fetchCustomers={fetchCustomers}
+            setCustomerId={setCustomerId}
+            initialLabel={
+              initialCustomer ? `${initialCustomer.username} ${initialCustomer.surname}`.trim() : ''
+            }
+          />
         </div>
 
         <div>

@@ -68,7 +68,7 @@ function renderCartImage(orderList, priceField) {
     return {
       item,
       price,
-      sum: price * item.quantity,
+      sum: Math.round(price * item.quantity),
       // Savatda qoʻlda oʻzgartirilgan narxning odatiy narxdan farqi (1 dona uchun).
       change: priceChange(item, priceField),
       lines: wrapText(ctx, item.name, NAME_W),
@@ -76,8 +76,8 @@ function renderCartImage(orderList, priceField) {
   })
 
   const total = rows.reduce((sum, row) => sum + row.sum, 0)
-  const count = orderList.reduce((sum, item) => sum + item.quantity, 0)
-  const changeTotal = rows.reduce((sum, row) => sum + row.change * row.item.quantity, 0)
+  const count = Math.round(orderList.reduce((sum, item) => sum + item.quantity, 0) * 1000) / 1000
+  const changeTotal = Math.round(rows.reduce((sum, row) => sum + row.change * row.item.quantity, 0))
 
   const HEADER_H = 74
   const CHANGE_H = changeTotal !== 0 ? 24 : 0
@@ -140,7 +140,7 @@ function renderCartImage(orderList, priceField) {
       // Yuqoridagi «son × narx» qatori bilan bir xil rangda, biroz kichikroq.
       g.font = font(400, 11)
       g.fillText(
-        `было ${Number(row.item[priceField]).toLocaleString('uz')} · ${signed(row.change * row.item.quantity)}`,
+        `было ${Number(row.item[priceField]).toLocaleString('uz')} · ${signed(Math.round(row.change * row.item.quantity))}`,
         right,
         top + LINE_H * 2 + 1,
       )

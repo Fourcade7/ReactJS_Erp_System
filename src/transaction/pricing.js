@@ -1,6 +1,8 @@
+import { roundQty } from '../lib/quantity'
+
 /** Mahsulotning barcha omborlardagi umumiy qoldigʻi. */
 export const stockOf = (product) =>
-  product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0
+  roundQty(product.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0)
 
 /**
  * Savat qatorining birlik narxi: savatda qoʻlda oʻzgartirilgan boʻlsa —

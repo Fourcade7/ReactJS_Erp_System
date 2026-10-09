@@ -15,6 +15,7 @@ import {
 import { cn } from '../lib/cn'
 import { Badge, Button, Card, Form, Modal } from '../ui'
 import { ResultModal } from '../utils/StatusModals'
+import { roundQty } from '../lib/quantity'
 import SaleReturnModal from './SaleReturnModal'
 
 const PAYMENT_ICONS = {
@@ -149,7 +150,7 @@ function TransactionDetail({
             <ul className="m-0 list-none divide-y divide-line p-0">
               {sale.items.map((item, index) => {
                 const returned = item.returned ?? 0
-                const returnable = item.quantity - returned
+                const returnable = roundQty(item.quantity - returned)
 
                 return (
                   <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">

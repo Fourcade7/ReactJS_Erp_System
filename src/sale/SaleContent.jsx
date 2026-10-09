@@ -1,6 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Info, ShoppingBag, Wallet } from 'lucide-react'
 import { Tab, Tabs } from '../ui'
+import {
+  clearMasterOrderHandoff,
+  peekMasterOrderHandoff,
+} from '../masterorder/handoff'
+import { completeMasterOrder } from '../masterorder/MasterOrderApi'
 import TransactionWorkspace from '../transaction/TransactionWorkspace'
 import TransactionList from '../transaction/TransactionList'
 import TransactionDetail from '../transaction/TransactionDetail'
@@ -96,7 +101,21 @@ function SaleTabForHome() {
 }
 
 function SaleScreen() {
-  return <TransactionWorkspace config={SALE_CONFIG} />
+  // "Заказы мастеров" dan o'tgan zakaz bo'lsa — savat va kontragent tayyor holda ochiladi.
+  const [handoff] = useState(peekMasterOrderHandoff)
+  useEffect(() => {
+    clearMasterOrderHandoff()
+  }, [])
+
+  return (
+    <TransactionWorkspace
+      config={SALE_CONFIG}
+      initialOrderList={handoff?.orderList}
+      initialCustomer={handoff?.customer}
+      // Savdo yozilgach zakaz yakunlanadi va savdoga bog'lanadi.
+      onSubmitted={handoff ? (sale) => completeMasterOrder(handoff.orderId, sale.id) : undefined}
+    />
+  )
 }
 
 export { SaleScreen, SaleTabForHome }

@@ -3,6 +3,7 @@ import {
   ArrowDownLeft,
   Banknote,
   Boxes,
+  HardHat,
   LayoutDashboard,
   Package,
   PlugZap,
@@ -27,6 +28,8 @@ import { SaleScreen } from '../sale/SaleContent'
 import ReturnScreen from '../return/ReturnContent'
 import PaymentScreen from '../payment/PaymentContent'
 import { IntegrationScreen } from '../integration/IntegrationContent'
+import { MasterOrderScreen } from '../masterorder/MasterOrderContent'
+import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
 
 /**
  * Menyu tuzilmasi. `key` qiymatlari eski `eventKey` lar bilan bir xil saqlangan,
@@ -54,6 +57,7 @@ const NAV_GROUPS = [
     items: [
       { key: 'nineth', label: 'Приход', Icon: ArrowDownLeft, adminOnly: true },
       { key: 'teenth', label: 'Продажа', Icon: ShoppingBag },
+      { key: 'masters', label: 'Заказы мастеров', Icon: HardHat, badgeKey: 'newMasterOrders' },
       { key: 'elevn', label: 'Возврат', Icon: Undo2 },
       { key: 'twelw', label: 'Платеж', Icon: Banknote, adminOnly: true },
     ],
@@ -74,6 +78,7 @@ const SCREENS = {
   eighth: StockScreen,
   nineth: PurchaseScreen,
   teenth: SaleScreen,
+  masters: MasterOrderScreen,
   elevn: ReturnScreen,
   twelw: PaymentScreen,
   integration: IntegrationScreen,
@@ -87,7 +92,7 @@ function readInitialTab() {
   return saved || 'first'
 }
 
-function NavButton({ item, active, disabled, onSelect }) {
+function NavButton({ item, active, disabled, onSelect, badge = 0 }) {
   const { Icon, label } = item
   return (
     <button
@@ -111,6 +116,11 @@ function NavButton({ item, active, disabled, onSelect }) {
       />
       <Icon className={cn('size-4 shrink-0', active ? 'text-primary' : 'text-subtle')} />
       <span className="truncate">{label}</span>
+      {badge > 0 && (
+        <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-danger px-1.5 text-[10px] font-semibold tabular-nums leading-5 text-white">
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </button>
   )
 }
@@ -122,6 +132,24 @@ function NavButton({ item, active, disabled, onSelect }) {
 function LeftTab({ mobileOpen = false, onCloseMobile }) {
   const [activeTab, setActiveTab] = useState(readInitialTab)
   const isUser = localStorage.getItem('role') === 'User'
+  const [newMasterOrders, setNewMasterOrders] = useState(0)
+
+  // Socketsiz: yangi zakazlar sonini vaqti-vaqti bilan so'raymiz.
+  useEffect(() => {
+    let stale = false
+    const refresh = () =>
+      getNewMasterOrderCount()
+        .then((count) => {
+          if (!stale) setNewMasterOrders(count)
+        })
+        .catch(() => {})
+    refresh()
+    const timer = setInterval(refresh, 30000)
+    return () => {
+      stale = true
+      clearInterval(timer)
+    }
+  }, [])
 
   const select = (key) => {
     setActiveTab(key)
@@ -155,6 +183,7 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
               active={activeTab === item.key}
               disabled={item.adminOnly && isUser}
               onSelect={select}
+              badge={item.badgeKey === 'newMasterOrders' ? newMasterOrders : 0}
             />
           ))}
         </div>
@@ -205,7 +234,7 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
         </aside>
 
         <main key={activeTab} className="min-w-0 flex-1 animate-fade-in py-5">
-          <ActiveScreen />
+          <ActiveScreen goTo={select} />
         </main>
       </div>
     </>

@@ -215,6 +215,7 @@ function UserListGroup(props) {
                 </option>
                 <option value="User">User</option>
                 <option value="Admin">Admin</option>
+                <option value="Master">Master</option>
               </Form.Select>
             </Form.Group>
             <Form.Group controlId="editUserPassword">

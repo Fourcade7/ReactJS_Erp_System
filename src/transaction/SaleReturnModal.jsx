@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Banknote, CreditCard, Minus, Plus, Undo2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Button, Form, Modal } from '../ui'
+import { parseQty, roundQty } from '../lib/quantity'
 
 const REFUND_METHODS = [
   { value: 'Наличные', Icon: Banknote },
@@ -19,15 +20,16 @@ const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
  * qarzdan ayiriladi, qolgani mijozga tanlangan usulda qaytariladi.
  */
 function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
-  const returnable = item.quantity - (item.returned ?? 0)
+  const returnable = roundQty(item.quantity - (item.returned ?? 0))
 
-  const [quantity, setQuantity] = useState('1')
+  const [quantity, setQuantity] = useState(String(Math.min(1, returnable)))
   const [method, setMethod] = useState(REFUND_METHODS[0].value)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  const qty = Number(quantity)
-  const validQty = Number.isInteger(qty) && qty >= 1 && qty <= returnable
+  // Metr/kg kabi o'nli birliklar uchun miqdor o'nli ham bo'ladi (3 xonagacha).
+  const qty = parseQty(quantity) ?? 0
+  const validQty = qty > 0 && qty <= returnable
 
   const saleNet = sale.total - sale.discount
   const paid = sale.payments.reduce((sum, p) => sum + p.amount, 0)
@@ -39,11 +41,17 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
   const refund = value - offset
 
   const step = (delta) =>
-    setQuantity((prev) => String(Math.min(returnable, Math.max(1, (Number(prev) || 0) + delta))))
+    setQuantity((prev) =>
+      String(
+        roundQty(
+          Math.min(returnable, Math.max(Math.min(1, returnable), (parseQty(prev) ?? 0) + delta)),
+        ),
+      ),
+    )
 
   const submit = async () => {
     if (!validQty) {
-      setError(`Введите количество от 1 до ${returnable}`)
+      setError(`Введите количество до ${returnable} (не более 3 знаков после запятой)`)
       return
     }
     setSaving(true)
@@ -95,9 +103,9 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
                 <Minus className="size-3.5" />
               </button>
               <Form.Control
-                inputMode="numeric"
+                inputMode="decimal"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => setQuantity(e.target.value.replace(/[^\d.,]/g, ''))}
                 className="h-9 w-16 rounded-none border-0 bg-transparent text-center tabular-nums focus:ring-0"
               />
               <button

@@ -4,8 +4,81 @@ import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
 import { copyCartImage } from './cartImage'
 import { priceChange, stockOf, unitPrice } from './pricing'
+import { parseQty, roundQty } from '../lib/quantity'
 
 const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString('uz')}`
+
+/**
+ * Savat qatoridagi miqdor — bosib yoziladi (metr, kg uchun o'nli ham: 12,5).
+ * Enter yoki tashqariga bosish — saqlash, Esc — bekor qilish.
+ */
+function QuantityInput({ value, overStock, onSave }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [invalid, setInvalid] = useState(false)
+  const cancelled = useRef(false)
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        title="Изменить количество (можно дробное, например 12,5)"
+        onClick={() => {
+          setDraft(String(value))
+          setInvalid(false)
+          setEditing(true)
+        }}
+        className={cn(
+          'min-w-6 px-1 text-center text-[12px] font-semibold tabular-nums transition hover:bg-surface-3',
+          overStock ? 'text-danger-soft-fg' : 'text-fg',
+        )}
+      >
+        {value}
+      </button>
+    )
+  }
+
+  const save = () => {
+    const next = parseQty(draft)
+    if (next === null) return setInvalid(true)
+    if (next !== value) onSave(next)
+    setEditing(false)
+  }
+
+  return (
+    <input
+      autoFocus
+      inputMode="decimal"
+      title="Enter — сохранить, Esc — отмена. До 3 знаков после запятой"
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value.replace(/[^\d.,]/g, ''))
+        setInvalid(false)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') save()
+        if (e.key === 'Escape') {
+          cancelled.current = true
+          setEditing(false)
+        }
+      }}
+      onBlur={() => {
+        if (cancelled.current) {
+          cancelled.current = false
+          return
+        }
+        // Noto'g'ri qiymat bilan chiqilsa — eski miqdor qoladi.
+        if (parseQty(draft) === null) return setEditing(false)
+        save()
+      }}
+      className={cn(
+        'h-6 w-16 bg-surface px-1 text-center text-[12px] tabular-nums text-fg outline-none',
+        'border-y border-primary focus:ring-2 focus:ring-[var(--ring)]',
+        invalid && 'border-danger',
+      )}
+    />
+  )
+}
 
 /**
  * Savat qatoridagi birlik narx — bosib oʻzgartiriladi. Enter yoki tashqariga
@@ -94,18 +167,19 @@ function Cart({
   const update = (id, fn) =>
     setOrderList((prev) => prev.map((item) => (item.id === id ? fn(item) : item)))
 
-  const increase = (id) => update(id, (item) => ({ ...item, quantity: item.quantity + 1 }))
+  const increase = (id) =>
+    update(id, (item) => ({ ...item, quantity: roundQty(item.quantity + 1) }))
 
   const decrease = (id) =>
     setOrderList((prev) =>
       prev
-        .map((item) => (item.id === id ? { ...item, quantity: item.quantity - 1 } : item))
+        .map((item) => (item.id === id ? { ...item, quantity: roundQty(item.quantity - 1) } : item))
         .filter((item) => item.quantity > 0),
     )
 
   const remove = (id) => setOrderList((prev) => prev.filter((item) => item.id !== id))
 
-  const count = orderList.reduce((sum, item) => sum + item.quantity, 0)
+  const count = roundQty(orderList.reduce((sum, item) => sum + item.quantity, 0))
 
   // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya koʻrinadi.
   const [copyState, setCopyState] = useState('idle')
@@ -181,7 +255,7 @@ function Cart({
             const available = stockOf(product)
             const overStock = limitByStock && product.quantity > available
             const stockHint = overStock
-              ? `На складе только ${available} ${product.unit} — лишних ${product.quantity - available}`
+              ? `На складе только ${available} ${product.unit} — лишних ${roundQty(product.quantity - available)}`
               : undefined
 
             return (
@@ -217,14 +291,11 @@ function Cart({
                   >
                     <Minus className="size-3" />
                   </button>
-                  <span
-                    className={cn(
-                      'min-w-6 px-0.5 text-center text-[12px] font-semibold tabular-nums',
-                      overStock ? 'text-danger-soft-fg' : 'text-fg',
-                    )}
-                  >
-                    {product.quantity}
-                  </span>
+                  <QuantityInput
+                    value={product.quantity}
+                    overStock={overStock}
+                    onSave={(quantity) => update(product.id, (item) => ({ ...item, quantity }))}
+                  />
                   <button
                     type="button"
                     onClick={() => increase(product.id)}
@@ -296,7 +367,7 @@ function Cart({
                 </div>
 
                 <span className="ml-auto shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg @lg:ml-0 @lg:min-w-[5.5rem]">
-                  {(product.quantity * price).toLocaleString('uz')}
+                  {Math.round(product.quantity * price).toLocaleString('uz')}
                 </span>
 
                 <button

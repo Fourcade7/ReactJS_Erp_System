@@ -7,6 +7,7 @@ import placeholderImage from '../assets/placeholder.jpg'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { ResultModal } from '../utils/StatusModals'
 import { stockOf } from './pricing'
+import { roundQty } from '../lib/quantity'
 
 /**
  * Savatga qoʻshish uchun mahsulot tanlagich.
@@ -62,7 +63,7 @@ function ProductPicker({
       const exists = prev.find((item) => item.id === product.id)
       if (exists) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+          item.id === product.id ? { ...item, quantity: roundQty(item.quantity + 1) } : item,
         )
       }
       return [...prev, { ...product, quantity: 1, checkPrice: false }]

@@ -12,8 +12,8 @@ import TransactionList from './TransactionList'
  * roʻyxat, yangi operatsiya (tovarlar → savat → hisob-kitob) va tafsilotlar.
  * Boʻlimlar orasidagi farq faqat `config` da.
  */
-function TransactionWorkspace({ config }) {
-  const [orderList, setOrderList] = useState([])
+function TransactionWorkspace({ config, initialOrderList = [], initialCustomer = null, onSubmitted }) {
+  const [orderList, setOrderList] = useState(initialOrderList)
   const [activeTab, setActiveTab] = useState('sale')
   const [selectedSale, setSelectedSale] = useState(null)
 
@@ -81,6 +81,8 @@ function TransactionWorkspace({ config }) {
                 printable={config.printable}
                 maxDiscountPercent={config.maxDiscountPercent}
                 limitByStock={config.limitByStock}
+                initialCustomer={initialCustomer}
+                onSubmitted={onSubmitted}
               />
             </div>
           </div>
