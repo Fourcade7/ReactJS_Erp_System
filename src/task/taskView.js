@@ -50,6 +50,8 @@ export const EVENT_LABELS = {
 
 /** Backend "Изменено: название; срок; ответственный: A → B" ni ruscha yozadi — ekranda tilga qarab. */
 export function eventNote(event) {
+  // "По договору" savdosidan avtomatik ochilgan vazifa (tizim yozadi).
+  if (event.note === 'Автоматически: продажа по договору') return t('Автоматически: продажа по договору')
   if (event.type !== 'updated' || !event.note) return event.note
   const words = {
     название: t('название'),

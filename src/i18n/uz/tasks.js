@@ -24,6 +24,14 @@ export default {
   'Задач не найдено': 'Vazifalar topilmadi',
   'Измените фильтры или выберите другой этап.': "Filtrlarni o'zgartiring yoki boshqa etapni tanlang.",
   'Здесь появятся задачи, которые администратор назначит вам.': "Bu yerda administrator sizga biriktirgan vazifalar paydo bo'ladi.",
+  'Автоматически: продажа по договору': "Avtomatik: shartnoma bo'yicha savdo",
+  // vazifadan shartnomani ochish
+  'Открыть договор: оплата, реквизиты, товары': "Shartnomani ochish: to'lov, rekvizitlar, tovarlar",
+  // voronka tablari va "barcha voronkalar"
+  'Все воронки': 'Barcha voronkalar',
+  'Открытые': 'Ochiq',
+  'Закрытые': 'Yopilgan',
+  'Состояние': 'Holat',
   // doska
   'Закрывает администратор': 'Administrator yopadi',
   'Нет задач': "Vazifalar yo'q",

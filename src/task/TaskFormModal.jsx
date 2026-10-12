@@ -121,162 +121,175 @@ function TaskFormModal({ task, pipelines, members, defaultPipelineId, defaultCon
   }
 
   return (
-    <Modal show onHide={onHide} centered size="lg">
+    // Keng va ikki ustunli: balandligi kamayadi; baribir ekranga sig'masa tanasi skroll bo'ladi (sarlavha va tugmalar joyida).
+    <Modal show onHide={onHide} centered size="full" scrollable>
       <Modal.Header closeButton>
         <Modal.Title>{editing ? t('Изменить задачу') : t('Новая задача')}</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="flex flex-col gap-4">
-        {error && <Alert variant="danger">{error}</Alert>}
+      <Modal.Body className="min-h-0 overflow-y-auto">
+        {error && (
+          <div className="mb-4">
+            <Alert variant="danger">{error}</Alert>
+          </div>
+        )}
 
-        <Form.Group controlId="taskTitle">
-          <Form.Label>{t('Название')}</Form.Label>
-          <Form.Control
-            value={title}
-            isInvalid={invalid}
-            maxLength={200}
-            placeholder={t('Что нужно сделать')}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          {invalid && <Form.Text className="text-danger">{t('Укажите название задачи')}</Form.Text>}
-        </Form.Group>
+        <div className="grid gap-x-8 gap-y-4 lg:grid-cols-2">
+          {/* Chap ustun: nima qilish kerak */}
+          <div className="flex min-w-0 flex-col gap-4">
+            <Form.Group controlId="taskTitle">
+              <Form.Label>{t('Название')}</Form.Label>
+              <Form.Control
+                value={title}
+                isInvalid={invalid}
+                maxLength={200}
+                placeholder={t('Что нужно сделать')}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              {invalid && <Form.Text className="text-danger">{t('Укажите название задачи')}</Form.Text>}
+            </Form.Group>
 
-        <Form.Group controlId="taskDescription">
-          <Form.Label>{t('Описание')}</Form.Label>
-          <Form.Control as="textarea" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
-        </Form.Group>
+            <Form.Group controlId="taskDescription">
+              <Form.Label>{t('Описание')}</Form.Label>
+              <Form.Control as="textarea" rows={5} value={description} onChange={(e) => setDescription(e.target.value)} />
+            </Form.Group>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {!editing && (
-            <>
-              <Form.Group controlId="taskPipeline">
-                <Form.Label>{t('Воронка')}</Form.Label>
-                <Form.Select
-                  value={pipelineId}
-                  onChange={(e) => {
-                    setPipelineId(e.target.value)
-                    setStageId('')
-                  }}
-                >
-                  {pipelines.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {td(item.name)}
+            {canAttachCustomer() && (
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-muted">{t('Контрагент')}</p>
+                <CustomerPicker value={customer} onChange={setCustomer} />
+                <p className="mt-1.5 text-[11px] leading-snug text-subtle">
+                  {t('Ищите по имени или телефону. Нет в списке — создайте нового: он попадёт в «Клиенты».')}
+                </p>
+              </div>
+            )}
+
+            {!editing && <FilePicker files={files} onChange={setFiles} />}
+          </div>
+
+          {/* O'ng ustun: kim, qachon va qaysi jarayonda */}
+          <div className="flex min-w-0 flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {!editing && (
+                <>
+                  <Form.Group controlId="taskPipeline">
+                    <Form.Label>{t('Воронка')}</Form.Label>
+                    <Form.Select
+                      value={pipelineId}
+                      onChange={(e) => {
+                        setPipelineId(e.target.value)
+                        setStageId('')
+                      }}
+                    >
+                      {pipelines.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {td(item.name)}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                  <Form.Group controlId="taskStage">
+                    <Form.Label>{t('Начальный этап')}</Form.Label>
+                    <Form.Select value={stageId} onChange={(e) => setStageId(e.target.value)}>
+                      <option value="">{startStages[0] ? td(startStages[0].name) : '—'}</option>
+                      {startStages.slice(1).map((stage) => (
+                        <option key={stage.id} value={stage.id}>
+                          {td(stage.name)}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </>
+              )}
+
+              <Form.Group controlId="taskPriority">
+                <Form.Label>{t('Приоритет')}</Form.Label>
+                <Form.Select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                  {PRIORITIES.map((item) => (
+                    <option key={item.key} value={item.key}>
+                      {item.label}
                     </option>
                   ))}
                 </Form.Select>
               </Form.Group>
-              <Form.Group controlId="taskStage">
-                <Form.Label>{t('Начальный этап')}</Form.Label>
-                <Form.Select value={stageId} onChange={(e) => setStageId(e.target.value)}>
-                  <option value="">{startStages[0] ? td(startStages[0].name) : '—'}</option>
-                  {startStages.slice(1).map((stage) => (
-                    <option key={stage.id} value={stage.id}>
-                      {td(stage.name)}
-                    </option>
-                  ))}
-                </Form.Select>
+
+              <Form.Group controlId="taskDue">
+                <Form.Label>{t('Срок выполнения')}</Form.Label>
+                <Form.Control type="datetime-local" value={due} onChange={(e) => setDue(e.target.value)} />
               </Form.Group>
-            </>
-          )}
-
-          <Form.Group controlId="taskPriority">
-            <Form.Label>{t('Приоритет')}</Form.Label>
-            <Form.Select value={priority} onChange={(e) => setPriority(e.target.value)}>
-              {PRIORITIES.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-
-          <Form.Group controlId="taskDue">
-            <Form.Label>{t('Срок выполнения')}</Form.Label>
-            <Form.Control type="datetime-local" value={due} onChange={(e) => setDue(e.target.value)} />
-          </Form.Group>
-
-          <Form.Group controlId="taskResponsible" className="sm:col-span-2">
-            <Form.Label>{t('Ответственный')}</Form.Label>
-            <Form.Select
-              value={responsibleId}
-              onChange={(e) => {
-                setResponsibleId(e.target.value)
-                // Javobgar qo'shimcha ijrochilar ro'yxatida takrorlanmaydi.
-                setParticipantIds((current) => current.filter((id) => id !== Number(e.target.value)))
-              }}
-            >
-              <option value="">{t('Не назначен')}</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {fullName(member)} · {roleLabel(member.role)}
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Text>{t('Закрытая и утверждённая задача засчитывается ответственному')}</Form.Text>
-          </Form.Group>
-
-          {canAttachCustomer() && (
-            <div className="sm:col-span-2">
-              <p className="mb-1.5 text-xs font-medium text-muted">{t('Контрагент')}</p>
-              <CustomerPicker value={customer} onChange={setCustomer} />
-              <p className="mt-1.5 text-[11px] leading-snug text-subtle">
-                {t('Ищите по имени или телефону. Нет в списке — создайте нового: он попадёт в «Клиенты».')}
-              </p>
             </div>
-          )}
 
-          {admin && (
-            <Form.Group controlId="taskContract" className="sm:col-span-2">
-              <Form.Label>{t('Договор')}</Form.Label>
+            <Form.Group controlId="taskResponsible">
+              <Form.Label>{t('Ответственный')}</Form.Label>
               <Form.Select
-                value={contractId}
+                value={responsibleId}
                 onChange={(e) => {
-                  if (e.target.value === NEW_CONTRACT) setQuickContract(true)
-                  else setContractId(e.target.value)
+                  setResponsibleId(e.target.value)
+                  // Javobgar qo'shimcha ijrochilar ro'yxatida takrorlanmaydi.
+                  setParticipantIds((current) => current.filter((id) => id !== Number(e.target.value)))
                 }}
               >
-                <option value="">{t('Без договора')}</option>
-                {contractOptions.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.number}
-                    {item.subject ? ` · ${item.subject.slice(0, 50)}` : ''}
-                    {item.customer ? ` · ${customerName(item.customer)}` : ''}
+                <option value="">{t('Не назначен')}</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {fullName(member)} · {roleLabel(member.role)}
                   </option>
                 ))}
-                <option value={NEW_CONTRACT}>{t('＋ Новый договор…')}</option>
               </Form.Select>
-              <Form.Text>{t('Задача выполняется по этому договору; он виден в карточке задачи')}</Form.Text>
+              <Form.Text>{t('Закрытая и утверждённая задача засчитывается ответственному')}</Form.Text>
             </Form.Group>
-          )}
-        </div>
 
-        <div>
-          <p className="mb-1.5 text-xs font-medium text-muted">{t('Соисполнители')}</p>
-          {members.length === 0 ? (
-            <Spinner size="sm" />
-          ) : (
-            <div className="grid max-h-40 gap-1 overflow-y-auto rounded-lg border border-line p-2 sm:grid-cols-2">
-              {members
-                .filter((member) => member.id !== responsible)
-                .map((member) => (
-                  <label
-                    key={member.id}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-fg hover:bg-surface-2"
-                  >
-                    <input
-                      type="checkbox"
-                      className="size-4 accent-[var(--primary)]"
-                      checked={participantIds.includes(member.id)}
-                      onChange={() => toggleParticipant(member.id)}
-                    />
-                    <span className="min-w-0 flex-1 truncate">{fullName(member)}</span>
-                    <span className="text-[11px] text-subtle">{roleLabel(member.role)}</span>
-                  </label>
-                ))}
+            {admin && (
+              <Form.Group controlId="taskContract">
+                <Form.Label>{t('Договор')}</Form.Label>
+                <Form.Select
+                  value={contractId}
+                  onChange={(e) => {
+                    if (e.target.value === NEW_CONTRACT) setQuickContract(true)
+                    else setContractId(e.target.value)
+                  }}
+                >
+                  <option value="">{t('Без договора')}</option>
+                  {contractOptions.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.number}
+                      {item.subject ? ` · ${item.subject.slice(0, 50)}` : ''}
+                      {item.customer ? ` · ${customerName(item.customer)}` : ''}
+                    </option>
+                  ))}
+                  <option value={NEW_CONTRACT}>{t('＋ Новый договор…')}</option>
+                </Form.Select>
+                <Form.Text>{t('Задача выполняется по этому договору; он виден в карточке задачи')}</Form.Text>
+              </Form.Group>
+            )}
+
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-muted">{t('Соисполнители')}</p>
+              {members.length === 0 ? (
+                <Spinner size="sm" />
+              ) : (
+                <div className="grid max-h-40 gap-1 overflow-y-auto rounded-lg border border-line p-2 sm:grid-cols-2">
+                  {members
+                    .filter((member) => member.id !== responsible)
+                    .map((member) => (
+                      <label
+                        key={member.id}
+                        className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-fg hover:bg-surface-2"
+                      >
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-[var(--primary)]"
+                          checked={participantIds.includes(member.id)}
+                          onChange={() => toggleParticipant(member.id)}
+                        />
+                        <span className="min-w-0 flex-1 truncate">{fullName(member)}</span>
+                        <span className="text-[11px] text-subtle">{roleLabel(member.role)}</span>
+                      </label>
+                    ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-
-        {!editing && <FilePicker files={files} onChange={setFiles} />}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={onHide}>

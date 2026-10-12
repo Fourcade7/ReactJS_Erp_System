@@ -4,7 +4,7 @@ import { cn } from '../lib/cn'
 import { useRequest } from '../lib/useRequest'
 import { Alert, Badge, Button, Card, EmptyState, Form, PageHeader, SearchField, Spinner } from '../ui'
 import { t, td } from '../i18n'
-import { getTaskBoard, getTaskMembers, getTaskPipelines, getTasks, moveTask } from './TaskApi'
+import { getPipelineCounts, getTaskBoard, getTaskMembers, getTaskPipelines, getTasks, moveTask } from './TaskApi'
 import { TaskBoard } from './TaskBoard'
 import { TaskDialog } from './TaskDialog'
 import { TaskFormModal } from './TaskFormModal'
@@ -15,6 +15,19 @@ import { currentUserId, fullName, isAdmin } from './taskView'
 const REFRESH_MS = 30_000
 const PAGE_SIZE = 15
 const VIEW_KEY = 'taskView'
+const PIPELINE_KEY = 'taskPipeline'
+/** Ro'yxat ko'rinishida: barcha voronkalar birga. */
+const ALL = 'all'
+
+/** Oxirgi tanlangan voronka (tab) brauzerda eslab qolinadi; yo'q bo'lsa — avtomatik tanlanadi. */
+function readPipeline() {
+  try {
+    const value = localStorage.getItem(PIPELINE_KEY)
+    return value === ALL ? ALL : Number(value) || null
+  } catch {
+    return null
+  }
+}
 
 /** Oxirgi tanlangan ko'rinish (doska / ro'yxat) brauzerda eslab qolinadi. */
 function readView() {
@@ -68,7 +81,10 @@ function TaskScreen() {
   const me = currentUserId()
 
   const [view, setView] = useState(readView)
-  const [pipelineId, setPipelineId] = useState(null)
+  // null — avtomatik; son — tanlangan voronka; 'all' — ro'yxatda barcha voronkalar.
+  const [pipelineId, setPipelineId] = useState(readPipeline)
+  const [autoId, setAutoId] = useState(null)
+  const [stateFilter, setStateFilter] = useState('')
   const [mine, setMine] = useState(false)
   const [responsibleId, setResponsibleId] = useState('')
   const [overdueOnly, setOverdueOnly] = useState(false)
@@ -105,8 +121,36 @@ function TaskScreen() {
   const membersRequest = useRequest(getTaskMembers, 'members')
   const pipelines = pipelinesRequest.data ?? []
   const members = membersRequest.data ?? []
-  const activePipeline = pipelines.find((pipeline) => pipeline.id === pipelineId) ?? pipelines[0]
+
+  // Tablardagi sonlar: foydalanuvchiga ko'rinadigan vazifalar voronkalar bo'yicha (joriy filtrlar bilan).
+  const countsKey = `${mine}|${responsibleId}|${overdueOnly}|${debounced}|${reload}`
+  const countsRequest = useRequest(
+    () =>
+      getPipelineCounts({
+        member_id: mine ? me : undefined,
+        responsible_id: responsibleId || undefined,
+        overdue: overdueOnly || undefined,
+        search: debounced || undefined,
+      }),
+    countsKey,
+  )
+  const counts = countsRequest.data?.pipelines ?? null
+
+  // Avtomatik tanlov bir marta: vazifasi bor birinchi voronka (bo'lmasa — birinchisi). Keyin o'zgarmaydi,
+  // aks holda har yangilanishda tab o'zi sakrab ketardi.
+  if (autoId === null && pipelines.length > 0 && (counts || countsRequest.error)) {
+    const withTasks = counts
+      ? (pipelines.find((p) => (counts[p.id]?.active ?? 0) > 0) ?? pipelines.find((p) => (counts[p.id]?.total ?? 0) > 0))
+      : null
+    setAutoId((withTasks ?? pipelines[0]).id)
+  }
+
+  const allMode = view === 'list' && pipelineId === ALL
+  const chosen = pipelines.find((pipeline) => pipeline.id === pipelineId)
+  const activePipeline = allMode ? null : (chosen ?? pipelines.find((pipeline) => pipeline.id === autoId) ?? null)
   const activePipelineId = activePipeline?.id ?? null
+  // Voronkalar bor, lekin sonlar hali kelmagan — tabni taxmin qilmasdan kutamiz.
+  const waitingFirst = pipelines.length > 0 && !activePipeline && !allMode
 
   // Ro'yxat va doska bir xil filtrlardan foydalanadi. Admin bo'lmaganlarga server o'zi cheklaydi.
   const query = {
@@ -116,15 +160,23 @@ function TaskScreen() {
     overdue: overdueOnly || undefined,
     search: debounced || undefined,
   }
-  const filterKey = `${activePipelineId}|${mine}|${responsibleId}|${overdueOnly}|${debounced}|${reload}`
+  const filterKey = `${allMode ? ALL : activePipelineId}|${mine}|${responsibleId}|${overdueOnly}|${debounced}|${reload}`
 
   const boardKey = activePipelineId && view === 'board' ? filterKey : null
   const boardRequest = useRequest(() => getTaskBoard(query), boardKey)
   const board = boardRequest.data
 
-  const listKey = activePipelineId && view === 'list' ? `${filterKey}|${stageId}|${page}` : null
+  const listKey = (activePipelineId || allMode) && view === 'list' ? `${filterKey}|${stageId}|${stateFilter}|${page}` : null
   const listRequest = useRequest(
-    () => getTasks({ ...query, stage_id: stageId || undefined, page, limit: PAGE_SIZE }),
+    () =>
+      getTasks({
+        ...query,
+        // Barcha voronkalarda etaplar har xil — shu bois holat (открытые / на проверке / закрытые) bo'yicha filtrlanadi.
+        stage_id: allMode ? undefined : stageId || undefined,
+        state: allMode ? stateFilter || undefined : undefined,
+        page,
+        limit: PAGE_SIZE,
+      }),
     listKey,
   )
   const list = listRequest.data
@@ -153,7 +205,13 @@ function TaskScreen() {
   const selectPipeline = (id) => {
     setPipelineId(id)
     setStageId('')
+    setStateFilter('')
     setPage(1)
+    try {
+      localStorage.setItem(PIPELINE_KEY, String(id))
+    } catch {
+      // brauzer saqlashga ruxsat bermasa — tanlov shu seans uchun qoladi
+    }
   }
 
   // Optimistik ko'rinish: surilgan vazifa darrov yangi ustunda ko'rinadi.
@@ -190,6 +248,7 @@ function TaskScreen() {
   const active = view === 'list' ? listRequest : boardRequest
   const loadingFirst =
     (pipelinesRequest.loading && !pipelinesRequest.data) ||
+    waitingFirst ||
     (view === 'list' ? listRequest.loading && !list : boardRequest.loading && !board)
   const error = pipelinesRequest.error || active.error
 
@@ -223,8 +282,19 @@ function TaskScreen() {
 
       {pipelines.length > 1 && (
         <div role="tablist" aria-label={t('Воронка')} className="flex flex-wrap gap-1.5">
-          {pipelines.map((pipeline) => {
-            const selected = pipeline.id === activePipelineId
+          {[
+            // "Все воронки" faqat ro'yxatda: doska bitta voronkaning etaplaridan iborat.
+            ...(view === 'list' ? [{ id: ALL, name: t('Все воронки') }] : []),
+            ...pipelines,
+          ].map((pipeline) => {
+            const isAll = pipeline.id === ALL
+            const selected = isAll ? allMode : pipeline.id === activePipelineId
+            const stat = isAll
+              ? counts && {
+                  active: Object.values(counts).reduce((sum, item) => sum + item.active, 0),
+                  overdue: Object.values(counts).reduce((sum, item) => sum + item.overdue, 0),
+                }
+              : counts?.[pipeline.id] ?? (counts ? { active: 0, overdue: 0 } : null)
             return (
               <button
                 key={pipeline.id}
@@ -233,13 +303,28 @@ function TaskScreen() {
                 aria-selected={selected}
                 onClick={() => selectPipeline(pipeline.id)}
                 className={cn(
-                  'rounded-lg border px-3 py-1.5 text-[13px] font-medium transition',
+                  'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition',
                   selected
                     ? 'border-primary/40 bg-primary-soft text-primary-soft-fg'
                     : 'border-line text-muted hover:bg-surface-2 hover:text-fg',
                 )}
               >
-                {td(pipeline.name)}
+                {isAll ? pipeline.name : td(pipeline.name)}
+                {stat && (
+                  <span
+                    title={stat.overdue > 0 ? t('Просрочено: {count}', { count: stat.overdue }) : undefined}
+                    className={cn(
+                      'rounded-full px-1.5 text-[11px] tabular-nums leading-5',
+                      stat.overdue > 0
+                        ? 'bg-danger-soft text-danger-soft-fg'
+                        : stat.active > 0
+                          ? 'bg-surface-2 text-fg'
+                          : 'text-subtle',
+                    )}
+                  >
+                    {stat.active}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -306,16 +391,17 @@ function TaskScreen() {
           <Spinner />
         </div>
       ) : view === 'list' ? (
-        activePipeline ? (
+        activePipeline || allMode ? (
           <TaskList
             data={list}
             loading={listRequest.loading}
-            stages={activePipeline.stages ?? []}
-            stageId={stageId}
-            onStage={resetPage(setStageId)}
+            allPipelines={allMode}
+            stages={activePipeline?.stages ?? []}
+            stageId={allMode ? stateFilter : stageId}
+            onStage={allMode ? resetPage(setStateFilter) : resetPage(setStageId)}
             page={page}
             onPage={setPage}
-            filtered={Boolean(debounced || responsibleId || overdueOnly || stageId || mine)}
+            filtered={Boolean(debounced || responsibleId || overdueOnly || stageId || stateFilter || mine)}
             admin={admin}
             onOpen={(task) => setOpenId(task.id)}
           />

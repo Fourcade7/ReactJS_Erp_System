@@ -10,26 +10,36 @@ import { dueSoon, formatShortDateTime, fullName, priorityOf, stageStyle } from '
  * Vazifalar ro'yxati — kanban doskasining ikkinchi ko'rinishi: etap bo'yicha filtr (tugmalarda sonlar)
  * va sahifalash. Ma'lumot va filtrlar `TaskContent` da turadi, bu yerda faqat ko'rinish.
  *
- * `data` — `GET /task/allpagsearch` javobi (`data`, `meta`, `stageCounts`).
+ * `data` — `GET /task/allpagsearch` javobi (`data`, `meta`, `stageCounts`, `summary`).
+ * `allPipelines` — barcha voronkalar birga: etaplar har xil, shu bois tugmalar holat bo'yicha
+ * (открытые / на проверке / закрытые) va jadvalda "Воронка" ustuni bor.
  */
-function TaskList({ data, loading, stages, stageId, onStage, page, onPage, filtered, admin, onOpen }) {
+function TaskList({ data, loading, stages, stageId, onStage, page, onPage, filtered, admin, onOpen, allPipelines = false }) {
   const rows = data?.data ?? []
   const counts = data?.stageCounts ?? {}
   const all = Object.values(counts).reduce((sum, count) => sum + count, 0)
 
-  const chips = [
-    { id: '', label: t('Все этапы'), dot: null, count: data ? all : undefined },
-    ...stages.map((stage) => ({
-      id: stage.id,
-      label: td(stage.name),
-      dot: stageStyle(stage.color).dot,
-      count: data ? (counts[stage.id] ?? 0) : undefined,
-    })),
-  ]
+  const summary = data?.summary
+  const chips = allPipelines
+    ? [
+        { id: '', label: t('Все'), dot: null, count: summary ? summary.open + summary.review + summary.done : undefined },
+        { id: 'open', label: t('Открытые'), dot: 'bg-info', count: summary?.open },
+        { id: 'review', label: t('На проверке'), dot: 'bg-warning', count: summary?.review },
+        { id: 'done', label: t('Закрытые'), dot: 'bg-success', count: summary?.done },
+      ]
+    : [
+        { id: '', label: t('Все этапы'), dot: null, count: data ? all : undefined },
+        ...stages.map((stage) => ({
+          id: stage.id,
+          label: td(stage.name),
+          dot: stageStyle(stage.color).dot,
+          count: data ? (counts[stage.id] ?? 0) : undefined,
+        })),
+      ]
 
   return (
     <div className="flex flex-col gap-4">
-      <div role="tablist" aria-label={t('Этап')} className="flex flex-wrap gap-1.5">
+      <div role="tablist" aria-label={allPipelines ? t('Состояние') : t('Этап')} className="flex flex-wrap gap-1.5">
         {chips.map((chip) => {
           const active = String(stageId) === String(chip.id)
           return (
@@ -73,6 +83,7 @@ function TaskList({ data, loading, stages, stageId, onStage, page, onPage, filte
           <thead>
             <tr>
               <th>{t('Задача')}</th>
+              {allPipelines && <th>{t('Воронка')}</th>}
               <th>{t('Этап')}</th>
               <th>{t('Контрагент')}</th>
               <th>{t('Ответственный')}</th>
@@ -104,6 +115,9 @@ function TaskList({ data, loading, stages, stageId, onStage, page, onPage, filte
                       </span>
                     )}
                   </td>
+                  {allPipelines && (
+                    <td className="whitespace-nowrap text-muted">{task.pipeline ? td(task.pipeline.name) : '—'}</td>
+                  )}
                   <td>
                     <Badge bg={task.stage?.color ?? 'neutral'}>{td(task.stage?.name ?? '')}</Badge>
                   </td>

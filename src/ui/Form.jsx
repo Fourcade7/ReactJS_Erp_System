@@ -146,7 +146,8 @@ const FormCheck = forwardRef(function FormCheck(
             'focus-visible:ring-4 focus-visible:ring-[var(--ring)] focus-visible:outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50',
             isSwitch
-              ? 'h-5 w-9 rounded-full'
+              ? // O'chiq holat ko'rinsin: kulrang yo'l (fon rangidan farq qiladi) + yonganda asosiy rang.
+                'h-5 w-9 rounded-full bg-line hover:border-subtle checked:hover:border-primary'
               : type === 'radio'
                 ? 'size-4 rounded-full'
                 : 'size-4 rounded-[5px]',
@@ -164,7 +165,8 @@ const FormCheck = forwardRef(function FormCheck(
           <span className="pointer-events-none absolute left-1/2 top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-fg opacity-0 transition peer-checked:opacity-100" />
         )}
         {isSwitch && (
-          <span className="pointer-events-none absolute left-0.5 top-1/2 size-4 -translate-y-1/2 rounded-full bg-surface shadow-soft transition-transform duration-200 peer-checked:translate-x-4" />
+          // Dasta o'chiqda — kulrang, yoqilganda — oq: yo'ldan ajralib turadi.
+          <span className="pointer-events-none absolute left-0.5 top-1/2 size-4 -translate-y-1/2 rounded-full bg-muted shadow-soft transition-[transform,background-color] duration-200 peer-checked:translate-x-4 peer-checked:bg-primary-fg" />
         )}
       </span>
       {label != null && (

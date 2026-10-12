@@ -34,6 +34,8 @@ const getTaskPipelines = () => request(`${PIPELINE}/getall`)
 // ---- vazifalar
 // Ko'rish so'rovlarida ham kim so'rayotgani yuboriladi: admin bo'lmaganlarga server faqat o'z vazifalarini beradi.
 const getTaskBoard = (query) => request(`${TASK}/board?${params({ ...query, user_id: me() })}`)
+// Voronka (tab) bo'yicha foydalanuvchiga ko'rinadigan vazifalar soni: { pipelines: { id: { active, overdue, total } } }
+const getPipelineCounts = (query) => request(`${TASK}/pipeline-counts?${params({ ...query, user_id: me() })}`)
 const getTasks = (query) => request(`${TASK}/allpagsearch?${params({ ...query, user_id: me() })}`)
 const getTask = (id) => request(`${TASK}/getby/${id}?user_id=${me() ?? ''}`)
 const addTask = (task) => request(`${TASK}/add`, json('POST', { ...task, user_id: me() }))
@@ -63,6 +65,7 @@ export {
     getTaskPipelines,
     getTaskBoard,
     getTasks,
+    getPipelineCounts,
     getTask,
     addTask,
     updateTask,

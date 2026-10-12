@@ -76,18 +76,20 @@ async function saveMenuAccess(overrides) {
 /**
  * Menyu sozlamasi + yuklash. `poll` — ekran ochiq turganda daqiqada bir yangilab turadi
  * (administrator o'zgartirsa xodimlarda sahifani yangilamasdan ham o'zgaradi).
+ * `load: false` — faqat joriy qiymatni o'qiydi (so'rov yubormaydi): menyu allaqachon yuklagan joylar uchun.
  */
-function useMenuAccess({ poll = false } = {}) {
+function useMenuAccess({ poll = false, load = true } = {}) {
   const value = useSyncExternalStore(subscribe, getSnapshot)
 
   useEffect(() => {
+    if (!load) return undefined
     loadMenuAccess()
     if (!poll) return undefined
     const timer = window.setInterval(() => {
       if (!document.hidden) loadMenuAccess()
     }, REFRESH_MS)
     return () => window.clearInterval(timer)
-  }, [poll])
+  }, [poll, load])
 
   return value
 }

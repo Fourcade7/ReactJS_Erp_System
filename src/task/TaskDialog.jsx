@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarClock, CircleCheck, Pencil, Send, Trash2, Undo2 } from 'lucide-react'
+import { CalendarClock, ChevronRight, CircleCheck, FileText, Pencil, Send, Trash2, Undo2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { useRequest } from '../lib/useRequest'
 import { Alert, Badge, Button, Form, Modal, Spinner } from '../ui'
@@ -15,9 +15,12 @@ import {
   submitTask,
 } from './TaskApi'
 import { Attachments } from '../attachment/Attachments'
+import { ContractDialog } from '../contract/ContractDialog'
 import { statusOf } from '../contract/contractView'
 import { CustomerPicker } from '../customers/CustomerPicker'
 import { Avatar } from './TaskCard'
+import { useMenuAccess } from '../main/menuAccess'
+import { NAV_ITEMS, isVisible, roleKey } from '../main/menuItems'
 import { TaskFormModal } from './TaskFormModal'
 import {
   EVENT_LABELS,
@@ -75,8 +78,17 @@ function TaskDialog({ taskId, pipelines, members, onHide, onChanged }) {
   const [reason, setReason] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [target, setTarget] = useState('')
+  const [contractOpen, setContractOpen] = useState(false)
 
   const { data: task, error: loadError } = useRequest(() => getTask(taskId), `${taskId}-${version}`)
+
+  // Shartnomani vazifadan ochish "Договоры" bo'limi shu rolga ochiq bo'lsagina (sozlama "Настройки" da).
+  const { overrides } = useMenuAccess({ load: false })
+  const canOpenContract = isVisible(
+    roleKey(localStorage.getItem('role')),
+    NAV_ITEMS.find((item) => item.key === 'contracts'),
+    overrides,
+  )
 
   const refresh = () => {
     setVersion((current) => current + 1)
@@ -96,6 +108,12 @@ function TaskDialog({ taskId, pipelines, members, onHide, onChanged }) {
     } finally {
       setBusy(false)
     }
+  }
+
+  // Shartnoma kartochkasi (to'lov, rekvizit, tovarlar) — "Договоры" bo'limidagi bilan aynan bir xil.
+  // Yopilgach vazifa kartochkasiga qaytiladi (ikki modal bir vaqtda ochilmaydi).
+  if (contractOpen && task?.contract) {
+    return <ContractDialog contractId={task.contract.id} onHide={() => setContractOpen(false)} onChanged={refresh} />
   }
 
   if (editing && task) {
@@ -176,7 +194,34 @@ function TaskDialog({ taskId, pipelines, members, onHide, onChanged }) {
                   )}
                 </Field>
                 <Field label={t('Создана')}>{formatDateTime(task.date)}</Field>
-                {task.contract && (
+                {task.contract && canOpenContract && (
+                  <div className="col-span-2 min-w-0">
+                    <dt className="text-[11px] font-medium uppercase tracking-wide text-subtle">{t('Договор')}</dt>
+                    <dd className="mt-1">
+                      <button
+                        type="button"
+                        onClick={() => setContractOpen(true)}
+                        className="group flex w-full items-center gap-3 rounded-lg border border-line bg-surface-2 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary-soft"
+                      >
+                        <FileText className="size-4 shrink-0 text-primary" />
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-1.5 text-[13px] text-fg">
+                            <span className="font-medium">{task.contract.number}</span>
+                            <Badge bg={statusOf(task.contract.status).tone}>{statusOf(task.contract.status).label}</Badge>
+                          </span>
+                          {task.contract.subject && (
+                            <span className="mt-0.5 block truncate text-[12px] text-muted">{task.contract.subject}</span>
+                          )}
+                          <span className="mt-0.5 block text-[11px] text-primary">
+                            {t('Открыть договор: оплата, реквизиты, товары')}
+                          </span>
+                        </span>
+                        <ChevronRight className="size-4 shrink-0 text-subtle transition group-hover:text-primary" />
+                      </button>
+                    </dd>
+                  </div>
+                )}
+                {task.contract && !canOpenContract && (
                   <Field label={t('Договор')}>
                     <span className="inline-flex flex-wrap items-center gap-1.5">
                       <span className="font-medium">{task.contract.number}</span>

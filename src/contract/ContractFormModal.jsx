@@ -75,11 +75,11 @@ function ContractFormModal({ contract, members, defaultResponsibleId, onHide, on
   }
 
   return (
-    <Modal show onHide={onHide} centered size="lg">
+    <Modal show onHide={onHide} centered size="lg" scrollable>
       <Modal.Header closeButton>
         <Modal.Title>{editing ? t('Изменить договор') : t('Новый договор')}</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="flex flex-col gap-4">
+      <Modal.Body className="flex min-h-0 flex-col gap-4 overflow-y-auto">
         {error && <Alert variant="danger">{error}</Alert>}
 
         <div className="grid gap-4 sm:grid-cols-2">
