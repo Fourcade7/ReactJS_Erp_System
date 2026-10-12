@@ -27,6 +27,7 @@ import {
   canAttachCustomer,
   eventNote,
   formatDateTime,
+  formatSum,
   fullName,
   isAdmin,
   priorityOf,
@@ -142,9 +143,18 @@ function TaskDialog({ taskId, pipelines, members, onHide, onChanged }) {
           <>
             <Modal.Title>{task.title}</Modal.Title>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <Badge bg={task.stage?.color ?? 'neutral'}>{td(task.stage?.name ?? '')}</Badge>
-              <Badge bg={priority.tone}>{priority.label}</Badge>
-              {task.pipeline && <Badge bg="neutral">{td(task.pipeline.name)}</Badge>}
+              {/* Belgilar yorliq bilan: "Обычный" — bu muhimlik darajasi, voronka emas ("Обычная задача" bilan adashmasligi uchun). */}
+              <Badge bg={task.stage?.color ?? 'neutral'} title={t('Этап')}>
+                {td(task.stage?.name ?? '')}
+              </Badge>
+              <Badge bg={priority.tone}>
+                {t('Приоритет')}: {priority.label}
+              </Badge>
+              {task.pipeline && (
+                <Badge bg="neutral">
+                  {t('Воронка')}: {td(task.pipeline.name)}
+                </Badge>
+              )}
               {task.overdue && <Badge bg="danger">{t('Просрочена')}</Badge>}
               {task.state === 'done' && task.closedLate !== null && (
                 <Badge bg={task.closedLate ? 'warning' : 'success'}>
@@ -208,6 +218,11 @@ function TaskDialog({ taskId, pipelines, members, onHide, onChanged }) {
                           <span className="flex flex-wrap items-center gap-1.5 text-[13px] text-fg">
                             <span className="font-medium">{task.contract.number}</span>
                             <Badge bg={statusOf(task.contract.status).tone}>{statusOf(task.contract.status).label}</Badge>
+                            {task.contract.amount > 0 && (
+                              <span className="text-[12px] tabular-nums text-muted">
+                                {formatSum(task.contract.amount, task.contract.currency)}
+                              </span>
+                            )}
                           </span>
                           {task.contract.subject && (
                             <span className="mt-0.5 block truncate text-[12px] text-muted">{task.contract.subject}</span>

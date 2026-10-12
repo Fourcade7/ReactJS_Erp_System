@@ -4,7 +4,7 @@ import { Badge, EmptyState, Spinner, Table } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { t, td } from '../i18n'
 import { Avatar } from './TaskCard'
-import { dueSoon, formatShortDateTime, fullName, priorityOf, stageStyle } from './taskView'
+import { dueSoon, formatShortDateTime, formatSum, fullName, priorityOf, stageStyle } from './taskView'
 
 /**
  * Vazifalar ro'yxati — kanban doskasining ikkinchi ko'rinishi: etap bo'yicha filtr (tugmalarda sonlar)
@@ -111,7 +111,10 @@ function TaskList({ data, loading, stages, stageId, onStage, page, onPage, filte
                     {task.contract && (
                       <span className="mt-0.5 flex items-center gap-1 text-[11px] text-subtle">
                         <FileText className="size-3.5 shrink-0" />
-                        <span className="truncate">{task.contract.number}</span>
+                        <span className="truncate">
+                          {task.contract.number}
+                          {task.contract.amount > 0 && ' · ' + formatSum(task.contract.amount, task.contract.currency)}
+                        </span>
                       </span>
                     )}
                   </td>

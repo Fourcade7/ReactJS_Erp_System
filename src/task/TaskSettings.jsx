@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Lock, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, FileText, Lock, Plus, Trash2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Alert, Button, Form, Modal } from '../ui'
 import { t, td } from '../i18n'
@@ -84,7 +84,14 @@ function TaskSettings({ pipelines, onChanged, onHide }) {
                 )}
               >
                 <span className="truncate">{td(item.name)}</span>
-                <span className="text-[11px] tabular-nums text-subtle">{item.tasksCount}</span>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  {item.forContracts && (
+                    <span title={t('Сюда попадают задачи по договорам')} className="inline-flex text-primary">
+                      <FileText className="size-3.5" />
+                    </span>
+                  )}
+                  <span className="text-[11px] tabular-nums text-subtle">{item.tasksCount}</span>
+                </span>
               </button>
             ))}
             <form
@@ -131,8 +138,14 @@ function TaskSettings({ pipelines, onChanged, onHide }) {
                 </div>
                 <Button
                   variant="outline-danger"
-                  disabled={busy || pipelines.length <= 1 || pipeline.tasksCount > 0}
-                  title={pipeline.tasksCount > 0 ? t('В воронке есть задачи') : undefined}
+                  disabled={busy || pipelines.length <= 1 || pipeline.tasksCount > 0 || pipeline.forContracts}
+                  title={
+                    pipeline.forContracts
+                      ? t('Это воронка для договоров')
+                      : pipeline.tasksCount > 0
+                        ? t('В воронке есть задачи')
+                        : undefined
+                  }
                   onClick={async () => {
                     await run(() => deletePipeline(pipeline.id))
                     setSelectedId(null)
@@ -141,6 +154,23 @@ function TaskSettings({ pipelines, onChanged, onHide }) {
                   <Trash2 />
                   {t('Удалить воронку')}
                 </Button>
+              </div>
+
+              {/* Shartnoma ("По договору" savdosi) vazifalari qaysi voronkaga tushishi — nomga emas, shu belgiga bog'liq. */}
+              <div className="rounded-lg border border-line bg-surface-2/60 p-3">
+                <Form.Check
+                  type="switch"
+                  id={`pipeline-contracts-${pipeline.id}`}
+                  label={t('Воронка для договоров')}
+                  checked={Boolean(pipeline.forContracts)}
+                  disabled={busy || Boolean(pipeline.forContracts)}
+                  onChange={() => run(() => updatePipeline(pipeline.id, { forContracts: true }))}
+                />
+                <p className="mt-1.5 text-[11px] leading-snug text-subtle">
+                  {pipeline.forContracts
+                    ? t('Задачи, которые создаются автоматически при продаже «По договору», попадают в эту воронку. Чтобы сменить, включите этот переключатель у другой воронки.')
+                    : t('Включите, чтобы автоматические задачи по договорам попадали в эту воронку (у прежней отметка снимется).')}
+                </p>
               </div>
 
               <div>

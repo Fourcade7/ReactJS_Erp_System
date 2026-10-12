@@ -68,6 +68,25 @@ export function eventNote(event) {
     .replace(/(название|описание|приоритет|срок|участники|ответственный|договор|контрагент)/g, (word) => words[word] ?? word)
 }
 
+const sumFormat = new Intl.NumberFormat(locale)
+
+/** 1500000 + UZS -> "1 500 000 UZS". */
+export const formatSum = (amount, currency = 'UZS') => `${sumFormat.format(Number(amount) || 0)} ${currency}`
+
+/** { UZS: 1500000, USD: 2000 } -> "1 500 000 UZS · 2 000 USD" (bo'sh bo'lsa "0 UZS"). */
+export function formatAmounts(amounts) {
+  const entries = Object.entries(amounts ?? {}).filter(([, value]) => value > 0)
+  return entries.length > 0 ? entries.map(([currency, value]) => formatSum(value, currency)).join(' · ') : formatSum(0)
+}
+
+/** Kartochka etapdan etapga o'tganda ustun summasini darrov to'g'rilash (server javobigacha). */
+export function shiftAmounts(amounts, contract, sign) {
+  if (!contract || !contract.amount) return amounts ?? {}
+  const next = { ...(amounts ?? {}) }
+  next[contract.currency] = Math.max(0, (next[contract.currency] ?? 0) + sign * contract.amount)
+  return next
+}
+
 export const fullName = (user) => (user ? `${user.username ?? ''} ${user.surname ?? ''}`.trim() : '')
 
 export const initials = (user) =>

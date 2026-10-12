@@ -1,7 +1,7 @@
 import { CalendarClock, FileText, Handshake, Paperclip, Users } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { t } from '../i18n'
-import { dueSoon, formatShortDateTime, fullName, initials, priorityOf } from './taskView'
+import { dueSoon, formatShortDateTime, formatSum, fullName, initials, priorityOf } from './taskView'
 
 const PRIORITY_DOT = {
   low: 'bg-subtle',
@@ -100,7 +100,12 @@ function TaskCard({ task, dragging = false, draggable = true, onOpen, onDragStar
               className="inline-flex max-w-full items-center gap-1 rounded-md border border-line bg-surface-2 px-1.5 py-0.5 text-[11px] text-muted"
             >
               <FileText className="size-3.5 shrink-0" />
-              <span className="truncate">{task.contract.number}</span>
+              <span className="truncate">
+                {task.contract.number}
+                {task.contract.amount > 0 && (
+                  <span className="text-fg"> · {formatSum(task.contract.amount, task.contract.currency)}</span>
+                )}
+              </span>
             </span>
           )}
           {task.attachmentsCount > 0 && (

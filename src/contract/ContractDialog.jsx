@@ -128,7 +128,8 @@ function ContractDialog({ contractId, onHide, onChanged }) {
   }
 
   if (creatingTask && contract) {
-    const contractPipeline = pipelines.find((item) => item.name === 'По договору') ?? pipelines[0]
+    const contractPipeline =
+      pipelines.find((item) => item.forContracts) ?? pipelines.find((item) => item.name === 'По договору') ?? pipelines[0]
     return (
       <TaskFormModal
         pipelines={pipelines}

@@ -10,7 +10,7 @@ import { TaskDialog } from './TaskDialog'
 import { TaskFormModal } from './TaskFormModal'
 import { TaskList } from './TaskList'
 import { TaskSettings } from './TaskSettings'
-import { currentUserId, fullName, isAdmin } from './taskView'
+import { currentUserId, fullName, isAdmin, shiftAmounts } from './taskView'
 
 const REFRESH_MS = 30_000
 const PAGE_SIZE = 15
@@ -224,9 +224,16 @@ function TaskScreen() {
     return board.stages.map((stage) => {
       const rest = stage.tasks.filter((task) => task.id !== pending.taskId)
       if (stage.id === pending.stageId) {
-        return { ...stage, total: stage.total + 1, tasks: [{ ...moved, stage: { ...moved.stage, id: stage.id } }, ...rest] }
+        return {
+          ...stage,
+          total: stage.total + 1,
+          amounts: shiftAmounts(stage.amounts, moved.contract, +1),
+          tasks: [{ ...moved, stage: { ...moved.stage, id: stage.id } }, ...rest],
+        }
       }
-      return rest.length === stage.tasks.length ? stage : { ...stage, total: stage.total - 1, tasks: rest }
+      return rest.length === stage.tasks.length
+        ? stage
+        : { ...stage, total: stage.total - 1, amounts: shiftAmounts(stage.amounts, moved.contract, -1), tasks: rest }
     })
   }, [board, pending])
 

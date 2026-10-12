@@ -3,7 +3,7 @@ import { Lock } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { t, td } from '../i18n'
 import { TaskCard } from './TaskCard'
-import { stageStyle } from './taskView'
+import { formatAmounts, stageStyle } from './taskView'
 
 /**
  * Kanban doskasi: ustun = etap. Vazifa sichqoncha bilan etapdan etapga suriladi.
@@ -20,6 +20,9 @@ function TaskBoard({ stages, admin, onOpen, onMove }) {
     if (!admin && (stage.type === 'done' || task.state === 'done')) return false
     return true
   }
+
+  // Voronkada shartnomali vazifa bo'lsagina etap tepasida summa chiqadi (boshqa voronkalarda ortiqcha shovqin bo'lmasin).
+  const showAmounts = stages.some((stage) => Object.values(stage.amounts ?? {}).some((value) => value > 0))
 
   return (
     <div className="flex items-start gap-3 overflow-x-auto pb-3">
@@ -55,13 +58,23 @@ function TaskBoard({ stages, admin, onOpen, onMove }) {
               highlighted ? 'border-primary bg-primary-soft/40' : 'border-line',
             )}
           >
-            <header className="flex items-center gap-2 px-3 py-2.5">
-              <span className={cn('size-2 rounded-full', style.dot)} />
-              <h3 className="min-w-0 flex-1 truncate text-[13px] font-semibold text-fg">{td(stage.name)}</h3>
-              {stage.type === 'done' && <Lock className="size-3.5 text-subtle" aria-hidden="true" />}
-              <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted">
-                {stage.total}
-              </span>
+            <header className="flex flex-col gap-0.5 px-3 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className={cn('size-2 rounded-full', style.dot)} />
+                <h3 className="min-w-0 flex-1 truncate text-[13px] font-semibold text-fg">{td(stage.name)}</h3>
+                {stage.type === 'done' && <Lock className="size-3.5 text-subtle" aria-hidden="true" />}
+                <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted">
+                  {stage.total}
+                </span>
+              </div>
+              {showAmounts && (
+                <p
+                  className="truncate pl-4 text-[12px] font-medium tabular-nums text-muted"
+                  title={t('Сумма договоров на этапе')}
+                >
+                  {formatAmounts(stage.amounts)}
+                </p>
+              )}
             </header>
 
             <div className="flex min-h-24 flex-col gap-2 px-2 pb-2">

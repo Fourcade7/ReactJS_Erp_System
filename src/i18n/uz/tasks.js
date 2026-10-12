@@ -25,6 +25,15 @@ export default {
   'Измените фильтры или выберите другой этап.': "Filtrlarni o'zgartiring yoki boshqa etapni tanlang.",
   'Здесь появятся задачи, которые администратор назначит вам.': "Bu yerda administrator sizga biriktirgan vazifalar paydo bo'ladi.",
   'Автоматически: продажа по договору': "Avtomatik: shartnoma bo'yicha savdo",
+  'Сумма договоров на этапе': 'Bosqichdagi shartnomalar summasi',
+  // voronka sozlamasi: shartnomalar uchun
+  'Сюда попадают задачи по договорам': 'Shartnoma vazifalari shu voronkaga tushadi',
+  'Это воронка для договоров': 'Bu shartnomalar uchun voronka',
+  'Воронка для договоров': 'Shartnomalar uchun voronka',
+  'Задачи, которые создаются автоматически при продаже «По договору», попадают в эту воронку. Чтобы сменить, включите этот переключатель у другой воронки.':
+    "«Shartnoma bo'yicha» savdoda avtomatik yaratiladigan vazifalar shu voronkaga tushadi. O'zgartirish uchun boshqa voronkada shu tugmani yoqing.",
+  'Включите, чтобы автоматические задачи по договорам попадали в эту воронку (у прежней отметка снимется).':
+    "Shartnoma bo'yicha avtomatik vazifalar shu voronkaga tushishi uchun yoqing (avvalgisidan belgi olinadi).",
   // vazifadan shartnomani ochish
   'Открыть договор: оплата, реквизиты, товары': "Shartnomani ochish: to'lov, rekvizitlar, tovarlar",
   // voronka tablari va "barcha voronkalar"
