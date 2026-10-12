@@ -83,6 +83,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                 limitByStock={config.limitByStock}
                 initialCustomer={initialCustomer}
                 onSubmitted={onSubmitted}
+                contractSale={Boolean(config.contractSale)}
               />
             </div>
           </div>

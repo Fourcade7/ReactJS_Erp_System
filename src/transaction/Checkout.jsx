@@ -4,15 +4,18 @@ import {
   Banknote,
   ChevronDown,
   CreditCard,
+  FileText,
   Printer,
   Receipt,
   Search,
   SlidersHorizontal,
+  UserPlus,
   UserRound,
   Wallet,
 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Collapse, Form } from '../ui'
+import { NewCustomerForm } from '../customers/CustomerPicker'
 import {
   AlertDismissibleDanger,
   AlertDismissibleSuccess,
@@ -30,6 +33,9 @@ const PAYMENTS = [
   { value: 'Payme', Icon: CreditCard },
   { value: 'Uzum', Icon: CreditCard },
 ]
+
+/** "По договору": bank o'tkazmasi bilan, shartnoma avtomatik ochiladi (faqat savdoda). Backend CONTRACT_METHOD bilan bir xil. */
+const CONTRACT_PAYMENT = { value: 'По договору', Icon: FileText, contract: true }
 
 /** Kontragentni qidirib tanlash (combobox). */
 function CustomerPicker({ fetchCustomers, setCustomerId, initialLabel = '' }) {
@@ -203,12 +209,17 @@ function Checkout({
   limitByStock = false,
   initialCustomer = null,
   onSubmitted,
+  contractSale = false,
 }) {
   const componentRef = useRef(null)
 
   const [userId] = useState(localStorage.getItem('userid') || 1)
   const [open, setOpen] = useState(false)
   const [customerId, setCustomerId] = useState(initialCustomer?.id ?? null)
+  // "По договору": kassir ro'yxatda topilmagan kontragentni shu yerning o'zida ochadi ("Клиенты" jadvaliga yoziladi).
+  const [creatingCustomer, setCreatingCustomer] = useState(false)
+  const [customerKey, setCustomerKey] = useState(0)
+  const [createdLabel, setCreatedLabel] = useState('')
   const [printType, setPrintType] = useState(null)
 
   const [paymentType, setPaymentType] = useState('Наличные')
@@ -256,6 +267,9 @@ function Checkout({
   const finalCost = totalCost - discountAmount
 
   const isDebt = paymentType === 'В долг'
+  // "По договору": qarz kabi (to'lov 0) yoziladi, shartnoma ochiladi; kontragent majburiy.
+  const isContract = contractSale && paymentType === CONTRACT_PAYMENT.value
+  const payments = contractSale ? [...PAYMENTS, CONTRACT_PAYMENT] : PAYMENTS
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -283,6 +297,12 @@ function Checkout({
       setShowDanger(true)
       return
     }
+    if (isContract && !customerId) {
+      setShowSuccess(false)
+      setAlertMessage(t('Для продажи по договору выберите контрагента'))
+      setShowDanger(true)
+      return
+    }
 
     try {
       psetShow(true)
@@ -291,7 +311,7 @@ function Checkout({
 
       const res = await submit(
         orderList,
-        isDebt ? 0 : finalCost,
+        isDebt || isContract ? 0 : finalCost,
         paymentType,
         discountAmount,
         customerId,
@@ -320,18 +340,26 @@ function Checkout({
         }
       }
 
+      // "По договору": shartnoma savdo bilan birga ochiladi; ochilmasa savdo baribir yozilgan.
+      const contractFailed = isContract && Boolean(result.contractError)
       setShowSuccess(true)
       setAlertMessage(
         followUpFailed
           ? t('Продажа оформлена, но заказ мастера не отмечен завершённым — откройте его и отметьте вручную')
-          : t('Успешно...'),
+          : contractFailed
+            ? t('Продажа оформлена, но договор не создан: {error}. Администратор может создать его вручную.', {
+                error: result.contractError,
+              })
+            : isContract && result.contract?.number
+              ? t('Продажа оформлена. Договор {number} создан и передан бухгалтерам.', { number: result.contract.number })
+              : t('Успешно...'),
       )
       psetShow(false)
       setTimeout(() => {
         setShowSuccess(false)
         if (printable) setPrintType('Чек')
         else window.location.reload()
-      }, followUpFailed ? 8000 : 3000)
+      }, followUpFailed || contractFailed ? 8000 : isContract ? 5000 : 3000)
     } catch {
       setShowDanger(true)
       setAlertMessage(t('Не удалось подключиться к серверу'))
@@ -424,18 +452,45 @@ function Checkout({
         <div>
           <p className="mb-1.5 text-xs font-medium text-muted">{t('Контрагент')}</p>
           <CustomerPicker
+            key={customerKey}
             fetchCustomers={fetchCustomers}
             setCustomerId={setCustomerId}
             initialLabel={
-              initialCustomer ? `${initialCustomer.username} ${initialCustomer.surname}`.trim() : ''
+              createdLabel ||
+              (initialCustomer ? `${initialCustomer.username} ${initialCustomer.surname}`.trim() : '')
             }
           />
+          {contractSale && !creatingCustomer && (
+            <button
+              type="button"
+              onClick={() => setCreatingCustomer(true)}
+              className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-medium text-primary hover:underline"
+            >
+              <UserPlus className="size-3.5" />
+              {t('Создать нового контрагента')}
+            </button>
+          )}
+          {creatingCustomer && (
+            <div className="mt-2">
+              <NewCustomerForm
+                compact
+                initial={{ username: '', surname: '', phone: '' }}
+                onCancel={() => setCreatingCustomer(false)}
+                onCreated={(created) => {
+                  setCustomerId(created.id)
+                  setCreatedLabel(`${created.username} ${created.surname}`.trim())
+                  setCustomerKey((value) => value + 1)
+                  setCreatingCustomer(false)
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div>
           <p className="mb-1.5 text-xs font-medium text-muted">{t('Способ оплаты')}</p>
           <div className="grid grid-cols-3 gap-1.5">
-            {PAYMENTS.map(({ value, Icon, danger }) => {
+            {payments.map(({ value, Icon, danger }) => {
               const selected = paymentType === value
               return (
                 <button
@@ -459,6 +514,12 @@ function Checkout({
             })}
           </div>
         </div>
+
+        {isContract && (
+          <p className="rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-2 text-[11.5px] leading-snug text-primary-soft-fg">
+            {t('Оплата банковским переводом. Будет открыт договор: бухгалтер внесёт реквизиты и отметит оплату. Контрагент обязателен.')}
+          </p>
+        )}
 
         <dl className="flex flex-col gap-1 border-t border-line pt-3 text-xs">
           <div className="flex justify-between text-muted">
@@ -500,7 +561,7 @@ function Checkout({
           )}
         >
           <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">
-            {isDebt ? t('Оформить в долг') : t('Итого к оплате')}
+            {isDebt ? t('Оформить в долг') : isContract ? t('Оформить по договору') : t('Итого к оплате')}
           </span>
           <span className="text-lg font-semibold tabular-nums">
             {finalCost.toLocaleString('uz')} UZS

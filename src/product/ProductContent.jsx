@@ -9,6 +9,7 @@ import {
   AlertDismissibleSuccess,
   ProgressDismissible,
 } from '../utils/UtilsContent'
+import { isAdminRole } from '../users/roles'
 import { t } from '../i18n'
 
 function ProductAdd(props) {
@@ -191,7 +192,7 @@ function ProductTab() {
       </Tab>
       <Tab
         eventKey="add_new"
-        disabled={localStorage.getItem('role') === 'User'}
+        disabled={!isAdminRole()}
         title={
           <>
             <PackagePlus />

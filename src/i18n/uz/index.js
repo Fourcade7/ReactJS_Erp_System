@@ -5,6 +5,7 @@
  */
 import auth from './auth.js'
 import catalog from './catalog.js'
+import contracts from './contracts.js'
 import dashboard from './dashboard.js'
 import expense from './expense.js'
 import integration from './integration.js'
@@ -12,11 +13,13 @@ import masterorder from './masterorder.js'
 import nav from './nav.js'
 import products from './products.js'
 import system from './system.js'
+import tasks from './tasks.js'
 import trade from './trade.js'
 
 export default {
   ...auth,
   ...catalog,
+  ...contracts,
   ...dashboard,
   ...expense,
   ...integration,
@@ -24,5 +27,6 @@ export default {
   ...nav,
   ...products,
   ...system,
+  ...tasks,
   ...trade,
 }

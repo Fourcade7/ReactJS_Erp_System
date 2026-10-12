@@ -16,6 +16,8 @@ import {
 import { cn } from '../lib/cn'
 import { formatCompact, formatMoney, plural, RECORDS, SALES } from '../lib/format'
 import { NavbarScreen } from '../navbar/NavbarContent'
+import { useMenuAccess } from '../main/menuAccess'
+import { NAV_ITEMS, isVisible, roleKey } from '../main/menuItems'
 import { Alert, Button, Card, Container, EmptyState, Form, Spinner, Table } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { useRequest } from '../lib/useRequest'
@@ -329,8 +331,10 @@ function DashboardScreen() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const colors = useChartColors()
-  const role = localStorage.getItem('role')
+  const role = roleKey(localStorage.getItem('role'))
   const signedIn = Boolean(localStorage.getItem('userid'))
+  const { overrides, loaded: menuLoaded } = useMenuAccess()
+  const dashboardAllowed = isVisible(role, NAV_ITEMS.find((item) => item.key === 'dashboard'), overrides)
 
   const [reload, setReload] = useState(0)
   const [dismissedError, setDismissedError] = useState(null)
@@ -392,22 +396,29 @@ function DashboardScreen() {
   )
   const countSeries = useMemo(() => [{ key: 'salesCount', label: t('Продаж'), color: colors.series[0] }], [colors])
 
-  if (signedIn && role === 'User') {
+  // Dashboard kimga ochiqligini administrator "Настройки" da belgilaydi (standart — faqat admin).
+  if (signedIn && !dashboardAllowed) {
     return (
       <div className="min-h-svh">
         <NavbarScreen />
         <Container className="py-10">
-          <EmptyState
-            icon={BarChart3}
-            title={t('Недостаточно прав')}
-            description={t('Дашборд доступен только администратору.')}
-            action={
-              <Button as={Link} to="/home" variant="outline-primary">
-                <ArrowLeft />
-                {t('Вернуться в систему')}
-              </Button>
-            }
-          />
+          {menuLoaded ? (
+            <EmptyState
+              icon={BarChart3}
+              title={t('Недостаточно прав')}
+              description={t('Дашборд вам не открыт. Обратитесь к администратору.')}
+              action={
+                <Button as={Link} to="/home" variant="outline-primary">
+                  <ArrowLeft />
+                  {t('Вернуться в систему')}
+                </Button>
+              }
+            />
+          ) : (
+            <div className="flex justify-center py-16">
+              <Spinner />
+            </div>
+          )}
         </Container>
       </div>
     )

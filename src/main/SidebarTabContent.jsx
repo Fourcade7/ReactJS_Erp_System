@@ -1,24 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  ArrowDownLeft,
-  Banknote,
-  BarChart3,
-  Boxes,
-  HardHat,
-  LayoutDashboard,
-  Package,
-  PlugZap,
-  ReceiptText,
-  ShoppingBag,
-  Tags,
-  Undo2,
-  UserRound,
-  Users,
-  Warehouse,
-  X,
-} from 'lucide-react'
+import { LockKeyhole, X } from 'lucide-react'
 import { cn } from '../lib/cn'
+import { EmptyState } from '../ui'
 import UserScreen from '../users/UserContent'
 import HomeScreen from '../home/HomeContent'
 import CustomerScreen from '../customers/CustomerContent'
@@ -34,49 +18,11 @@ import { IntegrationScreen } from '../integration/IntegrationContent'
 import { MasterOrderScreen } from '../masterorder/MasterOrderContent'
 import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
 import { ExpenseScreen } from '../expense/ExpenseContent'
+import { TaskScreen } from '../task/TaskContent'
+import { ContractScreen } from '../contract/ContractContent'
+import { useMenuAccess } from './menuAccess'
+import { NAV_ITEMS, roleKey, visibleGroups } from './menuItems'
 import { t } from '../i18n'
-
-/**
- * Menyu tuzilmasi. `key` qiymatlari eski `eventKey` lar bilan bir xil saqlangan,
- * shu bois localStorage dagi `activeTab` oldingidek ishlaydi.
- * `adminOnly` — "User" rolida bloklanadigan boʻlimlar.
- */
-const NAV_GROUPS = [
-  {
-    label: t('Обзор'),
-    items: [
-      { key: 'first', label: t('Главная страница'), Icon: LayoutDashboard, adminOnly: true },
-      // Alohida sahifa (/dashboard) — tab emas, o'tish.
-      { key: 'dashboard', label: t('Дашборд'), Icon: BarChart3, adminOnly: true, href: '/dashboard' },
-    ],
-  },
-  {
-    label: t('Справочники'),
-    items: [
-      { key: 'second', label: t('Сотрудники'), Icon: UserRound, adminOnly: true },
-      { key: 'thrid', label: t('Клиенты'), Icon: Users, adminOnly: true },
-      { key: 'fourth', label: t('Склад'), Icon: Warehouse, adminOnly: true },
-      { key: 'fifth', label: t('Категория'), Icon: Tags },
-      { key: 'seventh', label: t('Продукты'), Icon: Package },
-      { key: 'eighth', label: t('Остатки'), Icon: Boxes, adminOnly: true },
-    ],
-  },
-  {
-    label: t('Операции'),
-    items: [
-      { key: 'nineth', label: t('Приход'), Icon: ArrowDownLeft, adminOnly: true },
-      { key: 'teenth', label: t('Продажа'), Icon: ShoppingBag },
-      { key: 'masters', label: t('Заказы мастеров'), Icon: HardHat, badgeKey: 'newMasterOrders' },
-      { key: 'elevn', label: t('Возврат'), Icon: Undo2 },
-      { key: 'twelw', label: t('Платеж'), Icon: Banknote, adminOnly: true },
-      { key: 'expenses', label: t('Расходы'), Icon: ReceiptText, adminOnly: true },
-    ],
-  },
-  {
-    label: t('Система'),
-    items: [{ key: 'integration', label: t('Интеграция'), Icon: PlugZap, adminOnly: true }],
-  },
-]
 
 const SCREENS = {
   first: HomeScreen,
@@ -88,6 +34,8 @@ const SCREENS = {
   eighth: StockScreen,
   nineth: PurchaseScreen,
   teenth: SaleScreen,
+  tasks: TaskScreen,
+  contracts: ContractScreen,
   masters: MasterOrderScreen,
   elevn: ReturnScreen,
   twelw: PaymentScreen,
@@ -95,25 +43,21 @@ const SCREENS = {
   integration: IntegrationScreen,
 }
 
-function readInitialTab() {
-  const role = localStorage.getItem('role')
-  const saved = localStorage.getItem('activeTab')
-
-  if (role === 'User') return saved && saved !== 'first' ? saved : 'teenth'
-  return saved || 'first'
+/** Rolga ruxsat etilgan bo'limlar orasidan ochiladigani: saqlangan, bo'lmasa odatdagi, bo'lmasa birinchisi. */
+function pickTab(saved, allowed) {
+  if (saved && allowed.includes(saved)) return saved
+  return ['first', 'teenth', 'tasks'].find((key) => allowed.includes(key)) ?? allowed[0] ?? null
 }
 
-function NavButton({ item, active, disabled, onSelect, badge = 0 }) {
+function NavButton({ item, active, onSelect, badge = 0 }) {
   const { Icon, label } = item
   return (
     <button
       type="button"
-      disabled={disabled}
       aria-current={active ? 'page' : undefined}
       onClick={() => onSelect(item.key)}
       className={cn(
         'group relative flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150',
-        'disabled:cursor-not-allowed disabled:opacity-35',
         active
           ? 'bg-primary-soft text-primary-soft-fg'
           : 'text-muted hover:bg-surface-2 hover:text-fg',
@@ -139,15 +83,29 @@ function NavButton({ item, active, disabled, onSelect, badge = 0 }) {
 /**
  * Chap menyu va unga bogʻlangan ekran. Katta ekranda yopishqoq ustun,
  * kichik ekranda esa chapdan chiquvchi panel (drawer) koʻrinishida ishlaydi.
+ *
+ * Qaysi bo'lim kimga ko'rinishini administrator "Настройки" da belgilaydi; ko'rinmaydigan
+ * bo'lim menyudan butunlay olib tashlanadi (administrator hammasini ko'radi).
  */
 function LeftTab({ mobileOpen = false, onCloseMobile }) {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState(readInitialTab)
-  const isUser = localStorage.getItem('role') === 'User'
+  const role = roleKey(localStorage.getItem('role'))
+  const { overrides } = useMenuAccess({ poll: true })
+  const [savedTab, setSavedTab] = useState(() => localStorage.getItem('activeTab'))
   const [newMasterOrders, setNewMasterOrders] = useState(0)
 
-  // Socketsiz: yangi zakazlar sonini vaqti-vaqti bilan so'raymiz.
+  const groups = useMemo(() => visibleGroups(role, overrides), [role, overrides])
+  // Alohida sahifaga o'tuvchi bo'limlar (href) ekran emas — "ochiq tab" bo'la olmaydi.
+  const tabKeys = useMemo(
+    () => groups.flatMap((group) => group.items).filter((item) => !item.href).map((item) => item.key),
+    [groups],
+  )
+  const activeTab = pickTab(savedTab, tabKeys)
+
+  // Socketsiz: yangi zakazlar sonini vaqti-vaqti bilan so'raymiz (bo'lim ko'rinmasa — so'ramaymiz).
+  const mastersVisible = tabKeys.includes('masters')
   useEffect(() => {
+    if (!mastersVisible) return undefined
     let stale = false
     const refresh = () =>
       getNewMasterOrderCount()
@@ -161,15 +119,15 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
       stale = true
       clearInterval(timer)
     }
-  }, [])
+  }, [mastersVisible])
 
   const select = (key) => {
-    const href = NAV_GROUPS.flatMap((group) => group.items).find((item) => item.key === key)?.href
+    const href = NAV_ITEMS.find((item) => item.key === key)?.href
     if (href) {
       navigate(href)
       return
     }
-    setActiveTab(key)
+    setSavedTab(key)
     localStorage.setItem('activeTab', key)
     onCloseMobile?.()
   }
@@ -184,11 +142,11 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
     }
   }, [mobileOpen])
 
-  const ActiveScreen = useMemo(() => SCREENS[activeTab] ?? HomeScreen, [activeTab])
+  const ActiveScreen = activeTab ? (SCREENS[activeTab] ?? HomeScreen) : null
 
   const nav = (
     <nav className="flex flex-col gap-5">
-      {NAV_GROUPS.map((group) => (
+      {groups.map((group) => (
         <div key={group.label} className="flex flex-col gap-0.5">
           <p className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle">
             {group.label}
@@ -198,7 +156,6 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
               key={item.key}
               item={item}
               active={activeTab === item.key}
-              disabled={item.adminOnly && isUser}
               onSelect={select}
               badge={item.badgeKey === 'newMasterOrders' ? newMasterOrders : 0}
             />
@@ -250,8 +207,16 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
           {nav}
         </aside>
 
-        <main key={activeTab} className="min-w-0 flex-1 animate-fade-in py-5">
-          <ActiveScreen goTo={select} />
+        <main key={activeTab ?? 'none'} className="min-w-0 flex-1 animate-fade-in py-5">
+          {ActiveScreen ? (
+            <ActiveScreen goTo={select} />
+          ) : (
+            <EmptyState
+              icon={LockKeyhole}
+              title={t('Нет доступных разделов')}
+              description={t('Администратор ещё не открыл вам ни одного раздела. Обратитесь к нему.')}
+            />
+          )}
         </main>
       </div>
     </>

@@ -22,6 +22,7 @@ export default {
   // xodimlar
   'User — продавец / кассир': 'User — sotuvchi / kassir',
   'Admin — полный доступ': "Admin — to'liq kirish",
+  'Accountant — бухгалтер (только задачи)': 'Accountant — buxgalter (faqat vazifalar)',
   'Master — мастер (мобильное приложение)': 'Master — usta (mobil ilova)',
   '{current} (текущая)': '{current} (joriy)',
   'Список сотрудников': "Xodimlar ro'yxati",

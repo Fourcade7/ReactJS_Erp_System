@@ -36,6 +36,8 @@ const SALE_CONFIG = {
   // Savatda narxni shu savdo uchun oʻzgartirish (opt narxdan past emas).
   editablePrice: true,
   maxDiscountPercent: 20,
+  // Kassada "По договору" to'lov turi: shartnoma va kuzatuv vazifasi avtomatik ochiladi.
+  contractSale: true,
   onlyStocked: false,
   autoAddSingle: true,
   printable: true,

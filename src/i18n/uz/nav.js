@@ -32,4 +32,36 @@ export default {
     "{v} IPv4 va portlar saqlanadi: almashtirganda yo'qolmaydi. Serverni almashtirgandan so'ng qayta kirish kerak.",
   'Запросы пойдут на указанный сервер.': "So'rovlar ko'rsatilgan serverga yuboriladi.",
   'Запросы пойдут на локальный сервер и его базу данных.': "So'rovlar lokal serverga va uning bazasiga yuboriladi.",
+  // "Настройки": menyu bo'limlariga ruxsat (faqat administrator)
+  'Доступ к разделам меню': "Menyu bo'limlariga ruxsat",
+  'Снимите галочку — раздел полностью исчезнет из меню у этой роли. Администратор видит все разделы.':
+    "Belgini olib tashlasangiz — bo'lim shu rolning menyusidan butunlay yo'qoladi. Administrator hamma bo'limni ko'radi.",
+  'Сохранено. У сотрудников меню обновится в течение минуты.': "Saqlandi. Xodimlarda menyu bir daqiqa ichida yangilanadi.",
+  'Раздел': "Bo'lim",
+  'администратор': 'administrator',
+  'Администратор видит всё': "Administrator hammasini ko'radi",
+  'Это настройка меню. Права на сами действия (например, создание задач) определяются ролью и сервером.':
+    "Bu menyu sozlamasi. Amallarga ruxsat (masalan, vazifa ochish) rol va server bo'yicha belgilanadi.",
+  'Сбросить по умолчанию': 'Standartga qaytarish',
+  'продавец / кассир': 'sotuvchi / kassir',
+  'бухгалтер': 'buxgalter',
+  'мастер': 'usta',
+  // menyu va dashboard ruxsati
+  'Нет доступных разделов': "Mavjud bo'limlar yo'q",
+  'Администратор ещё не открыл вам ни одного раздела. Обратитесь к нему.':
+    "Administrator hali sizga birorta bo'lim ochmagan. Unga murojaat qiling.",
+  'Дашборд вам не открыт. Обратитесь к администратору.': "Dashboard sizga ochilmagan. Administratorga murojaat qiling.",
+  // "Профиль"
+  'Укажите имя': 'Ismni kiriting',
+  'Укажите фамилию': 'Familiyani kiriting',
+  'Укажите адрес электронной почты': 'Elektron pochta manzilini kiriting',
+  'Введите текущий пароль': 'Joriy parolni kiriting',
+  'Новый пароль должен быть не короче {count} символов': "Yangi parol kamida {count} ta belgidan iborat bo'lsin",
+  'Пароли не совпадают': 'Parollar mos kelmadi',
+  'Профиль обновлён': 'Profil yangilandi',
+  'Используется для входа в систему': 'Tizimga kirish uchun ishlatiladi',
+  'Смена пароля': "Parolni o'zgartirish",
+  'Текущий пароль': 'Joriy parol',
+  'Не менять пароль': "Parolni o'zgartirmaslik",
+  'Сменить пароль': "Parolni o'zgartirish",
 }

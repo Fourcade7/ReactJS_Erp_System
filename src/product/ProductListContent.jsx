@@ -36,6 +36,7 @@ import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
 import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
 import { exportToExcel } from '../utils/ExcelUtils'
+import { isAdminRole } from '../users/roles'
 import { t } from '../i18n'
 
 const money = (v) => `${Number(v || 0).toLocaleString('uz')} So'm`
@@ -144,7 +145,7 @@ function ProductListGroup(props) {
   const [createMissingCategories, setCreateMissingCategories] = useState(true)
   const [importWarehouseId, setImportWarehouseId] = useState('')
 
-  const isUser = localStorage.getItem('role') === 'User'
+  const isUser = !isAdminRole()
 
   useEffect(() => {
     const handler = setTimeout(() => {

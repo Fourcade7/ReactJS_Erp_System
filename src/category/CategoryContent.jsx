@@ -22,6 +22,7 @@ import {
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
 import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
 import { exportToExcel } from '../utils/ExcelUtils'
+import { isAdminRole } from '../users/roles'
 import {
   addCategory,
   deleteCategory,
@@ -66,7 +67,7 @@ function CategoryList(props) {
   const [reloadKey, setReloadKey] = useState(0)
   const [showImport, setShowImport] = useState(false)
 
-  const isUser = localStorage.getItem('role') === 'User'
+  const isUser = !isAdminRole()
 
   useEffect(() => {
     const handleCategory = async () => {
@@ -373,7 +374,7 @@ function CategoryTab() {
 
       <Tab
         eventKey="profile"
-        disabled={localStorage.getItem('role') === 'User'}
+        disabled={!isAdminRole()}
         title={
           <>
             <Plus />

@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronDown, LifeBuoy, LogOut, Menu, Sparkles, UserRound } from 'lucide-react'
+import { ChevronDown, LifeBuoy, LogOut, Menu, SlidersHorizontal, Sparkles, UserRound } from 'lucide-react'
 import { BrandMark, Button, Container, Dropdown, LanguageToggle, ThemeToggle } from '../ui'
 import ServerSettings from './ServerSettings'
 import SupportDialog from './SupportDialog'
+import ProfileDialog from './ProfileDialog'
+import SettingsDialog from '../settings/SettingsDialog'
+import { isAdminRole } from '../users/roles'
 import { clearLocalData } from '../config/api'
 import { t } from '../i18n'
 
@@ -35,9 +38,23 @@ function initialsOf(name = '', surname = '') {
 function NavbarScreen({ onMenuClick }) {
   const navigate = useNavigate()
   const [showSupport, setShowSupport] = useState(false)
-  const username = localStorage.getItem('username') || t('Пользователь')
-  const surname = localStorage.getItem('surname') || ''
+  const [showProfile, setShowProfile] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  // Profilda ism o'zgarsa panelda darrov ko'rinadi (qiymat localStorage da ham yangilanadi).
+  const [name, setName] = useState(() => ({
+    username: localStorage.getItem('username') || '',
+    surname: localStorage.getItem('surname') || '',
+  }))
+  const username = name.username || t('Пользователь')
+  const surname = name.surname
   const role = localStorage.getItem('role') || '—'
+  const admin = isAdminRole()
+
+  const handleProfileSaved = (profile) => {
+    localStorage.setItem('username', profile.username)
+    localStorage.setItem('surname', profile.surname)
+    setName({ username: profile.username, surname: profile.surname })
+  }
 
   return (
     <header className="sticky top-0 z-[1030] border-b border-line bg-app/80 backdrop-blur-xl">
@@ -72,6 +89,21 @@ function NavbarScreen({ onMenuClick }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Menyu bo'limlari kimga ko'rinishini belgilash — faqat administrator. */}
+          {admin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSettings(true)}
+              title={t('Настройки')}
+              aria-label={t('Настройки')}
+              className="gap-1.5"
+            >
+              <SlidersHorizontal />
+              <span className="hidden lg:inline">{t('Настройки')}</span>
+            </Button>
+          )}
+
           <ServerSettings />
 
           <LanguageToggle />
@@ -106,7 +138,7 @@ function NavbarScreen({ onMenuClick }) {
                 </div>
               </div>
               <Dropdown.Divider />
-              <Dropdown.Item>
+              <Dropdown.Item onClick={() => setShowProfile(true)}>
                 <UserRound /> {t('Профиль')}
               </Dropdown.Item>
               <Dropdown.Item onClick={() => setShowSupport(true)}>
@@ -128,6 +160,8 @@ function NavbarScreen({ onMenuClick }) {
       </Container>
 
       <SupportDialog show={showSupport} onHide={() => setShowSupport(false)} />
+      {showProfile && <ProfileDialog onHide={() => setShowProfile(false)} onSaved={handleProfileSaved} />}
+      {showSettings && admin && <SettingsDialog onHide={() => setShowSettings(false)} />}
     </header>
   )
 }

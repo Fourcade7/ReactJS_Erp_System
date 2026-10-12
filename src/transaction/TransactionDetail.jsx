@@ -4,6 +4,8 @@ import {
   Banknote,
   CalendarClock,
   CreditCard,
+  FileText,
+  Landmark,
   Mail,
   Package,
   Phone,
@@ -24,6 +26,8 @@ const PAYMENT_ICONS = {
   'Банковская карта': CreditCard,
   'В долг': Wallet,
   'Зачёт возврата': Undo2,
+  'По договору': FileText,
+  Перечисление: Landmark,
 }
 
 function InfoRow({ icon: Icon, label, children }) {
@@ -210,7 +214,7 @@ function TransactionDetail({
               {sale.payments.map((item, index) => {
                 const method = item.method.trim()
                 const PayIcon = PAYMENT_ICONS[method] ?? CreditCard
-                const debt = item.method === 'В долг'
+                const debt = item.method === 'В долг' || method === 'По договору'
                 const offset = method === 'Зачёт возврата'
                 return (
                   <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">
