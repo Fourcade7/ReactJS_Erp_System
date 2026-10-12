@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import { useTheme } from '../../theme/ThemeProvider'
+import { chartAccent, useAppearance } from '../../theme/appearance'
 import { t } from '../../i18n'
 
 const WEEK_DAYS = [t('Пн'), t('Вт'), t('Ср'), t('Чт'), t('Пт'), t('Сб'), t('Вс')]
@@ -21,11 +22,12 @@ const WEEK_DAYS = [t('Пн'), t('Вт'), t('Ср'), t('Чт'), t('Пт'), t('С�
  */
 function useChartTheme() {
   const { resolvedTheme } = useTheme()
+  const { accent } = useAppearance()
 
   return useMemo(() => {
     const dark = resolvedTheme === 'dark'
     return {
-      accent: dark ? 'oklch(0.7 0.17 273)' : 'oklch(0.55 0.21 273)',
+      accent: chartAccent(accent, dark ? 'dark' : 'light'),
       accent2: dark ? 'oklch(0.72 0.13 230)' : 'oklch(0.62 0.15 230)',
       grid: dark ? 'oklch(0.32 0.013 265)' : 'oklch(0.917 0.005 265)',
       axis: dark ? 'oklch(0.62 0.014 265)' : 'oklch(0.58 0.012 265)',
@@ -33,7 +35,7 @@ function useChartTheme() {
       border: dark ? 'oklch(0.32 0.013 265)' : 'oklch(0.917 0.005 265)',
       fg: dark ? 'oklch(0.965 0.003 265)' : 'oklch(0.21 0.014 265)',
     }
-  }, [resolvedTheme])
+  }, [resolvedTheme, accent])
 }
 
 const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`

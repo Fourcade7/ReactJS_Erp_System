@@ -22,6 +22,16 @@
             (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
           document.documentElement.classList.toggle('dark', dark)
         } catch (e) {}
+        // Administrator tanlagan tizim rangi: React yuklanishidan oldin qo'yiladi (src/theme/appearance.js bilan bir xil id).
+        try {
+          var css = localStorage.getItem('accentCss')
+          if (css) {
+            var style = document.createElement('style')
+            style.id = 'app-accent'
+            style.textContent = css
+            document.head.appendChild(style)
+          }
+        } catch (e) {}
       })()
     </script>
   </head>

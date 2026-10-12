@@ -61,6 +61,13 @@ export default {
   'Отправлена на проверку': 'Tekshiruvga yuborilgan',
   'Утверждена': 'Tasdiqlangan',
   'Соисполнители': 'Hamkor ijrochilar',
+  // hamkor ijrochilarni qidirib tanlash (MemberPicker)
+  'Имя или фамилия сотрудника…': 'Xodimning ismi yoki familiyasi…',
+  'Начните вводить имя или фамилию': 'Ism yoki familiyani yozishni boshlang',
+  'Все найденные сотрудники уже добавлены': "Topilgan xodimlarning hammasi qo'shilgan",
+  'Выбрано: {count}': 'Tanlangan: {count}',
+  'Убрать всех': 'Hammasini olib tashlash',
+  'Убрать: {name}': 'Olib tashlash: {name}',
   'Описание': 'Tavsif',
   'Задача на проверке у администратора': 'Vazifa administrator tekshiruvida',
   'Закрыть (на проверку)': 'Yopish (tekshiruvga)',

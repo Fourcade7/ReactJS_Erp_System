@@ -4,6 +4,9 @@ const KEY_API_PORT = 'apiPort'
 const KEY_LOCAL_PORT = 'localPort'
 const SERVER_KEYS = [KEY_MODE, KEY_HOST, KEY_API_PORT, KEY_LOCAL_PORT]
 
+// Chiqishda saqlanadi: tizim rangi foydalanuvchiga emas, tizimga tegishli (kirish sahifasida ham shu rang).
+const KEPT_KEYS = [...SERVER_KEYS, 'accent', 'accentCss']
+
 const DEFAULT_PORT = '3000'
 
 /** Foydalanuvchi sozlama saqlamagan bo'lsa ishlatiladigan markaziy server ("IPv4:port"). */
@@ -92,9 +95,9 @@ function saveServerConfig(config) {
   return true
 }
 
-/** Chiqishda barcha mahalliy ma'lumotni tozalaydi, lekin server sozlamasini saqlab qoladi. */
+/** Chiqishda barcha mahalliy ma'lumotni tozalaydi, lekin server sozlamasi va tizim rangini saqlab qoladi. */
 function clearLocalData() {
-  const kept = SERVER_KEYS.map((key) => [key, read(key)])
+  const kept = KEPT_KEYS.map((key) => [key, read(key)])
   try {
     localStorage.clear()
     kept.forEach(([key, value]) => {

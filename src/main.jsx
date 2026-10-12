@@ -1,6 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { initAppearance } from './theme/appearance'
+
+initAppearance()
 
 // StrictMode ataylab yoqilmagan: mavjud ekranlardagi effektlar bir marta
 // ishlashiga moʻljallangan (loyihaning boshlangʻich sozlamasi saqlandi).

@@ -120,6 +120,7 @@ const ROLE_LABELS = {
   admin: t('Администратор'),
   user: t('Сотрудник'),
   accountant: t('Бухгалтер'),
+  master: t('Мастер'),
 }
 
 /** "Accountant" -> "Бухгалтер" / "Buxgalter"; noma'lum rol o'zgarishsiz. */

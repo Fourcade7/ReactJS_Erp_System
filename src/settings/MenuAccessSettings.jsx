@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
-import { Check, RotateCcw, SlidersHorizontal } from 'lucide-react'
-import { Alert, Button, Form, Modal, Spinner, Table } from '../ui'
+import { Check, RotateCcw } from 'lucide-react'
+import { Alert, Button, Card, Form, Spinner, Table } from '../ui'
 import { saveMenuAccess, useMenuAccess } from '../main/menuAccess'
 import { ACCESS_ROLES, NAV_GROUPS, defaultVisible, isVisible } from '../main/menuItems'
 import { t } from '../i18n'
@@ -39,11 +39,11 @@ function toOverrides(matrix) {
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
 /**
- * "Настройки" (faqat administrator): chap menyudagi bo'limlar kimga ko'rinishini belgilaydi.
+ * "Доступ к разделам меню" (faqat administrator): chap menyudagi bo'limlar kimga ko'rinishini belgilaydi.
  * Belgisi olingan bo'lim menyudan butunlay yo'qoladi (administrator hammasini ko'radi).
  */
-function SettingsDialog({ onHide }) {
-  // Oyna ochilganda mount bo'ladi: serverdan so'nggi sozlama olinadi, yopilganda holat tozalanadi.
+function MenuAccessSettings() {
+  // Bo'lim ochilganda mount bo'ladi: serverdan so'nggi sozlama olinadi, boshqa bo'limga o'tilsa holat tozalanadi.
   const { overrides, loaded } = useMenuAccess()
   const saved = useMemo(() => currentMatrix(overrides), [overrides])
   // Sozlama serverdan kelgach (yoki saqlangach) jadval shundan boshlanadi; tahrir shu yerda.
@@ -78,24 +78,17 @@ function SettingsDialog({ onHide }) {
   }
 
   return (
-    <Modal show onHide={onHide} centered size="xl" scrollable>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <span className="inline-flex items-center gap-2">
-            <SlidersHorizontal className="size-4 text-primary" />
-            {t('Настройки')}
-          </span>
-        </Modal.Title>
-      </Modal.Header>
-
-      <Modal.Body className="flex flex-col gap-4 overflow-y-auto">
-        <div>
-          <h3 className="text-[14px] font-semibold text-fg">{t('Доступ к разделам меню')}</h3>
-          <p className="mt-1 text-[13px] text-muted">
+    <Card padded={false}>
+      <Card.Header>
+        <div className="min-w-0">
+          <Card.Title>{t('Доступ к разделам меню')}</Card.Title>
+          <Card.Subtitle className="mt-0.5">
             {t('Снимите галочку — раздел полностью исчезнет из меню у этой роли. Администратор видит все разделы.')}
-          </p>
+          </Card.Subtitle>
         </div>
+      </Card.Header>
 
+      <Card.Body className="flex flex-col gap-4">
         {error && <Alert variant="danger">{error}</Alert>}
         {done && <Alert variant="success">{t('Сохранено. У сотрудников меню обновится в течение минуты.')}</Alert>}
 
@@ -174,9 +167,9 @@ function SettingsDialog({ onHide }) {
         <p className="text-[12px] text-subtle">
           {t('Это настройка меню. Права на сами действия (например, создание задач) определяются ролью и сервером.')}
         </p>
-      </Modal.Body>
+      </Card.Body>
 
-      <Modal.Footer>
+      <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 rounded-b-card border-t border-line bg-surface/95 px-4 py-3 backdrop-blur">
         <Button
           variant="ghost"
           className="mr-auto"
@@ -189,17 +182,14 @@ function SettingsDialog({ onHide }) {
           <RotateCcw />
           {t('Сбросить по умолчанию')}
         </Button>
-        <Button variant="outline-secondary" onClick={onHide}>
-          {t('Закрыть')}
-        </Button>
         <Button onClick={submit} disabled={busy || !dirty}>
           {busy && <Spinner size="sm" />}
           {t('Сохранить')}
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </div>
+    </Card>
   )
 }
 
-export default SettingsDialog
-export { SettingsDialog }
+export default MenuAccessSettings
+export { MenuAccessSettings }

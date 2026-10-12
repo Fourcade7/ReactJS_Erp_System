@@ -8,6 +8,7 @@ import { getContracts } from '../contract/ContractApi'
 import { ContractFormModal } from '../contract/ContractFormModal'
 import { customerName } from '../contract/contractView'
 import { CustomerPicker } from '../customers/CustomerPicker'
+import { MemberPicker } from './MemberPicker'
 import { addTask, updateTask } from './TaskApi'
 import { PRIORITIES, canAttachCustomer, fromLocalInput, fullName, isAdmin, roleLabel, toLocalInput } from './taskView'
 
@@ -55,9 +56,6 @@ function TaskFormModal({ task, pipelines, members, defaultPipelineId, defaultCon
   const pipeline = pipelines.find((item) => item.id === Number(pipelineId))
   const startStages = (pipeline?.stages ?? []).filter((stage) => stage.type === 'normal')
   const responsible = Number(responsibleId) || null
-
-  const toggleParticipant = (id) =>
-    setParticipantIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))
 
   const save = async () => {
     if (!title.trim()) {
@@ -262,32 +260,14 @@ function TaskFormModal({ task, pipelines, members, defaultPipelineId, defaultCon
               </Form.Group>
             )}
 
-            <div>
-              <p className="mb-1.5 text-xs font-medium text-muted">{t('Соисполнители')}</p>
-              {members.length === 0 ? (
-                <Spinner size="sm" />
-              ) : (
-                <div className="grid max-h-40 gap-1 overflow-y-auto rounded-lg border border-line p-2 sm:grid-cols-2">
-                  {members
-                    .filter((member) => member.id !== responsible)
-                    .map((member) => (
-                      <label
-                        key={member.id}
-                        className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-fg hover:bg-surface-2"
-                      >
-                        <input
-                          type="checkbox"
-                          className="size-4 accent-[var(--primary)]"
-                          checked={participantIds.includes(member.id)}
-                          onChange={() => toggleParticipant(member.id)}
-                        />
-                        <span className="min-w-0 flex-1 truncate">{fullName(member)}</span>
-                        <span className="text-[11px] text-subtle">{roleLabel(member.role)}</span>
-                      </label>
-                    ))}
-                </div>
-              )}
-            </div>
+            {/* Qidirib topiladi: xodim ko'p bo'lsa ham oyna kattalashmaydi. */}
+            <MemberPicker
+              members={members}
+              known={task?.participants}
+              value={participantIds}
+              onChange={setParticipantIds}
+              exclude={responsible}
+            />
           </div>
         </div>
       </Modal.Body>

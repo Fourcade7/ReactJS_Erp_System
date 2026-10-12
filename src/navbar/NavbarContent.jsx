@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, LifeBuoy, LogOut, Menu, SlidersHorizontal, Sparkles, UserRound } from 'lucide-react'
 import { BrandMark, Button, Container, Dropdown, LanguageToggle, ThemeToggle } from '../ui'
 import ServerSettings from './ServerSettings'
 import SupportDialog from './SupportDialog'
 import ProfileDialog from './ProfileDialog'
-import SettingsDialog from '../settings/SettingsDialog'
 import { isAdminRole } from '../users/roles'
 import { clearLocalData } from '../config/api'
 import { t } from '../i18n'
@@ -37,9 +36,9 @@ function initialsOf(name = '', surname = '') {
  */
 function NavbarScreen({ onMenuClick }) {
   const navigate = useNavigate()
+  const onSettings = useLocation().pathname === '/settings'
   const [showSupport, setShowSupport] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
   // Profilda ism o'zgarsa panelda darrov ko'rinadi (qiymat localStorage da ham yangilanadi).
   const [name, setName] = useState(() => ({
     username: localStorage.getItem('username') || '',
@@ -89,21 +88,6 @@ function NavbarScreen({ onMenuClick }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Menyu bo'limlari kimga ko'rinishini belgilash — faqat administrator. */}
-          {admin && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings(true)}
-              title={t('Настройки')}
-              aria-label={t('Настройки')}
-              className="gap-1.5"
-            >
-              <SlidersHorizontal />
-              <span className="hidden lg:inline">{t('Настройки')}</span>
-            </Button>
-          )}
-
           <ServerSettings />
 
           <LanguageToggle />
@@ -156,12 +140,28 @@ function NavbarScreen({ onMenuClick }) {
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
+
+          {/* Sozlamalar sahifasi (menyu ruxsati, tizim rangi) — faqat administrator, panelning eng chetida. */}
+          {admin && (
+            <Button
+              as={Link}
+              to="/settings"
+              variant={onSettings ? 'secondary' : 'ghost'}
+              size="sm"
+              title={t('Настройки')}
+              aria-label={t('Настройки')}
+              aria-current={onSettings ? 'page' : undefined}
+              className="gap-1.5"
+            >
+              <SlidersHorizontal />
+              <span className="hidden lg:inline">{t('Настройки')}</span>
+            </Button>
+          )}
         </div>
       </Container>
 
       <SupportDialog show={showSupport} onHide={() => setShowSupport(false)} />
       {showProfile && <ProfileDialog onHide={() => setShowProfile(false)} onSaved={handleProfileSaved} />}
-      {showSettings && admin && <SettingsDialog onHide={() => setShowSettings(false)} />}
     </header>
   )
 }

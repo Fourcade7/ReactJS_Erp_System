@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { useTheme } from '../theme/ThemeProvider'
+import { DEFAULT_ACCENT, accentRgb, useAppearance } from '../theme/appearance'
 
 /*
  * Seriya ranglari validator bilan tekshirilgan (dataviz/validate_palette.js):
@@ -32,7 +34,16 @@ const PALETTE = {
   },
 }
 
+/**
+ * Seriya ranglari (identifikatsiya) tizim rangiga bog'liq emas: ular tekshirilgan, qo'shni juftliklar farqlanadi.
+ * Faqat "asosiy rang" (yillik kalendar kabi bir ohangli joylar) administrator tanlagan rangga o'tadi.
+ */
 export function useChartColors() {
   const { resolvedTheme } = useTheme()
-  return PALETTE[resolvedTheme === 'dark' ? 'dark' : 'light']
+  const { accent } = useAppearance()
+  const mode = resolvedTheme === 'dark' ? 'dark' : 'light'
+  return useMemo(
+    () => (accent === DEFAULT_ACCENT ? PALETTE[mode] : { ...PALETTE[mode], primaryRgb: accentRgb(accent, mode) }),
+    [accent, mode],
+  )
 }
