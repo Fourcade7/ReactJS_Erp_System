@@ -182,7 +182,7 @@ function Cart({
 
   const count = roundQty(orderList.reduce((sum, item) => sum + item.quantity, 0))
 
-  // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya koʻrinadi.
+  // 'idle' | 'done' | 'saved' (fayl sifatida yuklandi) | 'error' — natija tugma yonida 2 soniya koʻrinadi.
   const [copyState, setCopyState] = useState('idle')
 
   useEffect(() => {
@@ -193,8 +193,8 @@ function Cart({
 
   const copyAsImage = async () => {
     try {
-      await copyCartImage(orderList, priceField)
-      setCopyState('done')
+      const result = await copyCartImage(orderList, priceField)
+      setCopyState(result === 'downloaded' ? 'saved' : 'done')
     } catch (error) {
       console.log(error.message)
       setCopyState('error')
@@ -218,13 +218,19 @@ function Cart({
               title={t('Скопировать корзину как изображение')}
               className={cn(
                 'inline-flex items-center gap-1 text-[11px] transition',
-                copyState === 'done' && 'text-success-soft-fg',
+                (copyState === 'done' || copyState === 'saved') && 'text-success-soft-fg',
                 copyState === 'error' && 'text-danger-soft-fg',
                 copyState === 'idle' && 'text-subtle hover:text-fg',
               )}
             >
-              {copyState === 'done' ? <Check className="size-3" /> : <Copy className="size-3" />}
-              {copyState === 'done' ? t('Скопировано') : copyState === 'error' ? t('Ошибка') : t('Копировать')}
+              {copyState === 'done' || copyState === 'saved' ? <Check className="size-3" /> : <Copy className="size-3" />}
+              {copyState === 'done'
+                ? t('Скопировано')
+                : copyState === 'saved'
+                  ? t('Сохранено файлом')
+                  : copyState === 'error'
+                    ? t('Ошибка')
+                    : t('Копировать')}
             </button>
           )}
           {orderList.length > 0 && (

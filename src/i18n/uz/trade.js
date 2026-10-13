@@ -108,4 +108,18 @@ export default {
   "Возврат оформлен: {amount} So'm": "Qaytarish rasmiylashtirildi: {amount} So'm",
   'Операций пока нет': "Hozircha operatsiyalar yo'q",
   '· из продажи #{id}': '· sotuv #{id} dan',
+  // parallel cheklar (savdo / kirim / qaytarish)
+  'Чек': 'Chek',
+  'Открытые чеки': 'Ochiq cheklar',
+  'Открыть ещё один чек, не закрывая текущий': 'Joriy chekni yopmasdan yana bitta chek ochish',
+  'Закрыть чек': 'Chekni yopish',
+  'Закрыть чек {number}': 'Chekni yopish: {number}',
+  'Закрыть чек {number}?': 'Chek {number} yopilsinmi?',
+  'В чеке {count} поз. — они будут удалены, чек не оформлен.':
+    "Chekda {count} ta pozitsiya bor — ular o'chiriladi, chek rasmiylashtirilmagan.",
+  'Оставить': 'Qoldirish',
+  'Оформлено — закрыть чек': 'Rasmiylashtirildi — chekni yopish',
+  'Сохранено файлом': 'Fayl sifatida saqlandi',
+  'Скопировать список как изображение, чтобы отправить клиенту': "Ro'yxatni rasm sifatida nusxalash — mijozga yuborish uchun",
 }
+

@@ -14,6 +14,7 @@ const PURCHASE_CONFIG = {
   title: t('Приход'),
   description: t('Поступление товаров от поставщиков на склад'),
   label: t('Приход'),
+  draftLabel: t('Приход'),
   listTitle: t('Список приходов'),
   newTitle: t('Новый приход'),
   detailTitle: t('Детали прихода'),

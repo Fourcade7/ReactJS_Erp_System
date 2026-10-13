@@ -1,10 +1,17 @@
 import { priceChange, unitPrice } from './pricing'
-import { locale, t } from '../i18n'
+import { locale, t, td } from '../i18n'
 
 /**
- * Savatni PNG rasm qilib chizadi va clipboard ga yozadi — mijozga
+ * Savatni yoki savdo tafsilotini PNG rasm qilib chizadi va clipboard ga yozadi — mijozga
  * messenjer orqali yuborish uchun (Ctrl+V bilan qoʻyiladi).
  * Rasm doim oq fonda: qaysi mavzuda koʻchirilganidan qatʼi nazar bir xil koʻrinadi.
+ *
+ * Rasm "spec" dan chiziladi:
+ *  - `title`, `subtitle` — sarlavha va uning ostidagi satr;
+ *  - `rows` — tovarlar: `{ name, quantity, unit?, price, sum, wholesale, change, was }`;
+ *  - `extras` — jami ustidagi qoʻshimcha qatorlar: `[{ label, value }]` (chegirma, qarz ...);
+ *  - `total` — «ИТОГО» summasi.
+ * Savat va savdo tafsiloti faqat spec yasashda farq qiladi.
  */
 
 const WIDTH = 560
@@ -15,6 +22,7 @@ const INDEX_W = 28
 const AMOUNT_W = 170
 const NAME_W = WIDTH - PAD * 2 - INDEX_W - AMOUNT_W - 12
 const LINE_H = 19
+const EXTRA_H = 24
 
 const COLORS = {
   bg: '#ffffff',
@@ -57,32 +65,20 @@ function wrapText(ctx, text, maxWidth) {
   return lines.length ? lines : ['—']
 }
 
-function renderCartImage(orderList, priceField) {
+function renderImage(spec) {
   const family = fontFamily()
   const font = (weight, size) => `${weight} ${size}px ${family}`
 
   const ctx = document.createElement('canvas').getContext('2d')
   ctx.font = font(500, 14)
 
-  const rows = orderList.map((item) => {
-    const price = Number(unitPrice(item, priceField) || 0)
-    return {
-      item,
-      price,
-      sum: Math.round(price * item.quantity),
-      // Savatda qoʻlda oʻzgartirilgan narxning odatiy narxdan farqi (1 dona uchun).
-      change: priceChange(item, priceField),
-      lines: wrapText(ctx, item.name, NAME_W),
-    }
-  })
-
-  const total = rows.reduce((sum, row) => sum + row.sum, 0)
-  const count = Math.round(orderList.reduce((sum, item) => sum + item.quantity, 0) * 1000) / 1000
-  const changeTotal = Math.round(rows.reduce((sum, row) => sum + row.change * row.item.quantity, 0))
+  const rows = spec.rows.map((row) => ({ ...row, lines: wrapText(ctx, row.name, NAME_W) }))
+  const extras = spec.extras ?? []
+  const count = Math.round(rows.reduce((sum, row) => sum + row.quantity, 0) * 1000) / 1000
 
   const HEADER_H = 74
-  const CHANGE_H = changeTotal !== 0 ? 24 : 0
-  const FOOTER_H = 90 + CHANGE_H
+  const EXTRAS_H = extras.length * EXTRA_H
+  const FOOTER_H = 90 + EXTRAS_H
   // Oʻng ustun: summa, «son × narx» va (oʻzgargan boʻlsa) «было … · farq».
   const rowHeight = (row) => Math.max(row.lines.length, row.change !== 0 ? 3 : 2) * LINE_H + 20
   const height = HEADER_H + rows.reduce((sum, row) => sum + rowHeight(row), 0) + FOOTER_H
@@ -100,10 +96,10 @@ function renderCartImage(orderList, priceField) {
   // Sarlavha
   g.fillStyle = COLORS.fg
   g.font = font(700, 20)
-  g.fillText(t('Список товаров'), PAD, PAD)
+  g.fillText(spec.title, PAD, PAD)
   g.fillStyle = COLORS.muted
   g.font = font(400, 13)
-  g.fillText(new Date().toLocaleString(locale), PAD, PAD + 28)
+  g.fillText(spec.subtitle, PAD, PAD + 28)
 
   let y = HEADER_H
   const divider = (atY) => {
@@ -131,9 +127,10 @@ function renderCartImage(orderList, priceField) {
     g.fillText(money(row.sum), right, top)
     g.fillStyle = COLORS.muted
     g.font = font(400, 12)
-    const wholesale = row.item.checkPrice ? t(' (опт)') : ''
+    const unit = row.unit ? ` ${row.unit}` : ''
+    const wholesale = row.wholesale ? t(' (опт)') : ''
     g.fillText(
-      `${row.item.quantity} × ${Number(row.price).toLocaleString('uz')}${wholesale}`,
+      `${row.quantity}${unit} × ${Number(row.price).toLocaleString('uz')}${wholesale}`,
       right,
       top + LINE_H + 1,
     )
@@ -141,7 +138,10 @@ function renderCartImage(orderList, priceField) {
       // Yuqoridagi «son × narx» qatori bilan bir xil rangda, biroz kichikroq.
       g.font = font(400, 11)
       g.fillText(
-        t('было {price} · {change}', { price: Number(row.item[priceField]).toLocaleString('uz'), change: signed(Math.round(row.change * row.item.quantity)) }),
+        t('было {price} · {change}', {
+          price: Number(row.was).toLocaleString('uz'),
+          change: signed(Math.round(row.change * row.quantity)),
+        }),
         right,
         top + LINE_H * 2 + 1,
       )
@@ -157,33 +157,127 @@ function renderCartImage(orderList, priceField) {
   g.font = font(400, 13)
   g.fillText(t('Товаров: {length} · Всего: {count} шт.', { length: rows.length, count }), PAD, y + 16)
 
-  if (changeTotal !== 0) {
-    g.fillText(t('Изменение цены'), PAD, y + 40)
-    g.textAlign = 'right'
-    g.fillText(`${signed(changeTotal)} So'm`, WIDTH - PAD, y + 40)
+  extras.forEach((extra, index) => {
+    const top = y + 40 + index * EXTRA_H
     g.textAlign = 'left'
-  }
+    g.fillText(extra.label, PAD, top)
+    g.textAlign = 'right'
+    g.fillText(extra.value, WIDTH - PAD, top)
+  })
+  g.textAlign = 'left'
 
   g.fillStyle = COLORS.fg
   g.font = font(700, 16)
-  g.fillText(t('ИТОГО'), PAD, y + 46 + CHANGE_H)
+  g.fillText(t('ИТОГО'), PAD, y + 46 + EXTRAS_H)
 
   g.textAlign = 'right'
   g.fillStyle = COLORS.accent
   g.font = font(800, 22)
-  g.fillText(money(total), WIDTH - PAD, y + 42 + CHANGE_H)
+  g.fillText(money(spec.total), WIDTH - PAD, y + 42 + EXTRAS_H)
 
   return canvas
 }
 
-async function copyCartImage(orderList, priceField) {
-  const canvas = renderCartImage(orderList, priceField)
+/** Savat: narx oʻzgartirilgan boʻlsa «было … · farq» qatori va «Изменение цены» chiqadi. */
+function cartSpec(orderList, priceField) {
+  const rows = orderList.map((item) => {
+    const price = Number(unitPrice(item, priceField) || 0)
+    return {
+      name: item.name,
+      quantity: item.quantity,
+      price,
+      sum: Math.round(price * item.quantity),
+      wholesale: Boolean(item.checkPrice),
+      // Savatda qoʻlda oʻzgartirilgan narxning odatiy narxdan farqi (1 dona uchun).
+      change: priceChange(item, priceField),
+      was: Number(item[priceField]),
+    }
+  })
+  const changeTotal = Math.round(rows.reduce((sum, row) => sum + row.change * row.quantity, 0))
+
+  return {
+    title: t('Список товаров'),
+    subtitle: new Date().toLocaleString(locale),
+    rows,
+    extras: changeTotal !== 0 ? [{ label: t('Изменение цены'), value: `${signed(changeTotal)} So'm` }] : [],
+    total: rows.reduce((sum, row) => sum + row.sum, 0),
+  }
+}
+
+/**
+ * Savdo (kirim, qaytarish) tafsiloti. Raqamlar ekrandagi "Оплата" kartasi bilan bir xil:
+ * jami = summa − chegirma − qaytarilgan; qarz qolgan bo'lsa «Оплачено» va «Остаток долга» ham chiqadi.
+ */
+function saleSpec(sale, label) {
+  const rows = sale.items.map((item) => {
+    const price = Number(item.price || 0)
+    return {
+      name: item.product?.name ?? t('Товар удалён'),
+      quantity: item.quantity,
+      unit: item.product?.unit ? td(item.product.unit) : '',
+      price,
+      sum: Math.round(price * item.quantity),
+      wholesale: Boolean(item.checkPrice),
+      change: 0,
+      was: price,
+    }
+  })
+
+  const discount = sale.discount ?? 0
+  const returned = sale.returnedTotal ?? 0
+  const paid = sale.payments.reduce((sum, item) => sum + item.amount, 0)
+  const remaining = sale.total - (paid + discount)
+
+  const extras = []
+  if (discount > 0) extras.push({ label: t('Скидка'), value: `−${money(discount)}` })
+  if (returned > 0) extras.push({ label: t('Возвращено'), value: `−${money(returned)}` })
+  if (remaining > 0) {
+    extras.push({ label: t('Оплачено'), value: money(paid) })
+    extras.push({ label: t('Остаток долга'), value: money(remaining) })
+  }
+
+  return {
+    title: t('Список товаров'),
+    subtitle: `${label} #${sale.id} · ${new Date(sale.date).toLocaleString(locale)}`,
+    rows,
+    extras,
+    total: sale.total - discount - returned,
+  }
+}
+
+/**
+ * Rasmni clipboard ga yozadi. Brauzer clipboard API ni bermasa (masalan, oddiy http da ochilgan
+ * sahifa) — PNG fayl sifatida yuklab beradi. Natija: 'copied' | 'downloaded'.
+ */
+async function deliver(canvas, fileName) {
   // Blob ni Promise sifatida berish — `toBlob` kutilayotganda ham bosish
   // (user activation) yoʻqolmasligi uchun.
   const blob = new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),
   )
-  await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+
+  if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+    return 'copied'
+  }
+
+  const url = URL.createObjectURL(await blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+  return 'downloaded'
 }
 
-export { copyCartImage }
+async function copyCartImage(orderList, priceField) {
+  return deliver(renderImage(cartSpec(orderList, priceField)), 'savat.png')
+}
+
+async function copySaleImage(sale, label) {
+  return deliver(renderImage(saleSpec(sale, label)), `${label}-${sale.id}.png`)
+}
+
+export { copyCartImage, copySaleImage }

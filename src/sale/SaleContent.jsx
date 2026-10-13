@@ -26,6 +26,7 @@ const SALE_CONFIG = {
   title: t('Продажа'),
   description: t('Оформление продаж, печать чека и контроль долга'),
   label: t('Продажа'),
+  draftLabel: t('Чек'),
   listTitle: t('Список продаж'),
   newTitle: t('Новая продажа'),
   detailTitle: t('Детали продажи'),

@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   Banknote,
   CalendarClock,
+  Check,
+  Copy,
   CreditCard,
   FileText,
   Landmark,
@@ -18,6 +20,7 @@ import { Badge, Button, Card, Form, Modal } from '../ui'
 import { ResultModal } from '../utils/StatusModals'
 import { roundQty } from '../lib/quantity'
 import SaleReturnModal from './SaleReturnModal'
+import { copySaleImage } from './cartImage'
 import { t, td } from '../i18n'
 
 const PAYMENT_ICONS = {
@@ -65,6 +68,14 @@ function TransactionDetail({
   const [reloadKey, setReloadKey] = useState(0)
   const [returnItem, setReturnItem] = useState(null)
   const [returnDone, setReturnDone] = useState('')
+  // 'idle' | 'done' | 'saved' (fayl sifatida yuklandi) | 'error' — natija tugma yonida 2 soniya ko'rinadi.
+  const [copyState, setCopyState] = useState('idle')
+
+  useEffect(() => {
+    if (copyState === 'idle') return undefined
+    const timer = setTimeout(() => setCopyState('idle'), 2000)
+    return () => clearTimeout(timer)
+  }, [copyState])
 
   useEffect(() => {
     if (!fetchDetail || !selectedSale) return
@@ -89,6 +100,17 @@ function TransactionDetail({
   const remaining = sale.total - (totalPayed + sale.discount)
   const settled = remaining <= 0
   const returnedTotal = sale.returnedTotal ?? 0
+
+  // Ro'yxatni rasm qilib nusxalash: mijozga messenjer orqali tashlab yuborish uchun.
+  const copyAsImage = async () => {
+    try {
+      const result = await copySaleImage(sale, label)
+      setCopyState(result === 'downloaded' ? 'saved' : 'done')
+    } catch (error) {
+      console.log(error.message)
+      setCopyState('error')
+    }
+  }
   const anyBulk = sale.items.some((item) => item.checkPrice)
 
   return (
@@ -150,7 +172,28 @@ function TransactionDetail({
           <Card padded={false}>
             <Card.Header>
               <Card.Title>{t('Список продуктов')}</Card.Title>
-              <span className="text-[11px] text-subtle">{t('{length} поз.', { length: sale.items.length })}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] text-subtle">{t('{length} поз.', { length: sale.items.length })}</span>
+                <Button
+                  variant="outline-secondary"
+                  size="xs"
+                  onClick={copyAsImage}
+                  title={t('Скопировать список как изображение, чтобы отправить клиенту')}
+                  className={cn(
+                    (copyState === 'done' || copyState === 'saved') && 'border-success/40 text-success-soft-fg',
+                    copyState === 'error' && 'border-danger/40 text-danger-soft-fg',
+                  )}
+                >
+                  {copyState === 'done' || copyState === 'saved' ? <Check /> : <Copy />}
+                  {copyState === 'done'
+                    ? t('Скопировано')
+                    : copyState === 'saved'
+                      ? t('Сохранено файлом')
+                      : copyState === 'error'
+                        ? t('Ошибка')
+                        : t('Копировать')}
+                </Button>
+              </div>
             </Card.Header>
             {/* Savatdagi kabi ixcham: har bir tovar — bitta qator; tor joyda nom alohida qatorga tushadi. */}
             <ul className="@container m-0 flex list-none flex-col gap-1 p-2">

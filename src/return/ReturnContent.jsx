@@ -14,6 +14,7 @@ const RETURN_CONFIG = {
   title: t('Возврат'),
   description: t('Возврат товаров от покупателей'),
   label: t('Возврат'),
+  draftLabel: t('Возврат'),
   listTitle: t('Список возвратов'),
   newTitle: t('Новый возврат'),
   detailTitle: t('Детали возврата'),

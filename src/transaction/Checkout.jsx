@@ -37,9 +37,12 @@ const PAYMENTS = [
 /** "По договору": bank o'tkazmasi bilan, shartnoma avtomatik ochiladi (faqat savdoda). Backend CONTRACT_METHOD bilan bir xil. */
 const CONTRACT_PAYMENT = { value: 'По договору', Icon: FileText, contract: true }
 
-/** Kontragentni qidirib tanlash (combobox). */
-function CustomerPicker({ fetchCustomers, setCustomerId, initialLabel = '' }) {
-  const [searchTerm, setSearchTerm] = useState(initialLabel)
+/**
+ * Kontragentni qidirib tanlash (combobox). Yozilgan matn (`label`) tashqarida saqlanadi: chek
+ * almashtirilganda yoki bo'lim qayta ochilganda tanlangan kontragent ko'rinib turadi.
+ */
+function CustomerPicker({ fetchCustomers, label, setLabel, setCustomerId }) {
+  const searchTerm = label
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [customerList, setCustomerList] = useState([])
   const [open, setOpen] = useState(false)
@@ -79,7 +82,7 @@ function CustomerPicker({ fetchCustomers, setCustomerId, initialLabel = '' }) {
         value={searchTerm}
         onFocus={() => setOpen(true)}
         onChange={(e) => {
-          setSearchTerm(e.target.value)
+          setLabel(e.target.value)
           setCustomerId(null)
           setOpen(true)
         }}
@@ -94,7 +97,7 @@ function CustomerPicker({ fetchCustomers, setCustomerId, initialLabel = '' }) {
               <button
                 type="button"
                 onClick={() => {
-                  setSearchTerm(`${item.username} ${item.surname}`)
+                  setLabel(`${item.username} ${item.surname}`)
                   setCustomerId(item.id)
                   setOpen(false)
                 }}
@@ -207,24 +210,36 @@ function Checkout({
   printable = false,
   maxDiscountPercent = null,
   limitByStock = false,
-  initialCustomer = null,
+  initialState = null,
+  onStateChange,
   onSubmitted,
+  onFinished,
   contractSale = false,
 }) {
   const componentRef = useRef(null)
 
   const [userId] = useState(localStorage.getItem('userid') || 1)
   const [open, setOpen] = useState(false)
-  const [customerId, setCustomerId] = useState(initialCustomer?.id ?? null)
+  // Boshlang'ich qiymatlar chekdan (`initialState`): bo'lim almashib qaytilganda ham saqlanadi.
+  const [customerId, setCustomerId] = useState(initialState?.customerId ?? null)
+  const [customerLabel, setCustomerLabel] = useState(initialState?.customerLabel ?? '')
   // "По договору": kassir ro'yxatda topilmagan kontragentni shu yerning o'zida ochadi ("Клиенты" jadvaliga yoziladi).
   const [creatingCustomer, setCreatingCustomer] = useState(false)
-  const [customerKey, setCustomerKey] = useState(0)
-  const [createdLabel, setCreatedLabel] = useState('')
   const [printType, setPrintType] = useState(null)
 
-  const [paymentType, setPaymentType] = useState('Наличные')
-  const [discountType, setDiscountType] = useState('sum')
-  const [discountSum, setDiscountSum] = useState(0)
+  const [paymentType, setPaymentType] = useState(initialState?.paymentType ?? 'Наличные')
+  const [discountType, setDiscountType] = useState(initialState?.discountType ?? 'sum')
+  const [discountSum, setDiscountSum] = useState(initialState?.discountSum ?? 0)
+  // Savdo yozildi: chek yopilguncha qayta yuborib bo'lmaydi (ikki marta savdo bo'lib ketmasin).
+  const [sold, setSold] = useState(false)
+
+  const report = useRef(onStateChange)
+  useEffect(() => {
+    report.current = onStateChange
+  })
+  useEffect(() => {
+    report.current?.({ customerId, customerLabel, paymentType, discountType, discountSum })
+  }, [customerId, customerLabel, paymentType, discountType, discountSum])
 
   const [pshow, psetShow] = useState(false)
   const [showDanger, setShowDanger] = useState(false)
@@ -273,7 +288,8 @@ function Checkout({
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    onAfterPrint: async () => window.location.reload(),
+    // Sahifa yangilanmaydi: faqat shu chek yopiladi, qolgan cheklar joyida turadi.
+    onAfterPrint: () => onFinished?.(),
   })
   const handlePrintDraft = useReactToPrint({ contentRef: componentRef })
 
@@ -289,7 +305,7 @@ function Checkout({
   }, [printType, handlePrint, handlePrintDraft])
 
   const handleSubmit = async () => {
-    if (overStockItems.length > 0) return
+    if (sold || overStockItems.length > 0) return
 
     if (isDebt && !customerId) {
       setShowSuccess(false)
@@ -355,10 +371,11 @@ function Checkout({
               : t('Успешно...'),
       )
       psetShow(false)
+      setSold(true)
       setTimeout(() => {
         setShowSuccess(false)
         if (printable) setPrintType('Чек')
-        else window.location.reload()
+        else onFinished?.()
       }, followUpFailed || contractFailed ? 8000 : isContract ? 5000 : 3000)
     } catch {
       setShowDanger(true)
@@ -452,13 +469,10 @@ function Checkout({
         <div>
           <p className="mb-1.5 text-xs font-medium text-muted">{t('Контрагент')}</p>
           <CustomerPicker
-            key={customerKey}
             fetchCustomers={fetchCustomers}
+            label={customerLabel}
+            setLabel={setCustomerLabel}
             setCustomerId={setCustomerId}
-            initialLabel={
-              createdLabel ||
-              (initialCustomer ? `${initialCustomer.username} ${initialCustomer.surname}`.trim() : '')
-            }
           />
           {contractSale && !creatingCustomer && (
             <button
@@ -478,8 +492,7 @@ function Checkout({
                 onCancel={() => setCreatingCustomer(false)}
                 onCreated={(created) => {
                   setCustomerId(created.id)
-                  setCreatedLabel(`${created.username} ${created.surname}`.trim())
-                  setCustomerKey((value) => value + 1)
+                  setCustomerLabel(`${created.username} ${created.surname}`.trim())
                   setCreatingCustomer(false)
                 }}
               />
@@ -539,6 +552,16 @@ function Checkout({
         )}
         {showDanger && <AlertDismissibleDanger alertMsg={alertMessage} />}
         {showSuccess && <AlertDismissibleSuccess alertMsg={alertMessage} />}
+        {sold && !showSuccess && (
+          // Chek yozilgan, lekin hali yopilmagan (masalan, chop etish oynasi bekor qilingan).
+          <button
+            type="button"
+            onClick={() => onFinished?.()}
+            className="inline-flex h-8 items-center justify-center rounded-lg border border-success/40 bg-success-soft text-xs font-medium text-success-soft-fg transition hover:brightness-105"
+          >
+            {t('Оформлено — закрыть чек')}
+          </button>
+        )}
         <Collapse in={pshow} className={pshow ? undefined : '-mb-3'}>
           <div>
             <ProgressDismissible />
@@ -550,6 +573,7 @@ function Checkout({
           onClick={handleSubmit}
           disabled={
             pshow ||
+            sold ||
             orderList.length === 0 ||
             overStockItems.length > 0 ||
             (finalCost <= 0 && !isDebt)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Barcode, PackageSearch, Plus, Warehouse } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState, Form, OverlayTrigger, SearchField, Spinner, Tooltip } from '../ui'
@@ -23,6 +23,7 @@ function ProductPicker({
   priceField = 'buyPrice',
   onlyStocked = false,
   autoAddSingle = false,
+  reloadKey = 0,
 }) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
@@ -57,10 +58,16 @@ function ProductPicker({
     return () => clearTimeout(handler)
   }, [searchTerm])
 
+  // Faol chek almashishi mumkin: kechikib kelgan skaner natijasi ham hozirgi chekka tushadi.
+  const setOrderListRef = useRef(setOrderList)
+  useEffect(() => {
+    setOrderListRef.current = setOrderList
+  })
+
   // Qoldiqdan ortiq ham qoʻshiladi: savdo tugmasi (Checkout) ortiqcha miqdor
   // kamaytirilmaguncha bloklanadi.
   function addProductToOrder(product) {
-    setOrderList((prev) => {
+    setOrderListRef.current((prev) => {
       const exists = prev.find((item) => item.id === product.id)
       if (exists) {
         return prev.map((item) =>
@@ -109,8 +116,9 @@ function ProductPicker({
     return () => {
       stale = true
     }
+    // `reloadKey`: savdo yozilgach qoldiqlar qayta yuklanadi (sahifa yangilanmaydi).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, debouncedSearch, categoryId])
+  }, [active, debouncedSearch, categoryId, reloadKey])
 
   const visible = onlyStocked ? productList.filter((p) => p.stock?.[0]?.id) : productList
 
