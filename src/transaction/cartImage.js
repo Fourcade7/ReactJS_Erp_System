@@ -247,19 +247,22 @@ function saleSpec(sale, label) {
 
 /**
  * Brauzer rasmni clipboard ga yozishga ruxsat bermaydi: Async Clipboard API faqat xavfsiz saytda
- * (https:// yoki http://localhost) bor. Oddiy `http://IP` da u umuman yo'q, rasmni boshqa yo'l bilan
- * (bitmap sifatida) clipboard ga qo'yib bo'lmaydi — shuning uchun jimgina yuklab olmaymiz, sababini aytamiz.
+ * (https:// yoki http://localhost) bor. Oddiy `http://IP` da u umuman yo'q va rasmni boshqa yo'l bilan
+ * (bitmap sifatida) clipboard ga qo'yib bo'lmaydi. Yuklab olmaymiz: tayyor rasm (`image`, data URL)
+ * xatoga biriktiriladi — chaqiruvchi uni oynada ko'rsatadi, foydalanuvchi o'ng tugma → «Копировать
+ * изображение» bilan nusxalaydi (`CopyImageModal`).
  */
 class ClipboardUnavailableError extends Error {
-  constructor() {
+  constructor(image) {
     super('Clipboard API unavailable (insecure context)')
     this.name = 'ClipboardUnavailableError'
+    this.image = image
   }
 }
 
 async function deliver(canvas) {
   if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
-    throw new ClipboardUnavailableError()
+    throw new ClipboardUnavailableError(canvas.toDataURL('image/png'))
   }
   // Blob ni Promise sifatida berish — `toBlob` kutilayotganda ham bosish
   // (user activation) yoʻqolmasligi uchun.

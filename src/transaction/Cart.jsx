@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Copy, Minus, Pencil, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
-import { ResultModal } from '../utils/StatusModals'
+import CopyImageModal from './CopyImageModal'
 import { ClipboardUnavailableError, copyCartImage } from './cartImage'
 import { priceChange, stockOf, unitPrice } from './pricing'
 import { parseQty, roundQty } from '../lib/quantity'
@@ -185,8 +185,9 @@ function Cart({
 
   // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya koʻrinadi.
   const [copyState, setCopyState] = useState('idle')
-  // Sayt xavfsiz emas (http): brauzer rasmni clipboard ga yozishga ruxsat bermaydi.
-  const [insecure, setInsecure] = useState(false)
+  // Sayt xavfsiz emas (http): brauzer rasmni clipboard ga yozishga ruxsat bermaydi — tayyor rasm oynada
+  // ko'rsatiladi, foydalanuvchi o'ng tugma bilan nusxalaydi.
+  const [fallbackImage, setFallbackImage] = useState('')
 
   useEffect(() => {
     if (copyState === 'idle') return
@@ -200,7 +201,10 @@ function Cart({
       setCopyState('done')
     } catch (error) {
       console.log(error.message)
-      if (error instanceof ClipboardUnavailableError) setInsecure(true)
+      if (error instanceof ClipboardUnavailableError) {
+        setFallbackImage(error.image)
+        return
+      }
       setCopyState('error')
     }
   }
@@ -389,7 +393,7 @@ function Cart({
         </ul>
       )}
 
-      <ResultModal show={insecure} onHide={() => setInsecure(false)} success={false} message={t('Браузер не разрешает копировать изображение: сайт открыт без HTTPS. Откройте систему по адресу https:// или http://localhost — тогда «Копировать» будет работать.')} />
+      <CopyImageModal image={fallbackImage} onHide={() => setFallbackImage('')} />
     </section>
   )
 }

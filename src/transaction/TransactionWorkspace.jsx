@@ -350,6 +350,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
               addNewPayment={config.addNewPayment}
               fetchDetail={config.fetchDetail}
               returnFromSale={config.returnFromSale}
+              changeCustomer={config.changeCustomer}
               label={config.label}
               icon={Icon}
             />

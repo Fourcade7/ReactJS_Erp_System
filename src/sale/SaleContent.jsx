@@ -18,6 +18,7 @@ import {
   getAllSaleListPaginationSearch,
   getSaleDetail,
   returnFromSale,
+  changeSaleCustomer,
 } from './SaleApi'
 import { t } from '../i18n'
 
@@ -50,6 +51,8 @@ const SALE_CONFIG = {
   // Tafsilotda tovarni shu yerning oʻzidan qaytarish uchun.
   fetchDetail: getSaleDetail,
   returnFromSale,
+  // Savdodan keyin kontragentni almashtirish (kassir adashgan bo'lsa).
+  changeCustomer: changeSaleCustomer,
 }
 
 /** Bosh sahifadagi "qarzdor savdolar" bloki. */
@@ -95,6 +98,7 @@ function SaleTabForHome() {
             addNewPayment={addNewPayment}
             fetchDetail={getSaleDetail}
             returnFromSale={returnFromSale}
+            changeCustomer={changeSaleCustomer}
             label={t('Продажа')}
             icon={ShoppingBag}
           />

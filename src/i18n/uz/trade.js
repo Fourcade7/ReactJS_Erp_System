@@ -119,8 +119,24 @@ export default {
     "Chekda {count} ta pozitsiya bor — ular o'chiriladi, chek rasmiylashtirilmagan.",
   'Оставить': 'Qoldirish',
   'Оформлено — закрыть чек': 'Rasmiylashtirildi — chekni yopish',
-  'Браузер не разрешает копировать изображение: сайт открыт без HTTPS. Откройте систему по адресу https:// или http://localhost — тогда «Копировать» будет работать.':
-    "Brauzer rasmni nusxalashga ruxsat bermayapti: sayt HTTPS siz ochilgan. Tizimni https:// yoki http://localhost orqali oching — shunda «Копировать» ishlaydi.",
   'Скопировать список как изображение, чтобы отправить клиенту': "Ro'yxatni rasm sifatida nusxalash — mijozga yuborish uchun",
+  // rasmni nusxalash (HTTPS bo'lmasa)
+  'Скопируйте изображение': 'Rasmni nusxalang',
+  'Нажмите на картинку правой кнопкой мыши и выберите «Копировать изображение», затем вставьте её (Ctrl+V) в мессенджер.':
+    "Rasm ustida sichqonchaning o'ng tugmasini bosing va «Копировать изображение» (Copy image) ni tanlang, so'ng uni messenjerga qo'ying (Ctrl+V).",
+  'Как копировать одной кнопкой': 'Bitta tugma bilan qanday nusxalash mumkin',
+  'Кнопка «Копировать» работает в один клик, когда сайт открыт по https:// или http://localhost. Для адреса этого сайта это можно разрешить в браузере (Chrome, Edge):':
+    "«Копировать» tugmasi sayt https:// yoki http://localhost orqali ochilganda bir bosishda ishlaydi. Shu saytning manzili uchun buni brauzerda ruxsat etish mumkin (Chrome, Edge):",
+  'Вставьте в адресную строку:': "Manzil qatoriga qo'ying:",
+  'В поле впишите адрес этого сайта:': 'Maydonga shu saytning manzilini yozing:',
+  'Выберите «Enabled» и нажмите «Relaunch» — браузер перезапустится.':
+    "«Enabled» ni tanlang va «Relaunch» ni bosing — brauzer qayta ishga tushadi.",
+  // savdodan keyin kontragentni almashtirish
+  'Изменить контрагента': "Kontragentni o'zgartirish",
+  'Сейчас': 'Hozir',
+  'Этот контрагент уже указан в продаже': "Bu kontragent savdoda allaqachon ko'rsatilgan",
+  'Долг, возвраты и договор (если он есть) этой продажи перейдут к новому контрагенту.':
+    "Ushbu savdoning qarzi, qaytarishlari va shartnomasi (agar bo'lsa) yangi kontragentga o'tadi.",
+  'Контрагент изменён': "Kontragent o'zgartirildi",
 }
 

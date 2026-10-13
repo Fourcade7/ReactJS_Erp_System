@@ -227,4 +227,21 @@ async function returnFromSale(saleId, items, method, userId) {
 }
 
 
-export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale}
+// Savdo qilingandan keyin kontragentni almashtirish (kassir adashib boshqasini tanlagan bo'lsa).
+// Savdo bilan birga qaytarishlar va bog'langan shartnoma ham yangi kontragentga o'tadi.
+async function changeSaleCustomer(saleId, customerId, userId) {
+
+    return fetch(`${API_BASE}/sale/customer/${saleId}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            customer_id: customerId,
+            user_id: userId
+        })
+    });
+}
+
+
+export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale,changeSaleCustomer}

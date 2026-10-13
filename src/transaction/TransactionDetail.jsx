@@ -9,6 +9,7 @@ import {
   FileText,
   Landmark,
   Mail,
+  Pencil,
   Phone,
   Undo2,
   UserRound,
@@ -20,6 +21,8 @@ import { Badge, Button, Card, Form, Modal } from '../ui'
 import { ResultModal } from '../utils/StatusModals'
 import { roundQty } from '../lib/quantity'
 import SaleReturnModal from './SaleReturnModal'
+import SaleCustomerModal from './SaleCustomerModal'
+import CopyImageModal from './CopyImageModal'
 import { ClipboardUnavailableError, copySaleImage } from './cartImage'
 import { t, td } from '../i18n'
 
@@ -49,6 +52,9 @@ function InfoRow({ icon: Icon, label, children }) {
  * Savdo uchun (`fetchDetail` + `returnFromSale` berilganda) har bir tovarni shu
  * yerning oʻzidan qaytarish mumkin; buning uchun yangilangan maʼlumot
  * (qatorlardan qancha qaytarilgani) `fetchDetail` orqali yuklanadi.
+ *
+ * `changeCustomer(saleId, customerId, userId)` berilsa, savdo qilingandan keyin kontragentni
+ * almashtirish mumkin (kassir adashgan bo'lsa).
  */
 function TransactionDetail({
   selectedSale,
@@ -58,6 +64,7 @@ function TransactionDetail({
   icon: Icon,
   fetchDetail,
   returnFromSale,
+  changeCustomer,
 }) {
   const [showDebtEdit, setShowDebtEdit] = useState(false)
   const [debtAmount, setDebtAmount] = useState('')
@@ -70,8 +77,11 @@ function TransactionDetail({
   const [returnDone, setReturnDone] = useState('')
   // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya ko'rinadi.
   const [copyState, setCopyState] = useState('idle')
-  // Sayt xavfsiz emas (http): brauzer rasmni clipboard ga yozishga ruxsat bermaydi.
-  const [insecure, setInsecure] = useState(false)
+  // Sayt xavfsiz emas (http): brauzer rasmni clipboard ga yozishga ruxsat bermaydi — tayyor rasm oynada
+  // ko'rsatiladi, foydalanuvchi o'ng tugma bilan nusxalaydi.
+  const [fallbackImage, setFallbackImage] = useState('')
+  const [customerEdit, setCustomerEdit] = useState(false)
+  const [customerDone, setCustomerDone] = useState('')
 
   useEffect(() => {
     if (copyState === 'idle') return undefined
@@ -110,7 +120,10 @@ function TransactionDetail({
       setCopyState('done')
     } catch (error) {
       console.log(error.message)
-      if (error instanceof ClipboardUnavailableError) setInsecure(true)
+      if (error instanceof ClipboardUnavailableError) {
+        setFallbackImage(error.image)
+        return
+      }
       setCopyState('error')
     }
   }
@@ -157,6 +170,17 @@ function TransactionDetail({
           <Card padded={false}>
             <Card.Header>
               <Card.Title>{t('Контрагент')}</Card.Title>
+              {changeCustomer && (
+                <Button
+                  variant="outline-secondary"
+                  size="xs"
+                  onClick={() => setCustomerEdit(true)}
+                  title={t('Изменить контрагента')}
+                >
+                  <Pencil />
+                  {t('Изменить')}
+                </Button>
+              )}
             </Card.Header>
             <div className="divide-y divide-line px-4">
               <InfoRow icon={UserRound} label={t('Имя')}>
@@ -458,7 +482,22 @@ function TransactionDetail({
         />
       )}
 
-      <ResultModal show={insecure} onHide={() => setInsecure(false)} success={false} message={t('Браузер не разрешает копировать изображение: сайт открыт без HTTPS. Откройте систему по адресу https:// или http://localhost — тогда «Копировать» будет работать.')} />
+      {customerEdit && (
+        <SaleCustomerModal
+          sale={sale}
+          changeCustomer={changeCustomer}
+          onHide={() => setCustomerEdit(false)}
+          onDone={(updated) => {
+            setCustomerEdit(false)
+            setDetail(updated)
+            setCustomerDone(t('Контрагент изменён'))
+          }}
+        />
+      )}
+
+      <CopyImageModal image={fallbackImage} onHide={() => setFallbackImage('')} />
+
+      <ResultModal show={Boolean(customerDone)} onHide={() => setCustomerDone('')} success message={customerDone} />
 
       <ResultModal
         show={Boolean(returnDone)}
