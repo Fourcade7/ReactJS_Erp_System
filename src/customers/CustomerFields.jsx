@@ -48,25 +48,52 @@ export function CustomerTypeSwitch({ value, onChange, className }) {
 
 /**
  * Maydonlar. `compact` — tor ustun (kassa paneli): maydonlar ustma-ust, tashkilot rekvizitlari yig'iladi.
+ * `spread` — keng oyna: hamma maydon bitta to'rda, forma kengligiga qarab 3 ustunda (tor bo'lsa 2 yoki 1) —
+ * tashkilot rekvizitlari ham balandlikni ko'p egallamaydi.
  * `idPrefix` — bir sahifada bir nechta forma bo'lsa elementlar id si to'qnashmasligi uchun.
  */
-export function CustomerFields({ value, onChange, invalid = {}, compact = false, idPrefix = 'customer', lockType = false }) {
+export function CustomerFields({ value, onChange, invalid = {}, compact = false, spread = false, idPrefix = 'customer', lockType = false }) {
   const organization = value.type === 'organization'
   const [expanded, setExpanded] = useState(() => ORG_DETAILS.some((field) => value[field.key]))
   const showDetails = !compact || expanded
 
   const set = (key) => (event) => onChange({ ...value, [key]: event.target.value })
-  const grid = cn('grid gap-3', compact ? 'grid-cols-1' : 'sm:grid-cols-2')
-  const wide = (extra) => (compact ? undefined : cn('sm:col-span-2', extra))
+  // `spread`: ustunlar soni oynaning emas, shu formaning kengligiga bog'liq (container query).
+  const grid = cn('grid gap-3', spread ? '@sm:grid-cols-2 @xl:grid-cols-3' : compact ? 'grid-cols-1' : 'sm:grid-cols-2')
+  const wide = (extra) => (compact || spread ? undefined : cn('sm:col-span-2', extra))
+
+  const detailFields = ORG_DETAILS.map((field) => (
+    <Form.Group key={field.key} controlId={`${idPrefix}-${field.key}`} className={field.wide ? wide() : undefined}>
+      <Form.Label>{field.label}</Form.Label>
+      <Form.Control
+        value={value[field.key]}
+        inputMode={field.numeric ? 'numeric' : undefined}
+        onChange={set(field.key)}
+      />
+    </Form.Group>
+  ))
+
+  const phoneField = (
+    <Form.Group controlId={`${idPrefix}-phone`}>
+      <Form.Label>{t('Телефон')}</Form.Label>
+      <Form.Control
+        type="tel"
+        value={value.phone}
+        isInvalid={Boolean(invalid.phone)}
+        placeholder={t('Введите номер телефона')}
+        onChange={set('phone')}
+      />
+    </Form.Group>
+  )
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={cn('flex flex-col gap-3', spread && '@container')}>
       {!lockType && <CustomerTypeSwitch value={value.type} onChange={(type) => onChange({ ...value, type })} />}
 
       {organization ? (
         <>
           <div className={grid}>
-            <Form.Group controlId={`${idPrefix}-org`} className={wide()}>
+            <Form.Group controlId={`${idPrefix}-org`} className={spread ? '@sm:col-span-2' : wide()}>
               <Form.Label>{t('Название организации')} *</Form.Label>
               <Form.Control
                 value={value.orgName}
@@ -86,6 +113,8 @@ export function CustomerFields({ value, onChange, invalid = {}, compact = false,
                 onChange={set('phone')}
               />
             </Form.Group>
+            {/* `spread`: rekvizitlar nom va telefon bilan bitta to'rda — qatorlar kam, balandlik kichik. */}
+            {spread && detailFields}
           </div>
 
           {compact && (
@@ -100,20 +129,7 @@ export function CustomerFields({ value, onChange, invalid = {}, compact = false,
             </button>
           )}
 
-          {showDetails && (
-            <div className={grid}>
-              {ORG_DETAILS.map((field) => (
-                <Form.Group key={field.key} controlId={`${idPrefix}-${field.key}`} className={field.wide ? wide() : undefined}>
-                  <Form.Label>{field.label}</Form.Label>
-                  <Form.Control
-                    value={value[field.key]}
-                    inputMode={field.numeric ? 'numeric' : undefined}
-                    onChange={set(field.key)}
-                  />
-                </Form.Group>
-              ))}
-            </div>
-          )}
+          {showDetails && !spread && <div className={grid}>{detailFields}</div>}
 
           <p className="text-[11px] leading-snug text-subtle">
             {t('Обязательно только название. Остальное можно заполнить позже — например, в договоре.')}
@@ -140,17 +156,10 @@ export function CustomerFields({ value, onChange, invalid = {}, compact = false,
                 onChange={set('surname')}
               />
             </Form.Group>
+            {/* `spread`: telefon ism va familiya bilan bitta qatorda. */}
+            {spread && phoneField}
           </div>
-          <Form.Group controlId={`${idPrefix}-phone`}>
-            <Form.Label>{t('Телефон')}</Form.Label>
-            <Form.Control
-              type="tel"
-              value={value.phone}
-              isInvalid={Boolean(invalid.phone)}
-              placeholder={t('Введите номер телефона')}
-              onChange={set('phone')}
-            />
-          </Form.Group>
+          {!spread && phoneField}
         </>
       )}
 

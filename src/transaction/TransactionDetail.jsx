@@ -191,6 +191,12 @@ function TransactionDetail({
               <InfoRow icon={Phone} label={t('Телефон')}>
                 {sale.customer?.phone ?? '—'}
               </InfoRow>
+              {/* "По договору" savdo: ochilgan shartnoma raqami (tafsilot yuklangach). */}
+              {sale.contract && (
+                <InfoRow icon={FileText} label={t('Договор')}>
+                  {sale.contract.number}
+                </InfoRow>
+              )}
             </div>
           </Card>
         </div>
@@ -487,10 +493,17 @@ function TransactionDetail({
           sale={sale}
           changeCustomer={changeCustomer}
           onHide={() => setCustomerEdit(false)}
-          onDone={(updated) => {
+          onDone={(updated, meta) => {
             setCustomerEdit(false)
             setDetail(updated)
-            setCustomerDone(t('Контрагент изменён'))
+            const number = updated.contract?.number
+            setCustomerDone(
+              meta?.byContract && number
+                ? meta.customerChanged
+                  ? t('Контрагент изменён. Открыт договор {number} — бухгалтер возьмёт его в работу.', { number })
+                  : t('Продажа оформлена по договору {number} — бухгалтер возьмёт его в работу.', { number })
+                : t('Контрагент изменён'),
+            )
           }}
         />
       )}

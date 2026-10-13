@@ -101,8 +101,10 @@ function Modal({
   return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-[1080] flex justify-center overflow-y-auto p-4 sm:p-6',
-        centered ? 'items-center' : 'items-start pt-[8vh]',
+        // `items-center` baland oynaning yuqori qismini ekrandan tashqariga chiqarib, skroll qilib bo'lmas qilardi;
+        // shuning uchun markazlash `my-auto` bilan: joy bo'lsa o'rtada, sig'masa tepadan boshlanib skroll bo'ladi.
+        'fixed inset-0 z-[1080] flex items-start justify-center overflow-y-auto p-4 sm:p-6',
+        !centered && 'pt-[8vh]',
         className,
       )}
       role="presentation"
@@ -118,6 +120,7 @@ function Modal({
         aria-modal="true"
         className={cn(
           'relative z-10 w-full animate-slide-up rounded-2xl border border-line bg-surface shadow-pop',
+          centered && 'my-auto',
           sizes[size] ?? sizes.md,
           scrollable && 'flex max-h-[85vh] flex-col',
           contentClassName,

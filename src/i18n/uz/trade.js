@@ -138,5 +138,13 @@ export default {
   'Долг, возвраты и договор (если он есть) этой продажи перейдут к новому контрагенту.':
     "Ushbu savdoning qarzi, qaytarishlari va shartnomasi (agar bo'lsa) yangi kontragentga o'tadi.",
   'Контрагент изменён': "Kontragent o'zgartirildi",
+  // savdodan keyin "По договору" ga o'tkazish
+  'Оформить по договору': "Shartnoma bo'yicha rasmiylashtirish",
+  'Будет открыт договор по этой продаже и задача по нему. Бухгалтер возьмёт договор в работу, внесёт реквизиты и оплату по договору. Долг {amount} останется до поступления оплаты.':
+    "Ushbu savdo bo'yicha shartnoma va unga vazifa ochiladi. Buxgalter shartnomani ishga oladi, rekvizitlar va shartnoma bo'yicha to'lovni kiritadi. To'lov kelguncha {amount} qarz qoladi.",
+  'Контрагент изменён. Открыт договор {number} — бухгалтер возьмёт его в работу.':
+    "Kontragent o'zgartirildi. {number} shartnoma ochildi — buxgalter uni ishga oladi.",
+  'Продажа оформлена по договору {number} — бухгалтер возьмёт его в работу.':
+    "Savdo {number} shartnoma bo'yicha rasmiylashtirildi — buxgalter uni ishga oladi.",
 }
 

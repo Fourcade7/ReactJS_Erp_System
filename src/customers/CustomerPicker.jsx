@@ -24,9 +24,10 @@ function guessFields(query) {
 /**
  * Yangi kontragent ochish: qidiruvda topilmasa shu yerning o'zida. Odam yoki tashkilot tanlanadi:
  * tashkilotda faqat nomi majburiy (qolgani keyinroq, masalan shartnomada, to'ldiriladi).
- * `compact` — tor ustunda (kassa paneli) maydonlar ustma-ust joylashadi.
+ * `compact` — tor ustunda (kassa paneli) maydonlar ustma-ust joylashadi;
+ * `spread` — keng oynada maydonlar 3 ustunga yoyiladi (balandlik kichik bo'ladi).
  */
-function NewCustomerForm({ initial, onCreated, onCancel, compact = false }) {
+function NewCustomerForm({ initial, onCreated, onCancel, compact = false, spread = false }) {
   const [value, setValue] = useState(() => ({ ...emptyCustomer('user'), ...initial }))
   const [invalid, setInvalid] = useState({})
   const [busy, setBusy] = useState(false)
@@ -78,6 +79,7 @@ function NewCustomerForm({ initial, onCreated, onCancel, compact = false }) {
         }}
         invalid={invalid}
         compact={compact}
+        spread={spread}
         idPrefix="newCustomer"
       />
       <div className="flex flex-wrap justify-end gap-2">
@@ -100,9 +102,10 @@ function NewCustomerForm({ initial, onCreated, onCancel, compact = false }) {
  *
  *  - `value` — tanlangan kontragent ({ id, username, surname, phone }) yoki null;
  *  - `onChange(customer | null)`;
- *  - `readOnly` — faqat ko'rsatish (tanlash/olib tashlash yo'q).
+ *  - `readOnly` — faqat ko'rsatish (tanlash/olib tashlash yo'q);
+ *  - `spread` — keng oynada yangi kontragent formasi 3 ustunga yoyiladi.
  */
-function CustomerPicker({ value, onChange, readOnly = false, disabled = false }) {
+function CustomerPicker({ value, onChange, readOnly = false, disabled = false, spread = false }) {
   const [search, setSearch] = useState('')
   const [debounced, setDebounced] = useState('')
   const [open, setOpen] = useState(false)
@@ -152,6 +155,7 @@ function CustomerPicker({ value, onChange, readOnly = false, disabled = false })
     return (
       <NewCustomerForm
         initial={creating}
+        spread={spread}
         onCancel={() => setCreating(null)}
         onCreated={(customer) => {
           setCreating(null)

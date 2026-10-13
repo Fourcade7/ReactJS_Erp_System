@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Modal } from '../ui'
 import { CustomerPicker } from '../customers/CustomerPicker'
+import { amountsOf } from './amounts'
 import { t } from '../i18n'
 
 const nameOf = (customer) =>
@@ -11,23 +12,39 @@ const nameOf = (customer) =>
  * Kontragent qidiruv bo'yicha tanlanadi yoki shu yerning o'zida yangisi (odam / tashkilot) ochiladi.
  * Savdo bilan birga qarz, qaytarishlar va shartnoma (bo'lsa) yangi kontragentga o'tadi.
  *
- *  - `changeCustomer(saleId, customerId, userId)` — `Response` qaytaradi;
- *  - `onDone(updatedSale)` — saqlangach (backend yangilangan tafsilotni qaytaradi).
+ * Qarzi qolgan va shartnomasi yo'q savdoni shu yerning o'zida "По договору" ga o'tkazish mumkin:
+ * shartnoma va kuzatuv vazifasi avtomatik ochiladi (xuddi kassadagi "По договору" savdosidagidek).
+ *
+ *  - `changeCustomer(saleId, customerId, userId, byContract)` — `Response` qaytaradi;
+ *  - `onDone(updatedSale, { customerChanged, byContract })` — saqlangach (backend yangilangan tafsilotni qaytaradi).
  */
 function SaleCustomerModal({ sale, changeCustomer, onHide, onDone }) {
   const [customer, setCustomer] = useState(null)
+  const [byContract, setByContract] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const current = sale.customer
+  // `contract === null` — tafsilot yuklangan va shartnoma yo'q; `undefined` — hali yuklanmagan (ro'yxatdagi nusxa).
+  const { remaining } = amountsOf(sale)
+  const canContract = sale.contract === null && remaining > 0
+
   const same = Boolean(customer && current && customer.id === current.id)
+  const withContract = byContract && canContract
+  const customerId = customer && !same ? customer.id : undefined
+  const canSave = Boolean(customerId) || withContract
 
   const submit = async () => {
-    if (!customer || same) return
+    if (!canSave) return
     setSaving(true)
     setError('')
     try {
-      const res = await changeCustomer(sale.id, customer.id, Number(localStorage.getItem('userid')) || undefined)
+      const res = await changeCustomer(
+        sale.id,
+        customerId,
+        Number(localStorage.getItem('userid')) || undefined,
+        withContract,
+      )
       const result = await res.json().catch(() => null)
       if (!res.ok) {
         setError(
@@ -35,7 +52,7 @@ function SaleCustomerModal({ sale, changeCustomer, onHide, onDone }) {
         )
         return
       }
-      onDone(result)
+      onDone(result, { customerChanged: Boolean(customerId), byContract: withContract })
     } catch {
       setError(t('Не удалось подключиться к серверу'))
     } finally {
@@ -44,7 +61,8 @@ function SaleCustomerModal({ sale, changeCustomer, onHide, onDone }) {
   }
 
   return (
-    <Modal show onHide={saving ? undefined : onHide} centered>
+    // `lg`: yangi tashkilot formasi (rekvizitlar bilan) 3 ustunga yoyilib, ekran balandligiga sig'adi.
+    <Modal show onHide={saving ? undefined : onHide} size="lg" centered>
       <Modal.Header closeButton>
         <Modal.Title>{t('Изменить контрагента')}</Modal.Title>
       </Modal.Header>
@@ -56,9 +74,29 @@ function SaleCustomerModal({ sale, changeCustomer, onHide, onDone }) {
 
         <Form.Group controlId="saleCustomerPicker">
           <Form.Label>{t('Новый контрагент')}</Form.Label>
-          <CustomerPicker value={customer} onChange={setCustomer} disabled={saving} />
-          {same && <p className="mt-1.5 text-[12px] text-danger-soft-fg">{t('Этот контрагент уже указан в продаже')}</p>}
+          <CustomerPicker value={customer} onChange={setCustomer} disabled={saving} spread />
+          {same && !withContract && (
+            <p className="mt-1.5 text-[12px] text-danger-soft-fg">{t('Этот контрагент уже указан в продаже')}</p>
+          )}
         </Form.Group>
+
+        {canContract && (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-line bg-surface-2 p-3">
+            <Form.Check
+              type="switch"
+              id="saleByContract"
+              label={t('Оформить по договору')}
+              checked={byContract}
+              disabled={saving}
+              onChange={(event) => setByContract(event.target.checked)}
+            />
+            <p className="text-[12px] leading-snug text-muted">
+              {t('Будет открыт договор по этой продаже и задача по нему. Бухгалтер возьмёт договор в работу, внесёт реквизиты и оплату по договору. Долг {amount} останется до поступления оплаты.', {
+                amount: `${remaining.toLocaleString('uz')} So'm`,
+              })}
+            </p>
+          </div>
+        )}
 
         <Alert variant="info">
           {t('Долг, возвраты и договор (если он есть) этой продажи перейдут к новому контрагенту.')}
@@ -70,7 +108,7 @@ function SaleCustomerModal({ sale, changeCustomer, onHide, onDone }) {
         <Button variant="outline-secondary" onClick={onHide} disabled={saving}>
           {t('Отмена')}
         </Button>
-        <Button loading={saving} disabled={!customer || same} onClick={submit}>
+        <Button loading={saving} disabled={!canSave} onClick={submit}>
           {t('Сохранить')}
         </Button>
       </Modal.Footer>

@@ -229,7 +229,9 @@ async function returnFromSale(saleId, items, method, userId) {
 
 // Savdo qilingandan keyin kontragentni almashtirish (kassir adashib boshqasini tanlagan bo'lsa).
 // Savdo bilan birga qaytarishlar va bog'langan shartnoma ham yangi kontragentga o'tadi.
-async function changeSaleCustomer(saleId, customerId, userId) {
+// `byContract` — savdoni "По договору" ga o'tkazish: shartnoma va kuzatuv vazifasi avtomatik ochiladi.
+// `customerId` bo'lmasa kontragent o'zgarmaydi (faqat shartnoma ochiladi).
+async function changeSaleCustomer(saleId, customerId, userId, byContract = false) {
 
     return fetch(`${API_BASE}/sale/customer/${saleId}`, {
         method: "PATCH",
@@ -238,7 +240,8 @@ async function changeSaleCustomer(saleId, customerId, userId) {
         },
         body: JSON.stringify({
             customer_id: customerId,
-            user_id: userId
+            user_id: userId,
+            by_contract: byContract || undefined
         })
     });
 }
