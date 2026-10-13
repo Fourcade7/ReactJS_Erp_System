@@ -12,6 +12,7 @@ import {
 } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { LoadingModal, ResultModal } from '../utils/StatusModals'
+import { CustomerProfile } from './CustomerProfile'
 import { ImportExportMenu, ImportModal } from '../utils/ImportExportContent'
 import { exportToExcel } from '../utils/ExcelUtils'
 import {
@@ -61,6 +62,10 @@ function CustomerListGroup(props) {
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
   const [uid, setUid] = useState(-1)
+
+  // Ro'yxatdagi kontragentni bossak — uning kartochkasi (operatsiyalar, summalar) ochiladi.
+  const [profileId, setProfileId] = useState(null)
+  const [profileVersion, setProfileVersion] = useState(0)
 
   const [customerList, setCustomerList] = useState([])
   const [pageCount, setPageCount] = useState(0)
@@ -118,94 +123,120 @@ function CustomerListGroup(props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <SearchField
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value)
-            setActive(1)
+      {profileId !== null ? (
+        // Kontragent kartochkasi ro'yxat o'rniga ochiladi; tahrirlash/o'chirish oynalari pastda doim turadi.
+        <CustomerProfile
+          customerId={profileId}
+          version={profileVersion}
+          onBack={() => setProfileId(null)}
+          onEdit={(customer) => {
+            setShowEdit(true)
+            setUid(customer.id)
+            setUserName(customer.username)
+            setSurname(customer.surname)
+            setPhone(customer.phone)
           }}
-          onClear={() => setSearchTerm('')}
-          placeholder={t('Поиск по имени, фамилии или телефону...')}
-          className="flex-1"
-        />
-        <ImportExportMenu
-          onImport={() => setShowImport(true)}
-          onExport={handleExport}
-          exporting={exporting}
-        />
-      </div>
-
-      {customerList.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title={t('Клиенты не найдены')}
-          description={t('Измените условия поиска или добавьте нового клиента на соседней вкладке.')}
         />
       ) : (
-        <ListGroup as="ol">
-          {customerList.map((customer, index) => (
-            <ListGroup.Item key={customer.id} as="li">
-              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
-                {index + 1}
-              </span>
+        <>
+          <div className="flex items-center gap-2">
+            <SearchField
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setActive(1)
+              }}
+              onClear={() => setSearchTerm('')}
+              placeholder={t('Поиск по имени, фамилии или телефону...')}
+              className="flex-1"
+            />
+            <ImportExportMenu
+              onImport={() => setShowImport(true)}
+              onExport={handleExport}
+              exporting={exporting}
+            />
+          </div>
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-fg">
-                  {customer.username} {customer.surname}
-                </p>
-                <p className="text-[11px] text-subtle">ID: {customer.id}</p>
-              </div>
-
-              <Badge bg="success" className="hidden sm:inline-flex">
-                <Phone />
-                {customer.phone}
-              </Badge>
-
-              <Badge className="hidden lg:inline-flex">
-                <CalendarClock />
-                {new Date(customer.createdAt).toLocaleString('UZ')}
-              </Badge>
-
-              <Dropdown>
-                <Dropdown.Toggle
-                  as="div"
-                  className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
+          {customerList.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={t('Клиенты не найдены')}
+              description={t('Измените условия поиска или добавьте нового клиента на соседней вкладке.')}
+            />
+          ) : (
+            <ListGroup as="ol">
+              {customerList.map((customer, index) => (
+                <ListGroup.Item
+                  key={customer.id}
+                  as="li"
+                  onClick={() => setProfileId(customer.id)}
+                  title={t('Открыть карточку клиента')}
                 >
-                  <MoreHorizontal className="size-4" />
-                </Dropdown.Toggle>
+                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[11px] font-semibold tabular-nums text-subtle">
+                    {index + 1}
+                  </span>
 
-                <Dropdown.Menu align="end">
-                  <Dropdown.Item
-                    onClick={() => {
-                      setShowEdit(true)
-                      setUid(customer.id)
-                      setUserName(customer.username)
-                      setSurname(customer.surname)
-                      setPhone(customer.phone)
-                    }}
-                  >
-                    <Pencil /> {t('Изменить')}
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    variant="danger"
-                    onClick={() => {
-                      setShowDel(true)
-                      setUid(customer.id)
-                    }}
-                  >
-                    <Trash2 /> {t('Удалить')}
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-fg">
+                      {customer.username} {customer.surname}
+                    </p>
+                    <p className="text-[11px] text-subtle">ID: {customer.id}</p>
+                  </div>
+
+                  <Badge bg="success" className="hidden sm:inline-flex">
+                    <Phone />
+                    {customer.phone}
+                  </Badge>
+
+                  <Badge className="hidden lg:inline-flex">
+                    <CalendarClock />
+                    {new Date(customer.createdAt).toLocaleString('UZ')}
+                  </Badge>
+
+                  {/* Menyu elementlari va uning tugmasi qatorni bosish (kartochkani ochish) bilan aralashmaydi. */}
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <Dropdown>
+                      <Dropdown.Toggle
+                        as="div"
+                        className="inline-flex size-7 items-center justify-center rounded-md text-subtle transition hover:bg-surface-3 hover:text-fg"
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu align="end">
+                        <Dropdown.Item
+                          onClick={() => {
+                            setShowEdit(true)
+                            setUid(customer.id)
+                            setUserName(customer.username)
+                            setSurname(customer.surname)
+                            setPhone(customer.phone)
+                          }}
+                        >
+                          <Pencil /> {t('Изменить')}
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          variant="danger"
+                          onClick={() => {
+                            setShowDel(true)
+                            setUid(customer.id)
+                          }}
+                        >
+                          <Trash2 /> {t('Удалить')}
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </span>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          )}
+
+          <div className="flex justify-center pt-1">
+            <CustomPaginationScreen active={active} pageCount={pageCount} setActive={setActive} />
+          </div>
+        </>
       )}
-
-      <div className="flex justify-center pt-1">
-        <CustomPaginationScreen active={active} pageCount={pageCount} setActive={setActive} />
-      </div>
 
       {/* Изменить */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered>
@@ -263,6 +294,7 @@ function CustomerListGroup(props) {
               } else {
                 setShowResAlert(true)
                 setShowResTitle(t('Клиент успешно обновлён'))
+                setProfileVersion((version) => version + 1)
               }
 
               setShowRes(true)

@@ -6,7 +6,6 @@ import {
   ExternalLink,
   HardHat,
   MapPin,
-  Package,
   Phone,
   ShoppingBag,
   UserPlus,
@@ -538,40 +537,76 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
               <Card.Title>{t('Товары')}</Card.Title>
               <span className="text-[11px] text-subtle">{t('{length} поз.', { length: items.length })}</span>
             </Card.Header>
-            <ul className="m-0 list-none divide-y divide-line p-0">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-subtle">
-                    <Package className="size-3.5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">{item.product.name}</p>
-                    <p className="flex flex-wrap items-center gap-1 text-[11px] text-subtle">
-                      {item.bulk && (
-                        <Badge bg="warning" className="py-0 text-[10px]">
-                          {t('Оптом')}
-                        </Badge>
-                      )}
-                      <span className={cn(item.short && isActive && 'text-danger-soft-fg')}>
-                        {t('на складе: {available} {unit}', { available: item.available, unit: td(item.product.unit) })}
+            {/* Savatdagi kabi ixcham: har bir tovar — bitta qator; tor joyda nom alohida qatorga tushadi. */}
+            <ul className="@container m-0 flex list-none flex-col gap-1 p-2">
+              {items.map((item, index) => {
+                const lack = item.short && isActive
+                const priceChanged = isActive && item.price !== item.currentPrice
+                const stockHint = t('на складе: {available} {unit}', { available: item.available, unit: td(item.product.unit) })
+                return (
+                  <li
+                    key={item.id}
+                    className={cn(
+                      'flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border bg-surface px-2.5 py-1.5 @lg:flex-nowrap',
+                      lack ? 'border-danger/50' : 'border-line',
+                    )}
+                  >
+                    <p
+                      title={item.product.name}
+                      className="m-0 min-w-0 basis-full truncate text-[13px] font-medium text-fg @lg:basis-0 @lg:flex-1"
+                    >
+                      <span className="mr-2 inline-flex h-5 min-w-5 items-center justify-center rounded bg-surface-2 px-1 align-middle text-[10px] font-semibold tabular-nums text-subtle">
+                        {index + 1}
                       </span>
-                      {isActive && item.price !== item.currentPrice && (
-                        <span className="text-warning-soft-fg">
-                          {t('· цена сейчас {price}', { price: item.currentPrice.toLocaleString('uz') })}
-                        </span>
+                      {item.product.name}
+                      {lack && (
+                        <span className="ml-2 text-[11px] font-normal text-danger-soft-fg">{stockHint}</span>
                       )}
                     </p>
-                  </div>
-                  <span className="shrink-0 text-right text-[13px] tabular-nums">
-                    <span className="text-subtle">
-                      {item.quantity} {td(item.product.unit)} ×{' '}
+
+                    <span
+                      title={stockHint}
+                      className={cn(
+                        'inline-flex h-6 shrink-0 items-center justify-center rounded-md border bg-surface-2 px-2 text-[12px] font-semibold tabular-nums text-fg @lg:min-w-[4.5rem]',
+                        lack ? 'border-danger/50 text-danger-soft-fg' : 'border-line',
+                      )}
+                    >
+                      {item.quantity}
+                      <span className="ml-1 font-normal text-subtle">{td(item.product.unit)}</span>
                     </span>
-                    <span className="font-semibold text-fg">{item.price.toLocaleString('uz')}</span>
-                  </span>
-                </li>
-              ))}
+
+                    {/* Keng qatorda ustun joyi doim band: "ОПТ" bor-yo'qligidan narx va summa surilmaydi. */}
+                    <span className="shrink-0 empty:hidden @lg:w-11 @lg:empty:block">
+                      {item.bulk && (
+                        <span
+                          title={t('Оптом')}
+                          className="rounded-md border border-warning/40 bg-warning-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning-soft-fg"
+                        >
+                          {t('Опт')}
+                        </span>
+                      )}
+                    </span>
+
+                    <span className="flex shrink-0 items-center justify-end gap-1 text-[12px] tabular-nums text-muted @lg:min-w-[5.5rem]">
+                      {item.price.toLocaleString('uz')}
+                      {priceChanged && (
+                        <span
+                          title={t('Цена сейчас: {price}', { price: item.currentPrice.toLocaleString('uz') })}
+                          className="text-[11px] text-warning-soft-fg"
+                        >
+                          → {item.currentPrice.toLocaleString('uz')}
+                        </span>
+                      )}
+                    </span>
+
+                    <span className="ml-auto shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg @lg:ml-0 @lg:min-w-[5.5rem]">
+                      {Math.round(item.quantity * item.price).toLocaleString('uz')}
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
-            <div className="flex items-center justify-between border-t border-line px-4 py-3 text-[13px]">
+            <div className="flex items-center justify-between border-t border-line px-4 py-2.5 text-[13px]">
               <span className="text-muted">{t('Сумма товаров')}</span>
               <span className="font-semibold tabular-nums text-fg">{money(order.itemsTotal)}</span>
             </div>

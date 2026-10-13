@@ -44,7 +44,7 @@ export default {
   '{length} поз.': '{length} ta pozitsiya',
   'Оптом': 'Ulgurji',
   'на складе: {available} {unit}': 'omborda: {available} {unit}',
-  '· цена сейчас {price}': '· hozirgi narx {price}',
+  'Цена сейчас: {price}': 'Hozirgi narx: {price}',
   'Сумма товаров': 'Tovarlar summasi',
   'Отменить заказ?': 'Buyurtma bekor qilinsinmi?',
   'Заказ #{id} будет отменён, мастер увидит этот статус.': "Buyurtma #{id} bekor qilinadi, usta bu holatni ko'radi.",

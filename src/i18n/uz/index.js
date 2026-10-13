@@ -6,6 +6,7 @@
 import auth from './auth.js'
 import catalog from './catalog.js'
 import contracts from './contracts.js'
+import customers from './customers.js'
 import dashboard from './dashboard.js'
 import expense from './expense.js'
 import integration from './integration.js'
@@ -20,6 +21,7 @@ export default {
   ...auth,
   ...catalog,
   ...contracts,
+  ...customers,
   ...dashboard,
   ...expense,
   ...integration,

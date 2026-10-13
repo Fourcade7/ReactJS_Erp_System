@@ -163,4 +163,22 @@ async function getAllCustomersPaginationSearch(page,limit,search){
 
 }
 
-export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers}
+// Kontragent kartochkasi: xato bo'lsa istisno otadi (useRequest uchun).
+async function getJson(url) {
+    const response = await fetch(url);
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+        const message = Array.isArray(data?.message) ? data.message.join(", ") : data?.message;
+        throw new Error(message || t('Ошибка сервера'));
+    }
+    return data;
+}
+
+/** Ma'lumot + savdo/qaytarish/xarid jamlanmasi + to'lov usullari + top tovarlar + 12 oy. */
+const getCustomerProfile = (id) => getJson(`${API_BASE}/customer/profile/${id}`);
+
+/** Barcha operatsiyalar (savdo, qaytarish, xarid), qatorlar va to'lovlar bilan. `type`: sale | return | purchase. */
+const getCustomerOperations = (id, { page = 1, limit = 10, type = "" } = {}) =>
+    getJson(`${API_BASE}/customer/operations/${id}?page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`);
+
+export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations}
