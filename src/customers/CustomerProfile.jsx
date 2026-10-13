@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react'
 import {
   ArrowDownLeft,
   ArrowLeft,
+  Building2,
   CalendarClock,
   ChevronDown,
   ChevronRight,
@@ -25,6 +26,7 @@ import { getTasks } from '../task/TaskApi'
 import { formatShortDateTime, fullName } from '../task/taskView'
 import { locale, t, td } from '../i18n'
 import { getCustomerOperations, getCustomerProfile } from './CustomerApi'
+import { isOrganization } from './customerForm'
 
 const OPERATION_LIMIT = 10
 const DAY = 86_400_000
@@ -435,7 +437,11 @@ function CustomerProfile({ customerId, onBack, onEdit, version = 0 }) {
 
   const { customer, summary, paymentMethods, topProducts, months } = profile.data
   const name = `${customer.username} ${customer.surname}`.trim()
-  const requisites = Object.entries(customer.requisites ?? {}).filter(([, value]) => value)
+  const organization = isOrganization(customer)
+  // Tashkilotda nomi sarlavhada va "Организация" qatorida allaqachon bor — rekvizitlarda takrorlanmaydi.
+  const requisites = Object.entries(customer.requisites ?? {}).filter(
+    ([field, value]) => value && !(organization && field === 'orgName'),
+  )
   const idleDays = summary.lastOperationAt ? daysSince(summary.lastOperationAt) : null
   const paidShare = summary.salesNet > 0 ? Math.round((summary.paid / summary.salesNet) * 100) : null
   const methodsTotal = paymentMethods.reduce((sum, item) => sum + item.amount, 0)
@@ -474,12 +480,23 @@ function CustomerProfile({ customerId, onBack, onEdit, version = 0 }) {
 
       <div className="flex flex-wrap items-center gap-3">
         <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-base font-semibold text-primary-soft-fg">
-          {`${customer.username.charAt(0)}${customer.surname.charAt(0)}`.toUpperCase()}
+          {organization ? (
+            <Building2 className="size-5" />
+          ) : (
+            `${customer.username.charAt(0)}${customer.surname.charAt(0)}`.toUpperCase()
+          )}
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-semibold tracking-tight text-fg">{name}</h3>
+          <h3 className="flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-fg">
+            <span className="truncate">{name}</span>
+            {organization && (
+              <Badge bg="info" className="shrink-0">
+                {t('Организация')}
+              </Badge>
+            )}
+          </h3>
           <p className="text-[12px] text-subtle">
-            {customer.phone} · ID {customer.id}
+            {customer.phone ? `${customer.phone} · ` : ''}ID {customer.id}
           </p>
         </div>
         <Badge bg={summary.debt > 0 ? 'danger' : 'success'} dot>
@@ -548,7 +565,7 @@ function CustomerProfile({ customerId, onBack, onEdit, version = 0 }) {
             <Card.Title>{t('Контакты')}</Card.Title>
           </Card.Header>
           <div className="divide-y divide-line px-4">
-            <InfoRow icon={UserRound} label={t('Имя')}>
+            <InfoRow icon={organization ? Building2 : UserRound} label={organization ? t('Организация') : t('Имя')}>
               {name}
             </InfoRow>
             <InfoRow icon={Phone} label={t('Телефон')}>

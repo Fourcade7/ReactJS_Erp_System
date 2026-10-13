@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Plus, UserPlus, X } from 'lucide-react'
-import { cn } from '../lib/cn'
+import { Building2, Plus, UserPlus, X } from 'lucide-react'
 import { Alert, Button, Form, Spinner } from '../ui'
 import { useRequest } from '../lib/useRequest'
 import { t } from '../i18n'
-import { addCustomer, getAllCustomersPaginationSearch } from './CustomerApi'
+import { createCustomer, getAllCustomersPaginationSearch } from './CustomerApi'
+import { CustomerFields } from './CustomerFields'
+import { customerPayload, emptyCustomer, isOrganization, validateCustomer } from './customerForm'
 
 const MIN_QUERY = 2
 const LIMIT = 6
@@ -21,30 +22,26 @@ function guessFields(query) {
 }
 
 /**
- * Mijoz jadvalida yangi kontragent ochish: qidiruvda topilmasa shu yerning o'zida.
+ * Yangi kontragent ochish: qidiruvda topilmasa shu yerning o'zida. Odam yoki tashkilot tanlanadi:
+ * tashkilotda faqat nomi majburiy (qolgani keyinroq, masalan shartnomada, to'ldiriladi).
  * `compact` — tor ustunda (kassa paneli) maydonlar ustma-ust joylashadi.
  */
 function NewCustomerForm({ initial, onCreated, onCancel, compact = false }) {
-  const [username, setUsername] = useState(initial.username)
-  const [surname, setSurname] = useState(initial.surname)
-  const [phone, setPhone] = useState(initial.phone)
+  const [value, setValue] = useState(() => ({ ...emptyCustomer('user'), ...initial }))
   const [invalid, setInvalid] = useState({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   const submit = async () => {
-    const found = {}
-    if (!username.trim()) found.username = true
-    if (!surname.trim()) found.surname = true
-    if (!phone.trim()) found.phone = true
-    setInvalid(found)
-    if (Object.keys(found).length > 0) return
+    const check = validateCustomer(value)
+    setInvalid(check.invalid)
+    if (!check.ok) return
 
     setBusy(true)
     setError('')
     try {
       // Kontragent doim "Клиенты" jadvaliga (Customer) yoziladi — qayerdan ochilishidan qat'i nazar.
-      const response = await addCustomer(username.trim(), surname.trim(), phone.trim())
+      const response = await createCustomer(customerPayload(value))
       const data = await response.json().catch(() => null)
       if (!response.ok) {
         setError(
@@ -70,42 +67,19 @@ function NewCustomerForm({ initial, onCreated, onCancel, compact = false }) {
       </p>
       {error && <Alert variant="danger">{error}</Alert>}
       {/*
-        Breakpoint ko'rinish oynasiga qaraydi, ammo forma tor ustunda (masalan, kassadagi 290px panel) turishi mumkin —
-        shu bois tor joyda `compact` bilan bitta ustun, kengida esa `minmax(0, 1fr)` (maydonlar chetga chiqmaydi).
+        Breakpoint ko'rish oynasiga qaraydi, ammo forma tor ustunda (masalan, kassadagi 290px panel) turishi mumkin —
+        shu bois tor joyda \`compact\` bilan bitta ustun.
       */}
-      <div className={cn('grid gap-3', compact ? 'grid-cols-1' : 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]')}>
-        <Form.Group controlId="newCustomerName">
-          <Form.Label>{t('Имя')}</Form.Label>
-          <Form.Control
-            value={username}
-            isInvalid={Boolean(invalid.username)}
-            placeholder={t('Введите имя')}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </Form.Group>
-        <Form.Group controlId="newCustomerSurname">
-          <Form.Label>{t('Фамилия')}</Form.Label>
-          <Form.Control
-            value={surname}
-            isInvalid={Boolean(invalid.surname)}
-            placeholder={t('Введите фамилию')}
-            onChange={(e) => setSurname(e.target.value)}
-          />
-        </Form.Group>
-      </div>
-      <Form.Group controlId="newCustomerPhone">
-        <Form.Label>{t('Телефон')}</Form.Label>
-        <Form.Control
-          type="tel"
-          value={phone}
-          isInvalid={Boolean(invalid.phone)}
-          placeholder={t('Введите номер телефона')}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        {Object.keys(invalid).length > 0 && (
-          <Form.Text className="text-danger">{t('Заполните имя, фамилию и телефон')}</Form.Text>
-        )}
-      </Form.Group>
+      <CustomerFields
+        value={value}
+        onChange={(next) => {
+          setValue(next)
+          setInvalid({})
+        }}
+        invalid={invalid}
+        compact={compact}
+        idPrefix="newCustomer"
+      />
       <div className="flex flex-wrap justify-end gap-2">
         <Button variant="outline-secondary" size="sm" onClick={onCancel} disabled={busy}>
           {t('Отмена')}
@@ -150,9 +124,12 @@ function CustomerPicker({ value, onChange, readOnly = false, disabled = false })
   if (value) {
     return (
       <div className="flex min-h-9 items-center justify-between gap-2 rounded-lg border border-line bg-surface-2 px-3 py-1.5 text-[13px] text-fg">
-        <span className="min-w-0 truncate">
-          {customerName(value)}
-          {value.phone && <span className="text-subtle"> · {value.phone}</span>}
+        <span className="flex min-w-0 items-center gap-1.5">
+          {isOrganization(value) && <Building2 className="size-3.5 shrink-0 text-subtle" />}
+          <span className="truncate">
+            {customerName(value)}
+            {value.phone && <span className="text-subtle"> · {value.phone}</span>}
+          </span>
         </span>
         {!readOnly && (
           <button
@@ -222,8 +199,11 @@ function CustomerPicker({ value, onChange, readOnly = false, disabled = false })
                   }}
                   className="flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] text-fg hover:bg-surface-2"
                 >
-                  <span className="truncate">{customerName(customer)}</span>
-                  <span className="shrink-0 text-[11px] text-subtle">{customer.phone}</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    {isOrganization(customer) && <Building2 className="size-3.5 shrink-0 text-subtle" />}
+                    <span className="truncate">{customerName(customer)}</span>
+                  </span>
+                  <span className="shrink-0 text-[11px] text-subtle">{customer.phone ?? ''}</span>
                 </button>
               </li>
             ))

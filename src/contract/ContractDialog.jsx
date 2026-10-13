@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarClock, CircleCheck, FilePlus, Pencil, Send, Trash2, Undo2 } from 'lucide-react'
+import { Building2, CalendarClock, CircleCheck, FilePlus, Pencil, Send, Trash2, Undo2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { useRequest } from '../lib/useRequest'
 import { Alert, Badge, Button, Form, Modal, Spinner } from '../ui'
@@ -7,6 +7,7 @@ import { t, td } from '../i18n'
 import { Attachments } from '../attachment/Attachments'
 import { getTaskMembers, getTaskPipelines } from '../task/TaskApi'
 import { Avatar } from '../task/TaskCard'
+import { CustomerPicker } from '../customers/CustomerPicker'
 import { TaskFormModal } from '../task/TaskFormModal'
 import { currentUserId, formatDateTime, fullName, isAdmin } from '../task/taskView'
 import { currentRole } from '../users/roles'
@@ -18,6 +19,7 @@ import {
   getContract,
   rejectContract,
   saveRequisites,
+  setContractCustomer,
   setContractStatus,
   submitContract,
   takeContract,
@@ -201,16 +203,19 @@ function ContractDialog({ contractId, onHide, onChanged }) {
               )}
 
               <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <Field label={t('Контрагент')}>
+                <Field label={contract.customer?.type === 'organization' ? t('Организация') : t('Контрагент')}>
                   {contract.customer ? (
                     <>
-                      {customerName(contract.customer)}
+                      <span className="inline-flex items-center gap-1.5">
+                        {contract.customer.type === 'organization' && <Building2 className="size-3.5 text-subtle" />}
+                        {customerName(contract.customer)}
+                      </span>
                       {contract.customer.phone && (
                         <span className="block text-[12px] text-muted">{contract.customer.phone}</span>
                       )}
                     </>
                   ) : (
-                    <span className="text-subtle">—</span>
+                    <span className="text-subtle">{t('Не указан')}</span>
                   )}
                 </Field>
                 <Field label={t('Дата договора')}>
@@ -267,10 +272,34 @@ function ContractDialog({ contractId, onHide, onChanged }) {
                 />
               )}
 
+              {/* Kontragentsiz (savdodan, "По договору") ochilgan shartnoma: buxgalter uni shu yerda tanlaydi yoki ochadi. */}
+              {!contract.customer && (
+                <section className="flex flex-col gap-2 rounded-lg border border-dashed border-line p-3">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{t('Контрагент')}</p>
+                  {canWork ? (
+                    <>
+                      <p className="text-[12px] text-muted">
+                        {t('Контрагент не указан. Найдите существующего или создайте нового — человека или организацию.')}
+                      </p>
+                      <CustomerPicker
+                        value={null}
+                        disabled={busy}
+                        onChange={(customer) => customer && run(() => setContractCustomer(contract.id, customer.id))}
+                      />
+                    </>
+                  ) : (
+                    <p className="text-[12px] text-muted">
+                      {t('Контрагент не указан. Возьмите договор в работу — тогда его можно будет выбрать или создать.')}
+                    </p>
+                  )}
+                </section>
+              )}
+
               {contract.customer && (
                 <RequisitesBlock
                   key={JSON.stringify(contract.customer.requisites)}
                   requisites={contract.customer.requisites}
+                  organization={contract.customer.type === 'organization'}
                   canWork={canWork}
                   busy={busy}
                   onSave={(values) => run(() => saveRequisites(contract.id, values))}

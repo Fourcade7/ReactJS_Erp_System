@@ -140,12 +140,13 @@ async function getAllUsersPagination(page,limit){
 }
 
 
-async function getAllCustomersPaginationSearch(page,limit,search){
+/** `type`: organization - faqat tashkilotlar, user - faqat odamlar, bo'sh - hammasi aralash. */
+async function getAllCustomersPaginationSearch(page,limit,search,type){
 
    
 
     try{
-        let response = await fetch(`${API_BASE}/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${type ? `&type=${type}` : ""}`,{ 
             method:"GET"
 
         });
@@ -181,4 +182,30 @@ const getCustomerProfile = (id) => getJson(`${API_BASE}/customer/profile/${id}`)
 const getCustomerOperations = (id, { page = 1, limit = 10, type = "" } = {}) =>
     getJson(`${API_BASE}/customer/operations/${id}?page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`);
 
-export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations}
+/** Kontragent yaratish (odam yoki tashkilot): tayyor tana (`customerPayload`) bilan; javob `Response`. */
+async function createCustomer(payload) {
+    try {
+        return await fetch(`${API_BASE}/customer/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+    } catch (error) {
+        console.log("Catch Error:", error);
+    }
+}
+
+/** Kontragentni to'liq yangilash (tashkilotda bo'sh maydon ham yuboriladi — tozalanadi). */
+async function updateCustomerData(id, payload) {
+    try {
+        return await fetch(`${API_BASE}/customer/update/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+    } catch (error) {
+        console.log("Catch Error:", error);
+    }
+}
+
+export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations,createCustomer,updateCustomerData}

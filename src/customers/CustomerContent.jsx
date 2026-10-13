@@ -7,46 +7,34 @@ import {
   ProgressDismissible,
 } from '../utils/UtilsContent'
 import { CustomerListGroup } from './CustomerListContent'
-import { addCustomer } from './CustomerApi'
+import { CustomerFields } from './CustomerFields'
+import { createCustomer } from './CustomerApi'
+import { customerPayload, emptyCustomer, validateCustomer } from './customerForm'
 import { t } from '../i18n'
 
-function CustomerForm({ handleRegister, busy }) {
-  const [username, setUsername] = useState('')
-  const [surname, setSurname] = useState('')
-  const [phone, setPhone] = useState('')
+/** Yangi kontragent: odam yoki tashkilot (tashkilotda faqat nomi majburiy). */
+function CustomerForm({ onSubmit, busy }) {
+  const [value, setValue] = useState(() => emptyCustomer('user'))
+  const [invalid, setInvalid] = useState({})
 
-  const submit = (e) => handleRegister(e, username, surname, phone)
+  const submit = (e) => {
+    e.preventDefault()
+    const check = validateCustomer(value)
+    setInvalid(check.invalid)
+    if (check.ok) onSubmit(value)
+  }
 
   return (
     <Form onSubmit={submit} className="flex flex-col gap-3">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Form.Group controlId="customerName">
-          <Form.Label>{t('Имя')}</Form.Label>
-          <Form.Control
-            placeholder={t('Введите имя')}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </Form.Group>
-        <Form.Group controlId="customerSurname">
-          <Form.Label>{t('Фамилия')}</Form.Label>
-          <Form.Control
-            placeholder={t('Введите фамилию')}
-            value={surname}
-            onChange={(e) => setSurname(e.target.value)}
-          />
-        </Form.Group>
-      </div>
-
-      <Form.Group controlId="customerPhone">
-        <Form.Label>{t('Телефон')}</Form.Label>
-        <Form.Control
-          type="tel"
-          placeholder={t('Введите номер телефона')}
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-      </Form.Group>
+      <CustomerFields
+        value={value}
+        onChange={(next) => {
+          setValue(next)
+          setInvalid({})
+        }}
+        invalid={invalid}
+        idPrefix="addCustomer"
+      />
 
       <Button type="submit" loading={busy} block>
         {!busy && <Save />}
@@ -62,20 +50,18 @@ function AddNewCustomer(props) {
   const [alertMessage, setAlertMessage] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const handleRegister = async (e, username, surname, phone) => {
-    e.preventDefault()
-
+  const handleRegister = async (value) => {
     try {
       psetShow(true)
       setShowDanger(false)
       setShowSuccess(false)
 
-      const res = await addCustomer(username, surname, phone)
+      const res = await createCustomer(customerPayload(value))
       const result = await res.json()
 
       if (!res.ok) {
         setShowDanger(true)
-        setAlertMessage(result.message)
+        setAlertMessage(Array.isArray(result.message) ? result.message.join(', ') : result.message)
         psetShow(false)
       } else {
         setShowSuccess(true)
@@ -92,7 +78,7 @@ function AddNewCustomer(props) {
   }
 
   return (
-    <div className="max-w-md">
+    <div className="max-w-xl">
       {showDanger && <AlertDismissibleDanger alertMsg={alertMessage} />}
       {showSuccess && <AlertDismissibleSuccess alertMsg={alertMessage} />}
       <Collapse in={pshow}>
@@ -100,7 +86,7 @@ function AddNewCustomer(props) {
           <ProgressDismissible />
         </div>
       </Collapse>
-      <CustomerForm handleRegister={handleRegister} busy={pshow} />
+      <CustomerForm onSubmit={handleRegister} busy={pshow} />
     </div>
   )
 }

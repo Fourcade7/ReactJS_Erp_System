@@ -127,11 +127,8 @@ export default {
   'адрес': 'manzil',
   'руководитель': 'rahbar',
   // kassa
-  'Для продажи по договору выберите контрагента': 'Shartnoma bo\'yicha savdo uchun kontragentni tanlang',
   'Продажа оформлена, но договор не создан: {error}. Администратор может создать его вручную.':
     "Savdo rasmiylashtirildi, lekin shartnoma yaratilmadi: {error}. Administrator uni qo'lda yaratishi mumkin.",
   'Продажа оформлена. Договор {number} создан и передан бухгалтерам.': 'Savdo rasmiylashtirildi. {number}-shartnoma ochildi va buxgalterlarga uzatildi.',
-  'Оплата банковским переводом. Будет открыт договор: бухгалтер внесёт реквизиты и отметит оплату. Контрагент обязателен.':
-    "To'lov bank o'tkazmasi bilan. Shartnoma ochiladi: buxgalter rekvizitlarni kiritadi va to'lovni belgilaydi. Kontragent majburiy.",
   'Оформить по договору': 'Shartnoma bo\'yicha rasmiylashtirish',
 }

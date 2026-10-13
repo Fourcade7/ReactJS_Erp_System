@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { CalendarClock, ChevronRight, Inbox, Percent } from 'lucide-react'
+import { CalendarClock, ChevronRight, Inbox, Percent, UserRound } from 'lucide-react'
 import { Badge, EmptyState, SearchField } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { amountsOf } from './amounts'
 import { t } from '../i18n'
-
-const paidOf = (sale) => sale.payments.reduce((sum, item) => sum + item.amount, 0)
 
 /**
  * Operatsiyalar roʻyxati (savdo / kirim / qaytarish).
@@ -73,8 +72,8 @@ function TransactionList({
       ) : (
         <ul className="m-0 list-none divide-y divide-line overflow-hidden rounded-card border border-line bg-surface p-0 shadow-soft">
           {saleList.map((sale, index) => {
-            const paid = paidOf(sale)
-            const inDebt = sale.total !== paid + sale.discount
+            // Asosiy summa doim ko'rinadi; qarz bo'lsa to'langani va qarz summasi ham (ichiga kirmasdan).
+            const { net, paid, remaining, inDebt } = amountsOf(sale)
 
             return (
               <li key={sale.id}>
@@ -95,14 +94,39 @@ function TransactionList({
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">
-                      {label} #{sale.id}
+                    <p className="flex min-w-0 items-center gap-2 text-[13px]">
+                      <span className="shrink-0 font-medium text-fg">
+                        {label} #{sale.id}
+                      </span>
+                      {/* Kontragent nomi: ichiga kirmasdan kimga sotilgani ko'rinadi (keng ekranda sarlavha yonida). */}
+                      {sale.customer && (
+                        <span
+                          title={`${sale.customer.username ?? ''} ${sale.customer.surname ?? ''} ${sale.customer.phone ?? ''}`.trim()}
+                          className="hidden min-w-0 items-center gap-1 text-muted sm:inline-flex"
+                        >
+                          <UserRound className="size-3 shrink-0 text-subtle" />
+                          <span className="truncate">
+                            {`${sale.customer.username ?? ''} ${sale.customer.surname ?? ''}`.trim()}
+                          </span>
+                        </span>
+                      )}
                     </p>
-                    <p className="flex items-center gap-1 text-[11px] text-subtle">
-                      <CalendarClock className="size-3" />
-                      {new Date(sale.date).toLocaleString('UZ')}
-                      {/* Список продаж ichidan qilingan qaytarish */}
-                      {sale.sale && <span className="ml-1">{t('· из продажи #{id}', { id: sale.sale.id })}</span>}
+                    {/* Tor ekranda nom alohida qatorga tushadi, summa ustuni uni siqib qo'ymaydi. */}
+                    {sale.customer && (
+                      <p className="flex min-w-0 items-center gap-1 text-[12px] text-muted sm:hidden">
+                        <UserRound className="size-3 shrink-0 text-subtle" />
+                        <span className="truncate">
+                          {`${sale.customer.username ?? ''} ${sale.customer.surname ?? ''}`.trim()}
+                        </span>
+                      </p>
+                    )}
+                    <p className="flex min-w-0 items-center gap-1 text-[11px] text-subtle">
+                      <CalendarClock className="size-3 shrink-0" />
+                      <span className="truncate">
+                        {new Date(sale.date).toLocaleString('UZ')}
+                        {/* Список продаж ichidan qilingan qaytarish */}
+                        {sale.sale && <span className="ml-1">{t('· из продажи #{id}', { id: sale.sale.id })}</span>}
+                      </span>
                     </p>
                   </div>
 
@@ -114,14 +138,24 @@ function TransactionList({
                   )}
 
                   {inDebt && (
-                    <Badge bg="danger" dot>
+                    <Badge bg="danger" dot className="hidden sm:inline-flex">
                       {t('В долг')}
                     </Badge>
                   )}
 
-                  <span className="shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg">
-                    {paid.toLocaleString('uz')}
-                    <span className="ml-1 text-[11px] font-normal text-subtle">So&apos;m</span>
+                  <span className="flex shrink-0 flex-col items-end text-right">
+                    <span className="text-[13px] font-semibold tabular-nums text-fg">
+                      {net.toLocaleString('uz')}
+                      <span className="ml-1 text-[11px] font-normal text-subtle">So&apos;m</span>
+                    </span>
+                    {inDebt && (
+                      <span className="whitespace-nowrap text-[11px] tabular-nums text-subtle">
+                        {t('Оплачено')} {paid.toLocaleString('uz')} ·{' '}
+                        <span className="font-medium text-danger-soft-fg">
+                          {t('Долг')} {remaining.toLocaleString('uz')}
+                        </span>
+                      </span>
+                    )}
                   </span>
 
                   <ChevronRight className="size-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-fg" />

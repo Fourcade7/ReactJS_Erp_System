@@ -36,4 +36,24 @@ export default {
   'Цена': 'Narx',
   'Договоров нет': "Shartnomalar yo'q",
   'Задач нет': "Vazifalar yo'q",
+  // odam / tashkilot
+  'Человек': 'Shaxs',
+  'Люди': 'Shaxslar',
+  'Организации': 'Tashkilotlar',
+  'Тип': 'Turi',
+  'Тип клиента': 'Mijoz turi',
+  'Тип контрагента': 'Kontragent turi',
+  'Название организации': 'Tashkilot nomi',
+  'Например: ООО «Ромашка»': 'Masalan: «Romashka» MChJ',
+  'необязательно': 'majburiy emas',
+  'Реквизиты организации (необязательно)': 'Tashkilot rekvizitlari (majburiy emas)',
+  'Обязательно только название. Остальное можно заполнить позже — например, в договоре.':
+    "Faqat nomi majburiy. Qolganini keyinroq — masalan, shartnomada — to'ldirish mumkin.",
+  'Укажите название организации': 'Tashkilot nomini kiriting',
+  'Контрагент не указан. Найдите существующего или создайте нового — человека или организацию.':
+    "Kontragent ko'rsatilmagan. Mavjudini toping yoki yangisini oching — shaxs yoki tashkilot.",
+  'Контрагент не указан. Возьмите договор в работу — тогда его можно будет выбрать или создать.':
+    "Kontragent ko'rsatilmagan. Shartnomani ishga oling — shundan so'ng uni tanlash yoki yaratish mumkin.",
+  'Оплата банковским переводом. Будет открыт договор: бухгалтер внесёт реквизиты и отметит оплату. Контрагента можно не указывать — бухгалтер выберет или создаст его в договоре.':
+    "To'lov bank o'tkazmasi bilan. Shartnoma ochiladi: buxgalter rekvizitlarni kiritadi va to'lovni belgilaydi. Kontragentni ko'rsatmasangiz ham bo'ladi — buxgalter uni shartnomada tanlaydi yoki yaratadi.",
 }

@@ -108,7 +108,7 @@ function HomeScreen() {
       tone: 'danger',
       hint: t('Долг'),
       label: t('Сумма продажи долгов'),
-      value: sum(allSaleDebtList, (i) => i.total - i.totalPaid),
+      value: sum(allSaleDebtList, (i) => Math.max(0, i.total - (i.discount ?? 0) - i.totalPaid)),
     },
   ]
 

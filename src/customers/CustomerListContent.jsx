@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { CalendarClock, MoreHorizontal, Pencil, Phone, Save, Trash2, Users } from 'lucide-react'
+import { Building2, CalendarClock, MoreHorizontal, Pencil, Phone, Save, Trash2, Users } from 'lucide-react'
+import { cn } from '../lib/cn'
 import {
   Badge,
   Button,
   Dropdown,
   EmptyState,
-  Form,
   ListGroup,
   Modal,
   SearchField,
@@ -19,9 +19,18 @@ import {
   deleteCustomer,
   getAllCustomersPaginationSearch,
   importCustomers,
-  updateCustomer,
+  updateCustomerData,
 } from './CustomerApi'
+import { CustomerFields } from './CustomerFields'
+import { customerPayload, customerToForm, isOrganization, validateCustomer } from './customerForm'
 import { t } from '../i18n'
+
+/** Ro'yxat filtri: odamlar va tashkilotlar aralash turadi, kerak bo'lsa ajratib olinadi. */
+const TYPE_FILTERS = [
+  { key: '', label: t('Все') },
+  { key: 'user', label: t('Люди') },
+  { key: 'organization', label: t('Организации') },
+]
 
 const CUSTOMER_IMPORT_FIELDS = [
   { key: 'username', label: t('Имя'), required: true, aliases: ['имя', 'name', 'firstname', 'ism'] },
@@ -38,6 +47,8 @@ const CUSTOMER_EXPORT_COLUMNS = [
   { key: 'username', label: t('Имя') },
   { key: 'surname', label: t('Фамилия') },
   { key: 'phone', label: t('Телефон') },
+  { key: 'type', label: t('Тип'), value: (row) => (isOrganization(row) ? t('Организация') : t('Человек')) },
+  { key: 'inn', label: t('ИНН') },
   {
     key: 'createdAt',
     label: t('Дата регистрации'),
@@ -54,9 +65,10 @@ function CustomerListGroup(props) {
   const [showLoadTitle, setShowLoadTitle] = useState(t('Загрузка...'))
   const [showResAlert, setShowResAlert] = useState(false)
 
-  const [userName, setUserName] = useState('')
-  const [surName, setSurname] = useState('')
-  const [phone, setPhone] = useState('')
+  // Tahrirlash formasi (odam yoki tashkilot maydonlari) va tekshiruv natijasi.
+  const [editForm, setEditForm] = useState(() => customerToForm({}))
+  const [editInvalid, setEditInvalid] = useState({})
+  const [typeFilter, setTypeFilter] = useState('')
 
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -88,7 +100,7 @@ function CustomerListGroup(props) {
   useEffect(() => {
     async function loadAllUserPag() {
       try {
-        const userListPag = await getAllCustomersPaginationSearch(active, 10, debouncedSearch)
+        const userListPag = await getAllCustomersPaginationSearch(active, 10, debouncedSearch, typeFilter)
         setPageCount(userListPag.meta.totalPages)
         setCustomerList(userListPag.data)
         setShowLoad(false)
@@ -99,16 +111,23 @@ function CustomerListGroup(props) {
     }
 
     if (props.activeTab === 'home') loadAllUserPag()
-  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch])
+  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch, typeFilter])
 
   const handleImportChunk = (rows) => importCustomers(rows)
+
+  const openEdit = (customer) => {
+    setUid(customer.id)
+    setEditForm(customerToForm(customer))
+    setEditInvalid({})
+    setShowEdit(true)
+  }
 
   const handleExport = async () => {
     try {
       setExporting(true)
       await exportToExcel({
         fetchRows: async () => {
-          const result = await getAllCustomersPaginationSearch(1, 100000, '')
+          const result = await getAllCustomersPaginationSearch(1, 100000, '', typeFilter)
           return result?.data ?? []
         },
         columns: CUSTOMER_EXPORT_COLUMNS,
@@ -129,13 +148,7 @@ function CustomerListGroup(props) {
           customerId={profileId}
           version={profileVersion}
           onBack={() => setProfileId(null)}
-          onEdit={(customer) => {
-            setShowEdit(true)
-            setUid(customer.id)
-            setUserName(customer.username)
-            setSurname(customer.surname)
-            setPhone(customer.phone)
-          }}
+          onEdit={openEdit}
         />
       ) : (
         <>
@@ -155,6 +168,26 @@ function CustomerListGroup(props) {
               onExport={handleExport}
               exporting={exporting}
             />
+          </div>
+
+          <div role="group" aria-label={t('Тип клиента')} className="inline-flex w-fit rounded-lg border border-line bg-surface-2 p-0.5">
+            {TYPE_FILTERS.map((option) => (
+              <button
+                key={option.key || 'all'}
+                type="button"
+                aria-pressed={typeFilter === option.key}
+                onClick={() => {
+                  setTypeFilter(option.key)
+                  setActive(1)
+                }}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs font-medium transition',
+                  typeFilter === option.key ? 'bg-surface text-fg shadow-soft' : 'text-muted hover:text-fg',
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
 
           {customerList.length === 0 ? (
@@ -177,16 +210,29 @@ function CustomerListGroup(props) {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-fg">
-                      {customer.username} {customer.surname}
+                    <p className="flex min-w-0 items-center gap-2 font-medium text-fg">
+                      <span className="truncate">
+                        {customer.username} {customer.surname}
+                      </span>
+                      {isOrganization(customer) && (
+                        <Badge bg="info" className="shrink-0">
+                          <Building2 />
+                          {t('Организация')}
+                        </Badge>
+                      )}
                     </p>
-                    <p className="text-[11px] text-subtle">ID: {customer.id}</p>
+                    <p className="text-[11px] text-subtle">
+                      ID: {customer.id}
+                      {isOrganization(customer) && customer.inn && ` · ${t('ИНН')} ${customer.inn}`}
+                    </p>
                   </div>
 
-                  <Badge bg="success" className="hidden sm:inline-flex">
-                    <Phone />
-                    {customer.phone}
-                  </Badge>
+                  {customer.phone && (
+                    <Badge bg="success" className="hidden sm:inline-flex">
+                      <Phone />
+                      {customer.phone}
+                    </Badge>
+                  )}
 
                   <Badge className="hidden lg:inline-flex">
                     <CalendarClock />
@@ -204,15 +250,7 @@ function CustomerListGroup(props) {
                       </Dropdown.Toggle>
 
                       <Dropdown.Menu align="end">
-                        <Dropdown.Item
-                          onClick={() => {
-                            setShowEdit(true)
-                            setUid(customer.id)
-                            setUserName(customer.username)
-                            setSurname(customer.surname)
-                            setPhone(customer.phone)
-                          }}
-                        >
+                        <Dropdown.Item onClick={() => openEdit(customer)}>
                           <Pencil /> {t('Изменить')}
                         </Dropdown.Item>
                         <Dropdown.Item
@@ -244,33 +282,17 @@ function CustomerListGroup(props) {
           <Modal.Title>{t('Редактировать клиента')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex flex-col gap-3">
-          <Form.Group controlId="editCustomerName">
-            <Form.Label>{t('Имя')}</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder={t('Введите имя')}
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="editCustomerSurname">
-            <Form.Label>{t('Фамилия')}</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder={t('Введите фамилию')}
-              value={surName}
-              onChange={(e) => setSurname(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="editCustomerPhone">
-            <Form.Label>{t('Телефон')}</Form.Label>
-            <Form.Control
-              type="tel"
-              placeholder={t('Введите номер телефона')}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </Form.Group>
+          {/* Turi (odam / tashkilot) yaratilganda belgilanadi va keyin o'zgartirilmaydi. */}
+          <CustomerFields
+            value={editForm}
+            onChange={(next) => {
+              setEditForm(next)
+              setEditInvalid({})
+            }}
+            invalid={editInvalid}
+            idPrefix="editCustomer"
+            lockType
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setShowEdit(false)}>
@@ -279,18 +301,22 @@ function CustomerListGroup(props) {
           <Button
             variant="warning"
             onClick={async () => {
+              const check = validateCustomer(editForm)
+              setEditInvalid(check.invalid)
+              if (!check.ok) return
+
               setShowResAlert(false)
               setShowEdit(false)
               setShowLoad(true)
               setShowLoadTitle(t('Загрузка...'))
 
-              const res = await updateCustomer(uid, userName, surName, phone)
+              const res = await updateCustomerData(uid, customerPayload(editForm))
               const data = await res.json()
               setShowLoad(false)
 
               if (!res.ok) {
                 setShowResAlert(false)
-                setShowResTitle(data.message)
+                setShowResTitle(Array.isArray(data.message) ? data.message.join(', ') : data.message)
               } else {
                 setShowResAlert(true)
                 setShowResTitle(t('Клиент успешно обновлён'))

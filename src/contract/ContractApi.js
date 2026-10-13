@@ -38,6 +38,9 @@ const rejectContract = (id, note) => request(`${BASE}/reject/${id}`, json('POST'
 const commentContract = (id, note) => request(`${BASE}/comment/${id}`, json('POST', { user_id: me(), note }))
 // Savdodan ochilgan shartnoma: buxgalter "oladi", rekvizit kiritadi va bank o'tkazmasini yozadi.
 const takeContract = (id) => request(`${BASE}/take/${id}`, json('POST', { user_id: me() }))
+// Kontragentsiz (savdodan ochilgan) shartnomaga kontragent — odam yoki tashkilot — biriktirish.
+const setContractCustomer = (id, customerId) =>
+    request(`${BASE}/customer/${id}`, json('PATCH', { user_id: me(), customer_id: customerId }))
 const saveRequisites = (id, requisites) =>
     request(`${BASE}/requisites/${id}`, json('PATCH', { ...requisites, user_id: me() }))
 const addContractPayment = (id, amount, note) =>
@@ -56,6 +59,7 @@ export {
     commentContract,
     takeContract,
     saveRequisites,
+    setContractCustomer,
     addContractPayment,
     deleteContract,
 }

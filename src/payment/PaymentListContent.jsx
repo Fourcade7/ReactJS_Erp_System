@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ArrowDownLeft, Banknote, CalendarClock, ChevronRight, ShoppingBag, Undo2 } from 'lucide-react'
+import { ArrowDownLeft, Banknote, CalendarClock, ChevronRight, ShoppingBag, Undo2, UserRound } from 'lucide-react'
 import { Badge, EmptyState, SearchField } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
+import { amountsOf } from '../transaction/amounts'
 import { getAllPaymentListPaginationSearch } from './PaymentApi'
 import { t } from '../i18n'
-
-const paidOf = (record) => record.payments.reduce((sum, item) => sum + item.amount, 0)
 
 /** Toʻlov qaysi operatsiyaga tegishli ekanini aniqlaydi. */
 function sourceOf(payment) {
@@ -61,12 +60,9 @@ function PaymentListGroup(props) {
           {paymentList.map((payment, index) => {
             const source = sourceOf(payment)
             const record = source?.record
-            // Qarz sharti manba turiga qarab asl koddagidek hisoblanadi.
-            const inDebt =
-              record &&
-              (payment.sale
-                ? paidOf(record) < record.total - record.discount
-                : record.total !== paidOf(record) + record.discount)
+            // Operatsiya qarzda bo'lsa — jami summa va qarz ham ko'rsatiladi (to'lov o'zi 0 bo'lishi mumkin).
+            const amounts = record ? amountsOf(record) : null
+            const inDebt = Boolean(amounts?.inDebt)
             const SourceIcon = source?.Icon ?? Banknote
 
             return (
@@ -87,10 +83,29 @@ function PaymentListGroup(props) {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-fg">{t('Платеж #{id}', { id: payment.id })}</p>
-                    <p className="flex items-center gap-1 text-[11px] text-subtle">
-                      <CalendarClock className="size-3" />
-                      {new Date(payment.date).toLocaleString('UZ')}
+                    <p className="flex min-w-0 items-center gap-2 text-[13px]">
+                      <span className="shrink-0 font-medium text-fg">{t('Платеж #{id}', { id: payment.id })}</span>
+                      {/* Kontragent nomi: ichiga kirmasdan kim bilan operatsiya ekani ko'rinadi. */}
+                      {record?.customer && (
+                        <span className="hidden min-w-0 items-center gap-1 text-muted sm:inline-flex">
+                          <UserRound className="size-3 shrink-0 text-subtle" />
+                          <span className="truncate">
+                            {`${record.customer.username ?? ''} ${record.customer.surname ?? ''}`.trim()}
+                          </span>
+                        </span>
+                      )}
+                    </p>
+                    {record?.customer && (
+                      <p className="flex min-w-0 items-center gap-1 text-[12px] text-muted sm:hidden">
+                        <UserRound className="size-3 shrink-0 text-subtle" />
+                        <span className="truncate">
+                          {`${record.customer.username ?? ''} ${record.customer.surname ?? ''}`.trim()}
+                        </span>
+                      </p>
+                    )}
+                    <p className="flex min-w-0 items-center gap-1 text-[11px] text-subtle">
+                      <CalendarClock className="size-3 shrink-0" />
+                      <span className="truncate">{new Date(payment.date).toLocaleString('UZ')}</span>
                     </p>
                   </div>
 
@@ -105,14 +120,24 @@ function PaymentListGroup(props) {
                     </Badge>
                   )}
                   {inDebt && (
-                    <Badge bg="danger" dot>
+                    <Badge bg="danger" dot className="hidden sm:inline-flex">
                       {t('В долг')}
                     </Badge>
                   )}
 
-                  <span className="shrink-0 text-right text-[13px] font-semibold tabular-nums text-success-soft-fg">
-                    +{payment.amount.toLocaleString('uz')}
-                    <span className="ml-1 text-[11px] font-normal text-subtle">So&apos;m</span>
+                  <span className="flex shrink-0 flex-col items-end text-right">
+                    <span className="text-[13px] font-semibold tabular-nums text-success-soft-fg">
+                      +{payment.amount.toLocaleString('uz')}
+                      <span className="ml-1 text-[11px] font-normal text-subtle">So&apos;m</span>
+                    </span>
+                    {inDebt && (
+                      <span className="whitespace-nowrap text-[11px] tabular-nums text-subtle">
+                        {t('Сумма')} {amounts.net.toLocaleString('uz')} ·{' '}
+                        <span className="font-medium text-danger-soft-fg">
+                          {t('Долг')} {amounts.remaining.toLocaleString('uz')}
+                        </span>
+                      </span>
+                    )}
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-fg" />
                 </button>

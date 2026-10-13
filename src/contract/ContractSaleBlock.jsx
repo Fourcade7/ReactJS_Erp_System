@@ -135,7 +135,8 @@ const emptyValues = (requisites) =>
  * Kontragent bank rekvizitlari. Kontragent kartasida saqlanadi: keyingi shartnomalarda qayta kiritilmaydi.
  * Tahrirlash — shartnomani olgan buxgalter yoki admin; qolganlar faqat ko'radi.
  */
-function RequisitesBlock({ requisites, canWork, busy, onSave }) {
+function RequisitesBlock({ requisites, organization = false, canWork, busy, onSave }) {
+  const title = organization ? t('Организация') : t('Реквизиты контрагента')
   const [values, setValues] = useState(() => emptyValues(requisites))
   const initial = emptyValues(requisites)
   const dirty = FIELDS.some((field) => values[field.key].trim() !== initial[field.key])
@@ -144,7 +145,7 @@ function RequisitesBlock({ requisites, canWork, busy, onSave }) {
     const filled = FIELDS.filter((field) => initial[field.key])
     return (
       <section>
-        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-subtle">{t('Реквизиты контрагента')}</p>
+        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-subtle">{title}</p>
         {filled.length === 0 ? (
           <p className="text-[13px] text-subtle">{t('Реквизиты ещё не внесены')}</p>
         ) : (
@@ -163,7 +164,7 @@ function RequisitesBlock({ requisites, canWork, busy, onSave }) {
 
   return (
     <section className="flex flex-col gap-3">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{t('Реквизиты контрагента')}</p>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{title}</p>
       <div className="grid grid-cols-2 gap-3">
         {FIELDS.map((field) => (
           <Form.Group key={field.key} controlId={`req-${field.key}`} className={field.wide ? 'col-span-2' : undefined}>

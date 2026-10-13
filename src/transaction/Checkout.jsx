@@ -313,12 +313,7 @@ function Checkout({
       setShowDanger(true)
       return
     }
-    if (isContract && !customerId) {
-      setShowSuccess(false)
-      setAlertMessage(t('Для продажи по договору выберите контрагента'))
-      setShowDanger(true)
-      return
-    }
+    // "По договору": kontragent majburiy emas — buxgalter uni shartnoma kartochkasida tanlaydi yoki ochadi.
 
     try {
       psetShow(true)
@@ -530,7 +525,7 @@ function Checkout({
 
         {isContract && (
           <p className="rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-2 text-[11.5px] leading-snug text-primary-soft-fg">
-            {t('Оплата банковским переводом. Будет открыт договор: бухгалтер внесёт реквизиты и отметит оплату. Контрагент обязателен.')}
+            {t('Оплата банковским переводом. Будет открыт договор: бухгалтер внесёт реквизиты и отметит оплату. Контрагента можно не указывать — бухгалтер выберет или создаст его в договоре.')}
           </p>
         )}
 
