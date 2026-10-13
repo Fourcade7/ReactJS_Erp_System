@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Copy, Minus, Pencil, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
-import { copyCartImage } from './cartImage'
+import { ResultModal } from '../utils/StatusModals'
+import { ClipboardUnavailableError, copyCartImage } from './cartImage'
 import { priceChange, stockOf, unitPrice } from './pricing'
 import { parseQty, roundQty } from '../lib/quantity'
 import { t, td } from '../i18n'
@@ -182,8 +183,10 @@ function Cart({
 
   const count = roundQty(orderList.reduce((sum, item) => sum + item.quantity, 0))
 
-  // 'idle' | 'done' | 'saved' (fayl sifatida yuklandi) | 'error' — natija tugma yonida 2 soniya koʻrinadi.
+  // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya koʻrinadi.
   const [copyState, setCopyState] = useState('idle')
+  // Sayt xavfsiz emas (http): brauzer rasmni clipboard ga yozishga ruxsat bermaydi.
+  const [insecure, setInsecure] = useState(false)
 
   useEffect(() => {
     if (copyState === 'idle') return
@@ -193,10 +196,11 @@ function Cart({
 
   const copyAsImage = async () => {
     try {
-      const result = await copyCartImage(orderList, priceField)
-      setCopyState(result === 'downloaded' ? 'saved' : 'done')
+      await copyCartImage(orderList, priceField)
+      setCopyState('done')
     } catch (error) {
       console.log(error.message)
+      if (error instanceof ClipboardUnavailableError) setInsecure(true)
       setCopyState('error')
     }
   }
@@ -218,19 +222,13 @@ function Cart({
               title={t('Скопировать корзину как изображение')}
               className={cn(
                 'inline-flex items-center gap-1 text-[11px] transition',
-                (copyState === 'done' || copyState === 'saved') && 'text-success-soft-fg',
+                copyState === 'done' && 'text-success-soft-fg',
                 copyState === 'error' && 'text-danger-soft-fg',
                 copyState === 'idle' && 'text-subtle hover:text-fg',
               )}
             >
-              {copyState === 'done' || copyState === 'saved' ? <Check className="size-3" /> : <Copy className="size-3" />}
-              {copyState === 'done'
-                ? t('Скопировано')
-                : copyState === 'saved'
-                  ? t('Сохранено файлом')
-                  : copyState === 'error'
-                    ? t('Ошибка')
-                    : t('Копировать')}
+              {copyState === 'done' ? <Check className="size-3" /> : <Copy className="size-3" />}
+              {copyState === 'done' ? t('Скопировано') : copyState === 'error' ? t('Ошибка') : t('Копировать')}
             </button>
           )}
           {orderList.length > 0 && (
@@ -390,6 +388,8 @@ function Cart({
           })}
         </ul>
       )}
+
+      <ResultModal show={insecure} onHide={() => setInsecure(false)} success={false} message={t('Браузер не разрешает копировать изображение: сайт открыт без HTTPS. Откройте систему по адресу https:// или http://localhost — тогда «Копировать» будет работать.')} />
     </section>
   )
 }

@@ -119,7 +119,8 @@ export default {
     "Chekda {count} ta pozitsiya bor — ular o'chiriladi, chek rasmiylashtirilmagan.",
   'Оставить': 'Qoldirish',
   'Оформлено — закрыть чек': 'Rasmiylashtirildi — chekni yopish',
-  'Сохранено файлом': 'Fayl sifatida saqlandi',
+  'Браузер не разрешает копировать изображение: сайт открыт без HTTPS. Откройте систему по адресу https:// или http://localhost — тогда «Копировать» будет работать.':
+    "Brauzer rasmni nusxalashga ruxsat bermayapti: sayt HTTPS siz ochilgan. Tizimni https:// yoki http://localhost orqali oching — shunda «Копировать» ishlaydi.",
   'Скопировать список как изображение, чтобы отправить клиенту': "Ro'yxatni rasm sifatida nusxalash — mijozga yuborish uchun",
 }
 

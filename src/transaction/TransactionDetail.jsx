@@ -20,7 +20,7 @@ import { Badge, Button, Card, Form, Modal } from '../ui'
 import { ResultModal } from '../utils/StatusModals'
 import { roundQty } from '../lib/quantity'
 import SaleReturnModal from './SaleReturnModal'
-import { copySaleImage } from './cartImage'
+import { ClipboardUnavailableError, copySaleImage } from './cartImage'
 import { t, td } from '../i18n'
 
 const PAYMENT_ICONS = {
@@ -68,8 +68,10 @@ function TransactionDetail({
   const [reloadKey, setReloadKey] = useState(0)
   const [returnItem, setReturnItem] = useState(null)
   const [returnDone, setReturnDone] = useState('')
-  // 'idle' | 'done' | 'saved' (fayl sifatida yuklandi) | 'error' — natija tugma yonida 2 soniya ko'rinadi.
+  // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya ko'rinadi.
   const [copyState, setCopyState] = useState('idle')
+  // Sayt xavfsiz emas (http): brauzer rasmni clipboard ga yozishga ruxsat bermaydi.
+  const [insecure, setInsecure] = useState(false)
 
   useEffect(() => {
     if (copyState === 'idle') return undefined
@@ -104,10 +106,11 @@ function TransactionDetail({
   // Ro'yxatni rasm qilib nusxalash: mijozga messenjer orqali tashlab yuborish uchun.
   const copyAsImage = async () => {
     try {
-      const result = await copySaleImage(sale, label)
-      setCopyState(result === 'downloaded' ? 'saved' : 'done')
+      await copySaleImage(sale, label)
+      setCopyState('done')
     } catch (error) {
       console.log(error.message)
+      if (error instanceof ClipboardUnavailableError) setInsecure(true)
       setCopyState('error')
     }
   }
@@ -180,18 +183,12 @@ function TransactionDetail({
                   onClick={copyAsImage}
                   title={t('Скопировать список как изображение, чтобы отправить клиенту')}
                   className={cn(
-                    (copyState === 'done' || copyState === 'saved') && 'border-success/40 text-success-soft-fg',
+                    copyState === 'done' && 'border-success/40 text-success-soft-fg',
                     copyState === 'error' && 'border-danger/40 text-danger-soft-fg',
                   )}
                 >
-                  {copyState === 'done' || copyState === 'saved' ? <Check /> : <Copy />}
-                  {copyState === 'done'
-                    ? t('Скопировано')
-                    : copyState === 'saved'
-                      ? t('Сохранено файлом')
-                      : copyState === 'error'
-                        ? t('Ошибка')
-                        : t('Копировать')}
+                  {copyState === 'done' ? <Check /> : <Copy />}
+                  {copyState === 'done' ? t('Скопировано') : copyState === 'error' ? t('Ошибка') : t('Копировать')}
                 </Button>
               </div>
             </Card.Header>
@@ -460,6 +457,8 @@ function TransactionDetail({
           }}
         />
       )}
+
+      <ResultModal show={insecure} onHide={() => setInsecure(false)} success={false} message={t('Браузер не разрешает копировать изображение: сайт открыт без HTTPS. Откройте систему по адресу https:// или http://localhost — тогда «Копировать» будет работать.')} />
 
       <ResultModal
         show={Boolean(returnDone)}

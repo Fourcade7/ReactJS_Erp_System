@@ -246,38 +246,37 @@ function saleSpec(sale, label) {
 }
 
 /**
- * Rasmni clipboard ga yozadi. Brauzer clipboard API ni bermasa (masalan, oddiy http da ochilgan
- * sahifa) — PNG fayl sifatida yuklab beradi. Natija: 'copied' | 'downloaded'.
+ * Brauzer rasmni clipboard ga yozishga ruxsat bermaydi: Async Clipboard API faqat xavfsiz saytda
+ * (https:// yoki http://localhost) bor. Oddiy `http://IP` da u umuman yo'q, rasmni boshqa yo'l bilan
+ * (bitmap sifatida) clipboard ga qo'yib bo'lmaydi — shuning uchun jimgina yuklab olmaymiz, sababini aytamiz.
  */
-async function deliver(canvas, fileName) {
+class ClipboardUnavailableError extends Error {
+  constructor() {
+    super('Clipboard API unavailable (insecure context)')
+    this.name = 'ClipboardUnavailableError'
+  }
+}
+
+async function deliver(canvas) {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
+    throw new ClipboardUnavailableError()
+  }
   // Blob ni Promise sifatida berish — `toBlob` kutilayotganda ham bosish
   // (user activation) yoʻqolmasligi uchun.
   const blob = new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),
   )
-
-  if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-    return 'copied'
-  }
-
-  const url = URL.createObjectURL(await blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = fileName
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 10_000)
-  return 'downloaded'
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
 }
 
+/** Savatni rasm qilib clipboard ga yozadi. Imkon bo'lmasa `ClipboardUnavailableError` otadi. */
 async function copyCartImage(orderList, priceField) {
-  return deliver(renderImage(cartSpec(orderList, priceField)), 'savat.png')
+  return deliver(renderImage(cartSpec(orderList, priceField)))
 }
 
+/** Savdo (kirim, qaytarish) tafsilotini rasm qilib clipboard ga yozadi. */
 async function copySaleImage(sale, label) {
-  return deliver(renderImage(saleSpec(sale, label)), `${label}-${sale.id}.png`)
+  return deliver(renderImage(saleSpec(sale, label)))
 }
 
-export { copyCartImage, copySaleImage }
+export { ClipboardUnavailableError, copyCartImage, copySaleImage }
