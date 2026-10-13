@@ -54,6 +54,10 @@ function TransactionList({
     if (activeTab === 'home') load()
   }, [active, activeTab, debouncedSearch, fetchPage, fetchAll])
 
+  // Chegirma va holat ustunlari faqat sahifada kamida bitta shunday qator bo'lsa joy oladi.
+  const anyDiscount = saleList.some((sale) => sale.discount > 0)
+  const anyDebt = saleList.some((sale) => amountsOf(sale).inDebt)
+
   return (
     <div className="flex flex-col gap-3">
       {fetchPage && (
@@ -130,31 +134,47 @@ function TransactionList({
                     </p>
                   </div>
 
-                  {sale.discount > 0 && (
-                    <Badge bg="info" className="hidden md:inline-flex">
-                      <Percent />
-                      {sale.discount.toLocaleString('uz')}
-                    </Badge>
+                  {/*
+                    O'ng blok. Keng ekranda (xl) hammasi bitta gorizontal qatorda: chegirma | holat | to'langan · qarz | jami.
+                    Slotlar qat'iy kenglikda va o'ngga tekislangan, shuning uchun ustunlar qatorlar bo'ylab bir joyda turadi.
+                    Tor ekranda — oldingidek: summa tepada, to'langan va qarz uning ostida.
+                  */}
+                  {anyDiscount && (
+                    <span className="hidden justify-end md:flex xl:w-[4.5rem]">
+                      {sale.discount > 0 && (
+                        <Badge bg="info">
+                          <Percent />
+                          {sale.discount.toLocaleString('uz')}
+                        </Badge>
+                      )}
+                    </span>
                   )}
 
-                  {inDebt && (
-                    <Badge bg="danger" dot className="hidden sm:inline-flex">
-                      {t('В долг')}
-                    </Badge>
+                  {anyDebt && (
+                    <span className="hidden justify-end sm:flex xl:w-[4.5rem]">
+                      {inDebt && (
+                        <Badge bg="danger" dot>
+                          {t('В долг')}
+                        </Badge>
+                      )}
+                    </span>
                   )}
 
-                  <span className="flex shrink-0 flex-col items-end text-right">
-                    <span className="text-[13px] font-semibold tabular-nums text-fg">
+                  <span className="flex shrink-0 flex-col items-end text-right xl:flex-row xl:items-center xl:gap-3">
+                    <span className="whitespace-nowrap text-[13px] font-semibold tabular-nums text-fg xl:order-2 xl:min-w-[7.5rem]">
                       {net.toLocaleString('uz')}
                       <span className="ml-1 text-[11px] font-normal text-subtle">So&apos;m</span>
                     </span>
-                    {inDebt && (
-                      <span className="whitespace-nowrap text-[11px] tabular-nums text-subtle">
+                    {inDebt ? (
+                      <span className="whitespace-nowrap text-[11px] tabular-nums text-subtle xl:order-1 xl:min-w-[13rem]">
                         {t('Оплачено')} {paid.toLocaleString('uz')} ·{' '}
                         <span className="font-medium text-danger-soft-fg">
                           {t('Долг')} {remaining.toLocaleString('uz')}
                         </span>
                       </span>
+                    ) : (
+                      // Qarzsiz qatorda joy band turadi: chegirma va holat ustunlari qarzli qatorlar bilan bir xil joyda.
+                      anyDebt && <span aria-hidden="true" className="hidden xl:order-1 xl:block xl:min-w-[13rem]" />
                     )}
                   </span>
 
