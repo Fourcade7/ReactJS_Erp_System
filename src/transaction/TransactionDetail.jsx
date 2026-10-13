@@ -7,7 +7,6 @@ import {
   FileText,
   Landmark,
   Mail,
-  Package,
   Phone,
   Undo2,
   UserRound,
@@ -90,6 +89,7 @@ function TransactionDetail({
   const remaining = sale.total - (totalPayed + sale.discount)
   const settled = remaining <= 0
   const returnedTotal = sale.returnedTotal ?? 0
+  const anyBulk = sale.items.some((item) => item.checkPrice)
 
   return (
     <div className="flex flex-col gap-4">
@@ -152,53 +152,88 @@ function TransactionDetail({
               <Card.Title>{t('Список продуктов')}</Card.Title>
               <span className="text-[11px] text-subtle">{t('{length} поз.', { length: sale.items.length })}</span>
             </Card.Header>
-            <ul className="m-0 list-none divide-y divide-line p-0">
+            {/* Savatdagi kabi ixcham: har bir tovar — bitta qator; tor joyda nom alohida qatorga tushadi. */}
+            <ul className="@container m-0 flex list-none flex-col gap-1 p-2">
               {sale.items.map((item, index) => {
                 const returned = item.returned ?? 0
                 const returnable = roundQty(item.quantity - returned)
+                const unit = item.product?.unit ? td(item.product.unit) : ''
+                const name = item.product?.name ?? t('Товар удалён')
 
                 return (
-                  <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">
-                    <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-subtle">
-                      <Package className="size-3.5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-medium text-fg">
-                        {item.product?.name ?? t('Товар удалён')}
-                      </p>
-                      <p className="flex flex-wrap items-center gap-1 text-[11px] text-subtle">
-                        <Warehouse className="size-3" />
-                        {item.warehouse?.name}
-                        {item.checkPrice && (
-                          <Badge bg="warning" className="ml-1 py-0 text-[10px]">
-                            {t('Оптом')}
-                          </Badge>
-                        )}
-                        {returned > 0 && (
-                          <Badge bg="warning" className="ml-1 py-0 text-[10px] tabular-nums">
-                            <Undo2 />
-                            {t('Возвращено: {returned} шт. {v}', { returned, v: returnable > 0 && t(' · осталось {returnable}', { returnable }) })}
-                          </Badge>
-                        )}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-right text-[13px] tabular-nums">
-                      <span className="text-subtle">{item.quantity} × </span>
-                      <span className="font-semibold text-fg">
-                        {item.price.toLocaleString('uz')}
+                  <li
+                    key={item.id ?? index}
+                    className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-line bg-surface px-2.5 py-1.5 @lg:flex-nowrap"
+                  >
+                    {/* Nom qirqiladi; ombor va "qaytarilgan" belgisi esa o'z joyida turadi. */}
+                    <div className="flex min-w-0 basis-full items-center gap-2 @lg:basis-0 @lg:flex-1">
+                      <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded bg-surface-2 px-1 text-[10px] font-semibold tabular-nums text-subtle">
+                        {index + 1}
                       </span>
+                      <span title={name} className="min-w-0 truncate text-[13px] font-medium text-fg">
+                        {name}
+                      </span>
+                      {item.warehouse?.name && (
+                        <span
+                          title={item.warehouse.name}
+                          className="inline-flex max-w-28 shrink-0 items-center gap-1 text-[11px] text-subtle"
+                        >
+                          <Warehouse className="size-3 shrink-0" />
+                          <span className="truncate">{item.warehouse.name}</span>
+                        </span>
+                      )}
+                      {returned > 0 && (
+                        <span
+                          title={t('Возвращено: {returned} шт. {v}', {
+                            returned,
+                            v: returnable > 0 ? t(' · осталось {returnable}', { returnable }) : '',
+                          })}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-warning/40 bg-warning-soft px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-warning-soft-fg"
+                        >
+                          <Undo2 className="size-3" />
+                          {returned}
+                        </span>
+                      )}
+                    </div>
+
+                    <span className="inline-flex h-6 shrink-0 items-center justify-center rounded-md border border-line bg-surface-2 px-2 text-[12px] font-semibold tabular-nums text-fg @lg:min-w-[4.5rem]">
+                      {item.quantity}
+                      {unit && <span className="ml-1 font-normal text-subtle">{unit}</span>}
                     </span>
+
+                    {/* Ustun joyi faqat ro'yxatda ulgurji tovar bo'lsagina band: narx va summa surilmaydi. */}
+                    {anyBulk && (
+                      <span className="shrink-0 empty:hidden @lg:w-11 @lg:empty:block">
+                        {item.checkPrice && (
+                          <span
+                            title={t('Оптом')}
+                            className="rounded-md border border-warning/40 bg-warning-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning-soft-fg"
+                          >
+                            {t('Опт')}
+                          </span>
+                        )}
+                      </span>
+                    )}
+
+                    <span className="shrink-0 text-right text-[12px] tabular-nums text-muted @lg:min-w-[4.5rem]">
+                      {item.price.toLocaleString('uz')}
+                    </span>
+
+                    <span className="ml-auto shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg @lg:ml-0 @lg:min-w-[5.5rem]">
+                      {Math.round(item.quantity * item.price).toLocaleString('uz')}
+                    </span>
+
                     {canReturn && (
-                      <Button
-                        variant="outline-secondary"
-                        size="sm"
+                      <button
+                        type="button"
                         disabled={returnable <= 0 || !item.product}
                         onClick={() => setReturnItem(item)}
                         title={returnable > 0 ? t('Вернуть товар') : t('Товар возвращён полностью')}
+                        aria-label={t('Вернуть товар')}
+                        className="inline-flex size-6 shrink-0 items-center justify-center rounded-md border border-line text-muted transition hover:bg-surface-2 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
                       >
-                        <Undo2 />
-                        {t('Возврат')}
-                      </Button>
+                        <Undo2 className="size-3.5" />
+                      </button>
                     )}
                   </li>
                 )
