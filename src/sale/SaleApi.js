@@ -102,7 +102,8 @@ async function getAllCustomersForSale(search) {
 
 
 
-async function addNewSale(orderList,finalCost,paymentType,discount,customerId,userId) {
+// `extra`: { openContract, masterFees } — shartnoma ochilsinmi (kassadagi tumbler) va usta xizmatlari.
+async function addNewSale(orderList,finalCost,paymentType,discount,customerId,userId,extra = {}) {
 
    
     
@@ -137,7 +138,11 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
                 user_id:userId,
                 discount:discount,
                 items,
-                payments                               
+                payments,
+                open_contract: extra.openContract,
+                master_fees: extra.masterFees?.length
+                    ? extra.masterFees.map((fee) => ({ master_id: fee.master.id, amount: fee.amount, note: fee.note }))
+                    : undefined                               
             })
         });
 

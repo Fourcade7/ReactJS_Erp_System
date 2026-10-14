@@ -15,6 +15,7 @@ import {
   UserRound,
   Wallet,
   Warehouse,
+  Wrench,
 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Badge, Button, Card, Form, Modal } from '../ui'
@@ -199,6 +200,34 @@ function TransactionDetail({
               )}
             </div>
           </Card>
+
+          {/* Usta xizmati: ustaga beriladi, savdo summasi va foydaga kirmaydi. */}
+          {sale.masterFees?.length > 0 && (
+            <Card padded={false}>
+              <Card.Header>
+                <Card.Title>{t('Услуги мастеров')}</Card.Title>
+                <span className="text-[11px] text-subtle">{t('не входят в сумму продажи')}</span>
+              </Card.Header>
+              <ul className="m-0 list-none divide-y divide-line px-4">
+                {sale.masterFees.map((fee) => (
+                  <li key={fee.id} className="flex items-center gap-2.5 py-2 text-[13px]">
+                    <Wrench className="size-3.5 shrink-0 text-subtle" />
+                    <span className="min-w-0 flex-1 truncate text-fg">
+                      {fee.master ? `${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim() : '—'}
+                      {fee.note && <span className="ml-1.5 text-[11px] text-subtle">{fee.note}</span>}
+                    </span>
+                    <span className="font-semibold tabular-nums text-fg">{fee.amount.toLocaleString('uz')} So&apos;m</span>
+                  </li>
+                ))}
+                <li className="flex items-center justify-between py-2 text-[13px]">
+                  <span className="text-muted">{t('Итого мастерам:')}</span>
+                  <span className="font-semibold tabular-nums text-fg">
+                    {(sale.masterFeeTotal ?? 0).toLocaleString('uz')} So&apos;m
+                  </span>
+                </li>
+              </ul>
+            </Card>
+          )}
         </div>
 
         <div className="flex flex-col gap-4">

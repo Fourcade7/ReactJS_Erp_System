@@ -8,6 +8,7 @@ import {
   MapPin,
   Phone,
   ShoppingBag,
+  Trash2,
   UserPlus,
   UserRound,
   Wrench,
@@ -24,13 +25,17 @@ import {
   PageHeader,
   SearchField,
   Spinner,
+  Tab,
+  Tabs,
 } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { stockOf } from '../transaction/pricing'
 import { setMasterOrderHandoff } from './handoff'
 import { orderToCart } from './orderToCart'
+import MasterFeesPanel from './MasterFeesPanel'
 import {
   createCustomerFromOrder,
+  deleteMasterOrder,
   findCustomerByPhone,
   getMasterOrder,
   getMasterOrders,
@@ -296,6 +301,9 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
   const [customerChecked, setCustomerChecked] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
+  // O'chirish faqat admin uchun (backend ham tekshiradi).
+  const canDelete = String(localStorage.getItem('role') ?? '').trim().toLowerCase() === 'admin'
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -375,6 +383,21 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
     }
   }
 
+  const removeOrder = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      await deleteMasterOrder(order.id)
+      setConfirmDelete(false)
+      onBack()
+    } catch (e) {
+      setConfirmDelete(false)
+      setError(e.message || t('Не удалось подключиться к серверу'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const toSale = () => {
     setMasterOrderHandoff({
       orderId: order.id,
@@ -397,8 +420,14 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
           <HardHat className="size-4 text-primary" />
           {t('Заказ #{id}', { id: order.id })}
         </h3>
-        <span className="ml-auto">
+        <span className="ml-auto flex items-center gap-2">
           <StatusBadge status={order.status} />
+          {canDelete && (
+            <Button variant="outline-danger" size="sm" onClick={() => setConfirmDelete(true)} disabled={busy}>
+              <Trash2 />
+              {t('Удалить')}
+            </Button>
+          )}
         </span>
       </div>
 
@@ -625,6 +654,24 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
         />
       )}
 
+      <Modal show={confirmDelete} onHide={() => setConfirmDelete(false)} size="sm" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{t('Удалить заказ?')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {t('Заказ #{id} будет удалён вместе со списком товаров. Это действие нельзя отменить.', { id: order.id })}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setConfirmDelete(false)}>
+            {t('Назад')}
+          </Button>
+          <Button variant="danger" loading={busy} onClick={removeOrder}>
+            <Trash2 />
+            {t('Удалить')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Modal show={confirmCancel} onHide={() => setConfirmCancel(false)} size="sm" centered>
         <Modal.Header closeButton>
           <Modal.Title>{t('Отменить заказ?')}</Modal.Title>
@@ -651,6 +698,7 @@ function MasterOrderDetail({ orderId, onBack, goTo }) {
 
 function MasterOrderScreen({ goTo }) {
   const [openId, setOpenId] = useState(null)
+  const [tab, setTab] = useState('orders')
 
   const back = useCallback(() => setOpenId(null), [])
 
@@ -662,7 +710,30 @@ function MasterOrderScreen({ goTo }) {
         description={t('Заявки от мастеров: подготовьте товар до их прихода и оформите продажу')}
       />
       {openId === null ? (
-        <MasterOrderList onOpen={setOpenId} />
+        <Tabs activeKey={tab} onSelect={(key) => setTab(key)} variant="underline">
+          <Tab
+            eventKey="orders"
+            title={
+              <>
+                <HardHat />
+                {t('Заказы')}
+              </>
+            }
+          >
+            <MasterOrderList onOpen={setOpenId} />
+          </Tab>
+          <Tab
+            eventKey="fees"
+            title={
+              <>
+                <Wrench />
+                {t('Услуги мастеров')}
+              </>
+            }
+          >
+            <MasterFeesPanel />
+          </Tab>
+        </Tabs>
       ) : (
         <MasterOrderDetail orderId={openId} onBack={back} goTo={goTo} />
       )}

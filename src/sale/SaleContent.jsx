@@ -40,6 +40,8 @@ const SALE_CONFIG = {
   maxDiscountPercent: 20,
   // Kassada "По договору" to'lov turi: shartnoma va kuzatuv vazifasi avtomatik ochiladi.
   contractSale: true,
+  // Tovarlar ro'yxatida usta xizmati: ustaga beriladi, savdo summasi va foydaga kirmaydi.
+  masterFees: true,
   onlyStocked: false,
   autoAddSingle: true,
   printable: true,

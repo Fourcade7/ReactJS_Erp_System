@@ -85,12 +85,13 @@ async function updateProductWImage(
 
 
 
-async function deleteProduct(id){
+// `confirm` — mahsulot zakaz yoki operatsiyalarda ishlatilgan bo'lsa ham o'chirish (backend 409 qaytargach so'raladi).
+async function deleteProduct(id, confirm = false){
 
    
 
     try{
-        let response = await fetch(`${API_BASE}/product/delete/${id}`,{ 
+        let response = await fetch(`${API_BASE}/product/delete/${id}${confirm ? "?confirm=true" : ""}`,{ 
             method:"DELETE"
 
         });

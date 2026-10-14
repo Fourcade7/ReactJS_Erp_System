@@ -7,6 +7,7 @@ import placeholderImage from '../assets/placeholder.jpg'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { ResultModal } from '../utils/StatusModals'
 import { stockOf } from './pricing'
+import MasterFeeRow from './MasterFeeRow'
 import { roundQty } from '../lib/quantity'
 import { t, td } from '../i18n'
 
@@ -24,6 +25,8 @@ function ProductPicker({
   onlyStocked = false,
   autoAddSingle = false,
   reloadKey = 0,
+  masterFeeEnabled = false,
+  onAddMasterFee,
 }) {
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
@@ -158,6 +161,9 @@ function ProductPicker({
           </Form.Select>
         </div>
       </div>
+
+      {/* Usta xizmati: ustani shu yerning o'zida tanlab, haqini yozish (savdo summasiga kirmaydi). */}
+      {masterFeeEnabled && onAddMasterFee && <MasterFeeRow onAdd={onAddMasterFee} />}
 
       {visible.length === 0 && !showLoad ? (
         <EmptyState

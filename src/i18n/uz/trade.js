@@ -146,5 +146,58 @@ export default {
     "Kontragent o'zgartirildi. {number} shartnoma ochildi — buxgalter uni ishga oladi.",
   'Продажа оформлена по договору {number} — бухгалтер возьмёт его в работу.':
     "Savdo {number} shartnoma bo'yicha rasmiylashtirildi — buxgalter uni ishga oladi.",
+  // usta xizmati (savdo summasiga kirmaydi)
+  'Выберите мастера': 'Ustani tanlang',
+  'Мастеров нет': "Ustalar yo'q",
+  '(в сумму продажи не входит)': "(savdo summasiga kirmaydi)",
+  'Добавить услугу мастера': "Usta xizmatini qo'shish",
+  'не входят в сумму продажи': "savdo summasiga kirmaydi",
+  'Услуги мастеров': 'Usta xizmatlari',
+  'Итого мастерам:': 'Ustalarga jami:',
+  'Мастерам (отдельно, не входит в сумму)': "Ustalarga (alohida, summaga kirmaydi)",
+  'С': 'Dan',
+  'По': 'Gacha',
+  'Все мастера': 'Barcha ustalar',
+  'Услуги мастеров не входят в сумму продаж и прибыль — это деньги мастеров, они считаются отдельно.':
+    "Usta xizmatlari savdo summasi va foydaga kirmaydi — bu ustalarning puli, alohida hisoblanadi.",
+  'Услуг мастеров за период нет': "Davr uchun usta xizmatlari yo'q",
+  'Услугу мастера добавляют при оформлении продажи — в списке товаров.':
+    "Usta xizmati savdoni rasmiylashtirishda — tovarlar ro'yxatida qo'shiladi.",
+  'Продаж: {count}': 'Savdolar: {count}',
+  'Услуги: {name}': 'Xizmatlar: {name}',
+  'Все услуги': 'Barcha xizmatlar',
+  'Продажа #{id}': 'Savdo #{id}',
+  // zakazni o'chirish
+  'Удалить заказ?': "Zakazni o'chirasizmi?",
+  'Заказ #{id} будет удалён вместе со списком товаров. Это действие нельзя отменить.':
+    "Zakaz #{id} tovarlar ro'yxati bilan birga o'chiriladi. Bu amalni bekor qilib bo'lmaydi.",
+  'Заказы': 'Zakazlar',
+  // mahsulotni o'chirish tasdig'i
+  'Товар используется': 'Tovar ishlatilgan',
+  'Этот товар используется:': 'Bu tovar quyidagilarda ishlatilgan:',
+  'в заказах мастеров: {count} — из заказов он будет удалён': "ustalar zakazlarida: {count} — zakazlardan o'chiriladi",
+  'в продажах: {count} — в них останется как «Товар удалён»': "savdolarda: {count} — ularda «Товар удалён» bo'lib qoladi",
+  'в приходах: {count} — в них останется как «Товар удалён»': "kirimlarda: {count} — ularda «Товар удалён» bo'lib qoladi",
+  'в возвратах: {count} — в них останется как «Товар удалён»': "qaytarishlarda: {count} — ularda «Товар удалён» bo'lib qoladi",
+  'Всё равно удалить товар?': "Baribir tovarni o'chirasizmi?",
+  'Да, удалить': "Ha, o'chirish",
+  // shartnoma tumbleri
+  'Открыть договор?': 'Shartnoma ochilsinmi?',
+  'Оплата банковским переводом. Будет открыт договор и задача в разделе «По договору»: бухгалтер возьмёт договор в работу, внесёт реквизиты и отметит оплату. Контрагента можно не указывать — бухгалтер выберет или создаст его в договоре.':
+    "To'lov bank o'tkazmasi bilan. Shartnoma va «По договору» bo'limida vazifa ochiladi: buxgalter shartnomani ishga oladi, rekvizitlarni kiritadi va to'lovni belgilaydi. Kontragentni ko'rsatmasangiz ham bo'ladi — buxgalter uni shartnomada tanlaydi yoki yaratadi.",
+  'Контрагент — организация. Будет открыт договор и задача в разделе «По договору»: бухгалтер возьмёт договор в работу и внесёт реквизиты.':
+    "Kontragent — tashkilot. Shartnoma va «По договору» bo'limida vazifa ochiladi: buxgalter shartnomani ishga oladi va rekvizitlarni kiritadi.",
+  'Договор не будет открыт. Позже его можно открыть: «Детали продажи» → «Изменить».':
+    "Shartnoma ochilmaydi. Keyin ochish mumkin: «Детали продажи» → «Изменить».",
+  // usta xizmatlari: ro'yxat, tafsilot, dashboard
+  'Поиск мастера…': 'Ustani qidirish…',
+  'Сумма продаж': 'Savdolar summasi',
+  'Сумма продажи': 'Savdo summasi',
+  'Мастеров': 'Ustalar',
+  'Продаж': 'Savdolar',
+  'Услуги (его заработок)': "Xizmatlar (uning topgani)",
+  'За период продаж нет': "Davr uchun savdolar yo'q",
+  'Не входят в выручку и прибыль — это деньги мастеров': "Tushum va foydaga kirmaydi — bu ustalarning puli",
+  'Мастеров: {count}': 'Ustalar: {count}',
 }
 

@@ -715,6 +715,34 @@ function DashboardScreen() {
               </ChartCard>
             </div>
 
+            {/* Usta xizmatlari: do'konniki emas — daromad va foydaga kirmaydi, alohida ko'rsatiladi. */}
+            {data.masterFees && (
+              <ChartCard
+                title={t('Услуги мастеров')}
+                subtitle={t('Не входят в выручку и прибыль — это деньги мастеров')}
+              >
+                <div className="mb-3 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[13px] text-muted">
+                  <span>
+                    {t('Итого мастерам:')}{' '}
+                    <span className="text-lg font-semibold tabular-nums text-fg">
+                      {formatMoney(data.masterFees.total)}
+                    </span>
+                  </span>
+                  <span>{t('Продаж: {count}', { count: data.masterFees.salesCount })}</span>
+                  <span>{t('Мастеров: {count}', { count: data.masterFees.mastersCount })}</span>
+                </div>
+                <SimpleTable
+                  rows={data.masterFees.top}
+                  columns={[
+                    { key: 'name', label: t('Мастер'), className: 'max-w-40 truncate font-medium text-fg' },
+                    { key: 'salesCount', label: t('Продаж'), align: 'right' },
+                    { key: 'amount', label: t('Сумма'), align: 'right', strong: true, render: (r) => formatMoney(r.amount) },
+                  ]}
+                  empty={t('Услуг мастеров за период нет')}
+                />
+              </ChartCard>
+            )}
+
             <HistoryCard from={data.range.from} to={data.range.to} />
 
             <p className="text-center text-[11px] text-subtle">

@@ -41,7 +41,7 @@ const CONTRACT_PAYMENT = { value: 'По договору', Icon: FileText, contr
  * Kontragentni qidirib tanlash (combobox). Yozilgan matn (`label`) tashqarida saqlanadi: chek
  * almashtirilganda yoki bo'lim qayta ochilganda tanlangan kontragent ko'rinib turadi.
  */
-function CustomerPicker({ fetchCustomers, label, setLabel, setCustomerId }) {
+function CustomerPicker({ fetchCustomers, label, setLabel, setCustomerId, setCustomerType = () => {} }) {
   const searchTerm = label
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [customerList, setCustomerList] = useState([])
@@ -84,6 +84,7 @@ function CustomerPicker({ fetchCustomers, label, setLabel, setCustomerId }) {
         onChange={(e) => {
           setLabel(e.target.value)
           setCustomerId(null)
+          setCustomerType(null)
           setOpen(true)
         }}
         placeholder={t('Имя контрагента или телефон')}
@@ -99,6 +100,7 @@ function CustomerPicker({ fetchCustomers, label, setLabel, setCustomerId }) {
                 onClick={() => {
                   setLabel(`${item.username} ${item.surname}`)
                   setCustomerId(item.id)
+                  setCustomerType(item.type ?? null)
                   setOpen(false)
                 }}
                 className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] transition hover:bg-surface-2"
@@ -215,6 +217,7 @@ function Checkout({
   onSubmitted,
   onFinished,
   contractSale = false,
+  masterFees = [],
 }) {
   const componentRef = useRef(null)
 
@@ -223,6 +226,10 @@ function Checkout({
   // Boshlang'ich qiymatlar chekdan (`initialState`): bo'lim almashib qaytilganda ham saqlanadi.
   const [customerId, setCustomerId] = useState(initialState?.customerId ?? null)
   const [customerLabel, setCustomerLabel] = useState(initialState?.customerLabel ?? '')
+  // Kontragent turi ('organization' — tashkilot): tashkilotga sotilganda shartnoma ochish so'raladi.
+  const [customerType, setCustomerType] = useState(initialState?.customerType ?? null)
+  // Shartnoma tumbleri: null — foydalanuvchi tegmagan (standart qiymat ishlaydi).
+  const [contractChoice, setContractChoice] = useState(initialState?.contractChoice ?? null)
   // "По договору": kassir ro'yxatda topilmagan kontragentni shu yerning o'zida ochadi ("Клиенты" jadvaliga yoziladi).
   const [creatingCustomer, setCreatingCustomer] = useState(false)
   const [printType, setPrintType] = useState(null)
@@ -238,8 +245,8 @@ function Checkout({
     report.current = onStateChange
   })
   useEffect(() => {
-    report.current?.({ customerId, customerLabel, paymentType, discountType, discountSum })
-  }, [customerId, customerLabel, paymentType, discountType, discountSum])
+    report.current?.({ customerId, customerLabel, customerType, contractChoice, paymentType, discountType, discountSum })
+  }, [customerId, customerLabel, customerType, contractChoice, paymentType, discountType, discountSum])
 
   const [pshow, psetShow] = useState(false)
   const [showDanger, setShowDanger] = useState(false)
@@ -286,6 +293,12 @@ function Checkout({
   const isContract = contractSale && paymentType === CONTRACT_PAYMENT.value
   const payments = contractSale ? [...PAYMENTS, CONTRACT_PAYMENT] : PAYMENTS
 
+  // Shartnoma so'rovi: "По договору" to'lovida yoki kontragent tashkilot bo'lsa (tumbler bilan).
+  // "По договору" da standart — ochish (avvalgidek), tashkilotga boshqa to'lov turida — ochmaslik.
+  const askContract = contractSale && (isContract || customerType === 'organization')
+  const openContract = contractChoice ?? isContract
+  const masterFeeTotal = masterFees.reduce((sum, fee) => sum + fee.amount, 0)
+
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     // Sahifa yangilanmaydi: faqat shu chek yopiladi, qolgan cheklar joyida turadi.
@@ -327,6 +340,7 @@ function Checkout({
         discountAmount,
         customerId,
         userId,
+        { openContract: askContract ? openContract : undefined, masterFees },
       )
       const result = await res.json()
 
@@ -352,7 +366,7 @@ function Checkout({
       }
 
       // "По договору": shartnoma savdo bilan birga ochiladi; ochilmasa savdo baribir yozilgan.
-      const contractFailed = isContract && Boolean(result.contractError)
+      const contractFailed = Boolean(result.contractError)
       setShowSuccess(true)
       setAlertMessage(
         followUpFailed
@@ -361,7 +375,7 @@ function Checkout({
             ? t('Продажа оформлена, но договор не создан: {error}. Администратор может создать его вручную.', {
                 error: result.contractError,
               })
-            : isContract && result.contract?.number
+            : result.contract?.number
               ? t('Продажа оформлена. Договор {number} создан и передан бухгалтерам.', { number: result.contract.number })
               : t('Успешно...'),
       )
@@ -371,7 +385,7 @@ function Checkout({
         setShowSuccess(false)
         if (printable) setPrintType('Чек')
         else onFinished?.()
-      }, followUpFailed || contractFailed ? 8000 : isContract ? 5000 : 3000)
+      }, followUpFailed || contractFailed ? 8000 : result.contract ? 5000 : 3000)
     } catch {
       setShowDanger(true)
       setAlertMessage(t('Не удалось подключиться к серверу'))
@@ -468,6 +482,7 @@ function Checkout({
             label={customerLabel}
             setLabel={setCustomerLabel}
             setCustomerId={setCustomerId}
+            setCustomerType={setCustomerType}
           />
           {contractSale && !creatingCustomer && (
             <button
@@ -488,6 +503,7 @@ function Checkout({
                 onCreated={(created) => {
                   setCustomerId(created.id)
                   setCustomerLabel(`${created.username} ${created.surname}`.trim())
+                  setCustomerType(created.type ?? null)
                   setCreatingCustomer(false)
                 }}
               />
@@ -523,10 +539,23 @@ function Checkout({
           </div>
         </div>
 
-        {isContract && (
-          <p className="rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-2 text-[11.5px] leading-snug text-primary-soft-fg">
-            {t('Оплата банковским переводом. Будет открыт договор: бухгалтер внесёт реквизиты и отметит оплату. Контрагента можно не указывать — бухгалтер выберет или создаст его в договоре.')}
-          </p>
+        {askContract && (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-2 text-primary-soft-fg">
+            <Form.Check
+              type="switch"
+              id="openContract"
+              label={t('Открыть договор?')}
+              checked={openContract}
+              onChange={(e) => setContractChoice(e.target.checked)}
+            />
+            <p className="m-0 text-[11.5px] leading-snug">
+              {openContract
+                ? isContract
+                  ? t('Оплата банковским переводом. Будет открыт договор и задача в разделе «По договору»: бухгалтер возьмёт договор в работу, внесёт реквизиты и отметит оплату. Контрагента можно не указывать — бухгалтер выберет или создаст его в договоре.')
+                  : t('Контрагент — организация. Будет открыт договор и задача в разделе «По договору»: бухгалтер возьмёт договор в работу и внесёт реквизиты.')
+                : t('Договор не будет открыт. Позже его можно открыть: «Детали продажи» → «Изменить».')}
+            </p>
+          </div>
         )}
 
         <dl className="flex flex-col gap-1 border-t border-line pt-3 text-xs">
@@ -538,6 +567,12 @@ function Checkout({
             <dt>{t('Скидка')}</dt>
             <dd className="tabular-nums">−{Number(discountAmount || 0).toLocaleString('uz')}</dd>
           </div>
+          {masterFeeTotal > 0 && (
+            <div className="flex justify-between text-muted">
+              <dt>{t('Мастерам (отдельно, не входит в сумму)')}</dt>
+              <dd className="tabular-nums">{masterFeeTotal.toLocaleString('uz')}</dd>
+            </div>
+          )}
         </dl>
 
         {overStockItems.length > 0 && (

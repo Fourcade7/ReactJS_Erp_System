@@ -36,6 +36,23 @@ const setMasterOrderStatus = (id, status) => request(`${BASE}/status/${id}`, jso
 
 const completeMasterOrder = (id, saleId) => request(`${BASE}/complete/${id}`, json('POST', { sale_id: saleId }))
 
+// Zakazni o'chirish — faqat admin (backend tekshiradi).
+const deleteMasterOrder = (id) =>
+    request(`${BASE}/delete/${id}?user_id=${localStorage.getItem('userid') ?? ''}`, { method: 'DELETE' })
+
+// Usta xizmati haqlari: ustalar bo'yicha yig'indi va savdolar ro'yxati (savdo summasi va foydadan alohida).
+const feeRange = (start, end) => (start && end ? `&start=${start}&end=${end}` : '')
+
+// Ustalar ro'yxati (qidiruv, sana oralig'i, sahifalash): nechta savdo, savdo summasi, haq.
+const getMasterFeeSummary = (page, limit, search, start, end) =>
+    request(
+        `${API_BASE}/sale/master-fees/summary?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? '')}${feeRange(start, end)}`,
+    )
+
+// Bitta usta: savdolari (sana, kontragent, summa, haq, mahsulotlar), sahifalab.
+const getMasterFeeDetail = (id, page, limit, start, end) =>
+    request(`${API_BASE}/sale/master-fees/master/${id}?page=${page}&limit=${limit}${feeRange(start, end)}`)
+
 const digits = (value) => `${value ?? ''}`.replace(/\D/g, '')
 
 /**
@@ -76,6 +93,9 @@ export {
     getNewMasterOrderCount,
     setMasterOrderStatus,
     completeMasterOrder,
+    deleteMasterOrder,
+    getMasterFeeSummary,
+    getMasterFeeDetail,
     findCustomerByPhone,
     createCustomerFromOrder,
 }

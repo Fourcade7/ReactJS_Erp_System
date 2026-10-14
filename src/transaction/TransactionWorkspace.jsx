@@ -69,6 +69,8 @@ const makeDraft = (drafts, extra = {}) => ({
   id: makeId(),
   number: freeNumber(drafts),
   orderList: [],
+  // Usta xizmatlari (savdo summasiga kirmaydi): [{ key, master, amount }].
+  masterFees: [],
   // Hisob-kitob paneli holati (kontragent, to'lov usuli, chegirma) — chek almashganda saqlanadi.
   checkout: null,
   // Zakazdan o'tgan chek: savdo yozilgach zakaz yakunlanadi.
@@ -137,6 +139,12 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
     patchDraft(id, (draft) => ({
       orderList: typeof updater === 'function' ? updater(draft.orderList) : updater,
     }))
+
+  const addMasterFeeFor = (id) => (fee) =>
+    patchDraft(id, (draft) => ({ masterFees: [...(draft.masterFees ?? []), { ...fee, key: makeId() }] }))
+
+  const removeMasterFeeFor = (id) => (key) =>
+    patchDraft(id, (draft) => ({ masterFees: (draft.masterFees ?? []).filter((fee) => fee.key !== key) }))
 
   const openDraft = (id) => setSession((current) => ({ ...current, activeId: id }))
 
@@ -294,6 +302,8 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                 onlyStocked={config.onlyStocked}
                 autoAddSingle={config.autoAddSingle}
                 reloadKey={productsVersion}
+                masterFeeEnabled={Boolean(config.masterFees)}
+                onAddMasterFee={addMasterFeeFor(active.id)}
               />
             </div>
             {/* Hamma cheklar ulangan turadi (faol bo'lmaganlari yashirin) — shuning uchun holati yo'qolmaydi. */}
@@ -308,6 +318,8 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                       priceField={config.priceField}
                       limitByStock={config.limitByStock}
                       editablePrice={config.editablePrice}
+                      masterFees={draft.masterFees ?? []}
+                      onRemoveMasterFee={removeMasterFeeFor(draft.id)}
                     />
                   </div>
                   <div className={cn('xl:sticky xl:top-20', !visible && 'hidden')}>
@@ -326,6 +338,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                       onSubmitted={draft.onSubmitted}
                       onFinished={() => finishDraft(draft.id)}
                       contractSale={Boolean(config.contractSale)}
+                      masterFees={draft.masterFees ?? []}
                     />
                   </div>
                 </Fragment>

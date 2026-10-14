@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Copy, Minus, Pencil, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
+import { Check, Copy, Minus, Pencil, Plus, ShoppingCart, Trash2, Wrench, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
 import CopyImageModal from './CopyImageModal'
@@ -165,6 +165,8 @@ function Cart({
   priceField = 'buyPrice',
   limitByStock = false,
   editablePrice = false,
+  masterFees = [],
+  onRemoveMasterFee,
 }) {
   const update = (id, fn) =>
     setOrderList((prev) => prev.map((item) => (item.id === id ? fn(item) : item)))
@@ -391,6 +393,32 @@ function Cart({
             )
           })}
         </ul>
+      )}
+
+      {/* Usta xizmatlari: savdo summasiga kirmaydi, ustaga beriladi. */}
+      {masterFees.length > 0 && (
+        <div className="flex flex-col gap-1 rounded-card border border-dashed border-line bg-surface-2/50 p-2">
+          <p className="m-0 text-[11px] font-medium uppercase tracking-wide text-subtle">
+            {t('Услуги мастеров')} · {t('не входят в сумму продажи')}
+          </p>
+          {masterFees.map((fee) => (
+            <div key={fee.key} className="flex items-center gap-2 text-[13px]">
+              <Wrench className="size-3.5 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1 truncate text-fg">
+                {`${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim()}
+              </span>
+              <span className="font-semibold tabular-nums text-fg">{fee.amount.toLocaleString('uz')}</span>
+              <button
+                type="button"
+                onClick={() => onRemoveMasterFee?.(fee.key)}
+                aria-label={t('Убрать')}
+                className="inline-flex size-6 items-center justify-center rounded-md text-subtle transition hover:bg-danger-soft hover:text-danger-soft-fg"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
       )}
 
       <CopyImageModal image={fallbackImage} onHide={() => setFallbackImage('')} />

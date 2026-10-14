@@ -104,6 +104,34 @@ const PRODUCT_EXPORT_COLUMNS = [
 function ProductListGroup(props) {
   const [showEdit, setShowEdit] = useState(false)
   const [showDel, setShowDel] = useState(false)
+  // Mahsulot zakaz/operatsiyalarda ishlatilgan: o'chirishdan oldin foydalanuvchidan so'raladi.
+  const [usage, setUsage] = useState(null)
+
+  // O'chirish: mahsulot ishlatilgan bo'lsa backend 409 (+ usage) qaytaradi — shunda rozilik so'raladi.
+  const runDelete = async (confirm) => {
+    setUsage(null)
+    setShowResAlert(false)
+    setShowLoadTitle(t('Загрузка...'))
+    setShowDel(false)
+    setShowLoad(true)
+
+    const res = await deleteProduct(pid, confirm)
+    const deleteResponse = await res.json().catch(() => ({}))
+
+    if (res.status === 409 && deleteResponse?.usage) {
+      setShowLoad(false)
+      setUsage(deleteResponse.usage)
+      return
+    }
+    setShowResAlert(res.ok)
+
+    setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
+    setTimeout(() => {
+      setShowLoad(false)
+      setShowResTitle(Array.isArray(deleteResponse.message) ? deleteResponse.message.join(', ') : deleteResponse.message)
+      setShowRes(true)
+    }, 2000)
+  }
   const [showLoad, setShowLoad] = useState(false)
   const [showRes, setShowRes] = useState(false)
   const [showResTitle, setShowResTitle] = useState('Success')
@@ -576,26 +604,44 @@ function ProductListGroup(props) {
           </Button>
           <Button
             variant="danger"
-            onClick={async () => {
-              setShowResAlert(false)
-              setShowLoadTitle(t('Загрузка...'))
-              setShowDel(false)
-              setShowLoad(true)
-
-              const res = await deleteProduct(pid)
-              const deleteResponse = await res.json()
-              setShowResAlert(res.ok)
-
-              setTimeout(() => setShowLoadTitle(t('Почти готово')), 1000)
-              setTimeout(() => {
-                setShowLoad(false)
-                setShowResTitle(deleteResponse.message)
-                setShowRes(true)
-              }, 2000)
-            }}
+            onClick={() => runDelete(false)}
           >
             <Trash2 />
             {t('Удалить')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Mahsulot ishlatilgan: nimalarda borligini ko'rsatib, rozilik so'raladi */}
+      <Modal show={usage !== null} onHide={() => setUsage(null)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{t('Товар используется')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-2">
+          <p className="m-0">{t('Этот товар используется:')}</p>
+          <ul className="m-0 flex list-disc flex-col gap-1 pl-5">
+            {usage?.masterOrders > 0 && (
+              <li>{t('в заказах мастеров: {count} — из заказов он будет удалён', { count: usage.masterOrders })}</li>
+            )}
+            {usage?.sales > 0 && (
+              <li>{t('в продажах: {count} — в них останется как «Товар удалён»', { count: usage.sales })}</li>
+            )}
+            {usage?.purchases > 0 && (
+              <li>{t('в приходах: {count} — в них останется как «Товар удалён»', { count: usage.purchases })}</li>
+            )}
+            {usage?.returns > 0 && (
+              <li>{t('в возвратах: {count} — в них останется как «Товар удалён»', { count: usage.returns })}</li>
+            )}
+          </ul>
+          <p className="m-0 font-medium">{t('Всё равно удалить товар?')}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setUsage(null)}>
+            {t('Нет')}
+          </Button>
+          <Button variant="danger" onClick={() => runDelete(true)}>
+            <Trash2 />
+            {t('Да, удалить')}
           </Button>
         </Modal.Footer>
       </Modal>
