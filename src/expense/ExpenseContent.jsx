@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, Pencil, Plus, ReceiptText, Trash2 } from 'lucide-react'
+import { CalendarClock, Pencil, Plus, ReceiptText, Trash2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { currentMonth, formatMoney, formatMonth, parseAmount, plural, RECORDS } from '../lib/format'
+import { formatDateTime } from '../task/taskView'
 import { Alert, Button, Card, EmptyState, Form, Modal, PageHeader, SearchField, Spinner, Table } from '../ui'
 import BarList from '../charts/BarList'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
@@ -301,6 +302,7 @@ function ExpenseScreen() {
             <Table>
               <thead>
                 <tr>
+                  <th>{t('Дата и время')}</th>
                   <th>{t('Месяц')}</th>
                   <th>{t('Вид')}</th>
                   <th className="text-right">{t('Сумма')}</th>
@@ -312,12 +314,14 @@ function ExpenseScreen() {
               <tbody>
                 {result.data.map((row) => (
                   <tr key={row.id}>
+                    {/* Qachon kiritilgan (kun va soat); "Месяц" — xarajat qaysi oy hisobiga yozilgani. */}
                     <td className="whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 text-muted">
-                        <CalendarDays className="size-3.5 text-subtle" />
-                        {formatMonth(row.period.slice(0, 7))}
+                      <span className="inline-flex items-center gap-1.5 tabular-nums text-muted">
+                        <CalendarClock className="size-3.5 text-subtle" />
+                        {formatDateTime(row.createdAt)}
                       </span>
                     </td>
+                    <td className="whitespace-nowrap text-muted">{formatMonth(row.period.slice(0, 7))}</td>
                     <td className="font-medium text-fg">{td(row.category)}</td>
                     <td className="whitespace-nowrap text-right font-semibold tabular-nums text-fg">
                       {formatMoney(row.amount)}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { BadgeCheck, CalendarClock, ChevronRight, Inbox, Percent, UserRound, Wallet, Wrench, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Badge, EmptyState, Form, SearchField } from '../ui'
@@ -170,6 +170,44 @@ function TransactionList({
           {saleList.map((sale, index) => {
             // Asosiy summa doim ko'rinadi; qarz bo'lsa to'langani va qarz summasi ham (ichiga kirmasdan).
             const { net, paid, remaining, inDebt } = amountsOf(sale)
+            const seller = filterable ? personName(sale.user) : ''
+            const masters = mastersOf(sale)
+
+            // Sana ostidagi ustun: qaysi savdodan qaytarilgan, kim sotgan, qaysi usta — " · " bilan ajratiladi.
+            const details = [
+              // Список продаж ichidan qilingan qaytarish.
+              sale.sale && (
+                <span key="sale" className="shrink-0">
+                  {t('из продажи #{id}', { id: sale.sale.id })}
+                </span>
+              ),
+              // Kim sotgan (kassir/admin) — qidiruv va filtr shu bo'yicha ham ishlaydi.
+              seller && (
+                <span key="seller" className="inline-flex min-w-0 items-center gap-1" title={t('Продавец')}>
+                  <BadgeCheck className="size-3 shrink-0" />
+                  <span className="truncate">{seller}</span>
+                </span>
+              ),
+              // Usta — sotuvchidan keyin, shu qatorda (qator balandligi o'zgarmaydi); bir nechta bo'lsa — "+N".
+              masters.length > 0 && (
+                <span
+                  key="masters"
+                  title={sale.masterFees
+                    .map((fee) =>
+                      `${personName(fee.master) || '—'}: ${t('Услуга мастера: {master} · доля компании: {company}', {
+                        master: fee.amount.toLocaleString('uz'),
+                        company: fee.companyAmount.toLocaleString('uz'),
+                      })}`,
+                    )
+                    .join('\n')}
+                  className="inline-flex min-w-0 items-center gap-1"
+                >
+                  <Wrench className="size-3 shrink-0 text-primary" />
+                  <span className="truncate">{masters[0]}</span>
+                  {masters.length > 1 && <span className="shrink-0">+{masters.length - 1}</span>}
+                </span>
+              ),
+            ].filter(Boolean)
 
             return (
               <li key={sale.id}>
@@ -189,69 +227,50 @@ function TransactionList({
                     <Icon className="size-4" />
                   </span>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="flex min-w-0 items-center gap-2 text-[13px]">
-                      <span className="shrink-0 font-medium text-fg">
-                        {label} #{sale.id}
-                      </span>
-                      {/* Kontragent nomi: ichiga kirmasdan kimga sotilgani ko'rinadi (keng ekranda sarlavha yonida). */}
+                  {/*
+                    Keng ekranda (sm) ikki ustun: chapda raqam va sana (qat'iy kenglik), o'ngda kontragent va
+                    sotuvchi/usta. Raqam uzunligi (#8 yoki #1234) qanday bo'lmasin, kontragent va sotuvchi hamma
+                    qatorlarda bitta chiziqdan boshlanadi. Tor ekranda: raqam, kontragent, so'ng sana · sotuvchi.
+                  */}
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4">
+                    <p className="w-full truncate text-[13px] font-medium text-fg">
+                      {label} #{sale.id}
+                    </p>
+                    {/* Kontragent nomi: ichiga kirmasdan kimga sotilgani ko'rinadi. Bo'lmasa ham katak band turadi. */}
+                    <p
+                      title={
+                        sale.customer
+                          ? `${sale.customer.username ?? ''} ${sale.customer.surname ?? ''} ${sale.customer.phone ?? ''}`.trim()
+                          : undefined
+                      }
+                      className={cn(
+                        'w-full min-w-0 items-center gap-1 text-[12px] text-muted sm:text-[13px]',
+                        sale.customer ? 'flex' : 'hidden sm:block',
+                      )}
+                    >
                       {sale.customer && (
-                        <span
-                          title={`${sale.customer.username ?? ''} ${sale.customer.surname ?? ''} ${sale.customer.phone ?? ''}`.trim()}
-                          className="hidden min-w-0 items-center gap-1 text-muted sm:inline-flex"
-                        >
+                        <>
                           <UserRound className="size-3 shrink-0 text-subtle" />
                           <span className="truncate">
                             {`${sale.customer.username ?? ''} ${sale.customer.surname ?? ''}`.trim()}
                           </span>
-                        </span>
+                        </>
                       )}
                     </p>
-                    {/* Tor ekranda nom alohida qatorga tushadi, summa ustuni uni siqib qo'ymaydi. */}
-                    {sale.customer && (
-                      <p className="flex min-w-0 items-center gap-1 text-[12px] text-muted sm:hidden">
-                        <UserRound className="size-3 shrink-0 text-subtle" />
-                        <span className="truncate">
-                          {`${sale.customer.username ?? ''} ${sale.customer.surname ?? ''}`.trim()}
-                        </span>
-                      </p>
-                    )}
-                    <p className="flex min-w-0 items-center gap-1 text-[11px] text-subtle">
+                    <p className="flex shrink-0 items-center gap-1 text-[11px] text-subtle">
                       <CalendarClock className="size-3 shrink-0" />
-                      <span className="truncate">
-                        {new Date(sale.date).toLocaleString('UZ')}
-                        {/* Список продаж ichidan qilingan qaytarish */}
-                        {sale.sale && <span className="ml-1">{t('· из продажи #{id}', { id: sale.sale.id })}</span>}
-                      </span>
-                      {/* Kim sotgan (kassir/admin) — qidiruv va filtr shu bo'yicha ham ishlaydi. */}
-                      {filterable && personName(sale.user) && (
-                        <span className="inline-flex min-w-0 items-center gap-1" title={t('Продавец')}>
-                          <span aria-hidden="true">·</span>
-                          <BadgeCheck className="size-3 shrink-0" />
-                          <span className="truncate">{personName(sale.user)}</span>
-                        </span>
-                      )}
-                      {/* Usta — sotuvchidan keyin, shu qatorda (qator balandligi o'zgarmaydi); bir nechta bo'lsa — "+N". */}
-                      {mastersOf(sale).length > 0 && (
-                        <span
-                          title={sale.masterFees
-                            .map((fee) =>
-                              `${personName(fee.master) || '—'}: ${t('Услуга мастера: {master} · доля компании: {company}', {
-                                master: fee.amount.toLocaleString('uz'),
-                                company: fee.companyAmount.toLocaleString('uz'),
-                              })}`,
-                            )
-                            .join('\n')}
-                          className="inline-flex min-w-0 items-center gap-1"
-                        >
-                          <span aria-hidden="true">·</span>
-                          <Wrench className="size-3 shrink-0 text-primary" />
-                          <span className="truncate">{mastersOf(sale)[0]}</span>
-                          {mastersOf(sale).length > 1 && (
-                            <span className="shrink-0">+{mastersOf(sale).length - 1}</span>
-                          )}
-                        </span>
-                      )}
+                      <span className="truncate">{new Date(sale.date).toLocaleString('UZ')}</span>
+                    </p>
+                    <p className="flex min-w-0 flex-1 items-center gap-1 text-[11px] text-subtle">
+                      {details.map((detail, position) => (
+                        <Fragment key={detail.key}>
+                          {/* Tor ekranda sanadan ajratadi; keng ekranda birinchi element ustun boshida turadi. */}
+                          <span aria-hidden="true" className={cn(position === 0 && 'sm:hidden')}>
+                            ·
+                          </span>
+                          {detail}
+                        </Fragment>
+                      ))}
                     </p>
                   </div>
 

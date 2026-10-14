@@ -107,7 +107,7 @@ export default {
   "Возврат оформлен: {amount} So'm (с долга списано {offset})": "Qaytarish rasmiylashtirildi: {amount} So'm (qarzdan ayirildi: {offset})",
   "Возврат оформлен: {amount} So'm": "Qaytarish rasmiylashtirildi: {amount} So'm",
   'Операций пока нет': "Hozircha operatsiyalar yo'q",
-  '· из продажи #{id}': '· sotuv #{id} dan',
+  'из продажи #{id}': 'sotuv #{id} dan',
   // parallel cheklar (savdo / kirim / qaytarish)
   'Чек': 'Chek',
   'Открытые чеки': 'Ochiq cheklar',
