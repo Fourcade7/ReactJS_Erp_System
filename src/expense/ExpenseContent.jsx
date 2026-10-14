@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { CalendarClock, Pencil, Plus, ReceiptText, Trash2 } from 'lucide-react'
+import { Pencil, Plus, ReceiptText, Trash2 } from 'lucide-react'
 import { cn } from '../lib/cn'
-import { currentMonth, formatMoney, formatMonth, parseAmount, plural, RECORDS } from '../lib/format'
-import { formatDateTime } from '../task/taskView'
+import { currentMonth, formatDayTime, formatMoney, formatMonth, parseAmount, plural, RECORDS } from '../lib/format'
 import { Alert, Button, Card, EmptyState, Form, Modal, PageHeader, SearchField, Spinner, Table } from '../ui'
 import BarList from '../charts/BarList'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
@@ -302,36 +301,29 @@ function ExpenseScreen() {
             <Table>
               <thead>
                 <tr>
-                  <th>{t('Дата и время')}</th>
-                  <th>{t('Месяц')}</th>
                   <th>{t('Вид')}</th>
-                  <th className="text-right">{t('Сумма')}</th>
                   <th>{t('Комментарий')}</th>
+                  <th className="text-right">{t('Сумма')}</th>
                   <th>{t('Кто')}</th>
+                  <th>{t('Дата')}</th>
                   <th aria-label={t('Действия')} />
                 </tr>
               </thead>
               <tbody>
                 {result.data.map((row) => (
                   <tr key={row.id}>
-                    {/* Qachon kiritilgan (kun va soat); "Месяц" — xarajat qaysi oy hisobiga yozilgani. */}
-                    <td className="whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 tabular-nums text-muted">
-                        <CalendarClock className="size-3.5 text-subtle" />
-                        {formatDateTime(row.createdAt)}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap text-muted">{formatMonth(row.period.slice(0, 7))}</td>
                     <td className="font-medium text-fg">{td(row.category)}</td>
-                    <td className="whitespace-nowrap text-right font-semibold tabular-nums text-fg">
-                      {formatMoney(row.amount)}
-                    </td>
                     <td className="max-w-64 truncate text-muted" title={row.comment ?? ''}>
                       {row.comment || '—'}
+                    </td>
+                    <td className="whitespace-nowrap text-right font-semibold tabular-nums text-fg">
+                      {formatMoney(row.amount)}
                     </td>
                     <td className="whitespace-nowrap text-subtle">
                       {row.user ? `${row.user.username} ${row.user.surname}`.trim() : '—'}
                     </td>
+                    {/* Qachon kiritilgan (kun va soat). */}
+                    <td className="whitespace-nowrap tabular-nums text-muted">{formatDayTime(row.createdAt)}</td>
                     <td className="whitespace-nowrap text-right">
                       <Button variant="ghost" size="sm" icon title={t('Изменить')} aria-label={t('Изменить')} onClick={() => setEditing(row)}>
                         <Pencil />

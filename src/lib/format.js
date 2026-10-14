@@ -42,6 +42,15 @@ export function formatMonth(month) {
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
+/** "6 октября 13:45" / "6-oktabr 13:45"; joriy yildan boshqa bo'lsa yili ham: "6 октября 2025 13:45". */
+export function formatDayTime(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  const year = date.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' }
+  const day = date.toLocaleDateString(locale, { day: 'numeric', month: 'long', ...year }).replace(' г.', '')
+  return `${day} ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`
+}
+
 /** Joriy oy "YYYY-MM" (brauzer vaqti bo'yicha). */
 export function currentMonth() {
   const now = new Date()
