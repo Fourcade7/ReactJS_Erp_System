@@ -25,6 +25,7 @@ const RETURN_CONFIG = {
   onlyStocked: true,
   autoAddSingle: false,
   printable: false,
+  productsOnRight: true,
   fetchPage: getAllReturnsListPaginationSearch,
   fetchProducts: getAllProductPaginationSearch,
   fetchCustomers: getAllCustomersForSale,

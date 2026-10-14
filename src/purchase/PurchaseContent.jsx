@@ -25,6 +25,7 @@ const PURCHASE_CONFIG = {
   onlyStocked: true,
   autoAddSingle: false,
   printable: false,
+  productsOnRight: true,
   fetchPage: getAllPurchaseListPaginationSearch,
   fetchProducts: getAllProductPaginationSearch,
   fetchCustomers: getAllCustomersForSale,

@@ -15,6 +15,26 @@ import { t } from '../i18n'
 const MAX_DRAFTS = 8
 
 /**
+ * Ish maydoni panellari joylashuvi. Keng ekranda tovarlar roʻyxati ~440px da qoladi, qolgan joy savatga.
+ * `productsOnRight` (kirim, qaytarish) — panellar teskari: hisob-kitob chapda, tovarlar o'ngda,
+ * shunda bu bo'limlar savdo ekrani bilan adashtirilmaydi.
+ */
+const LAYOUTS = {
+  default: {
+    grid: 'lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_290px] 2xl:grid-cols-[440px_minmax(0,1fr)_290px]',
+    picker: 'lg:row-span-2 xl:row-span-1',
+    cart: '',
+    checkout: '',
+  },
+  productsOnRight: {
+    grid: 'lg:grid-cols-2 xl:grid-cols-[290px_minmax(0,1fr)_minmax(0,1fr)] 2xl:grid-cols-[290px_minmax(0,1fr)_440px]',
+    picker: 'lg:col-start-2 lg:row-start-1 lg:row-span-2 xl:col-start-3 xl:row-span-1',
+    cart: 'lg:col-start-1 lg:row-start-1 xl:col-start-2',
+    checkout: 'lg:col-start-1 lg:row-start-2 xl:row-start-1',
+  },
+}
+
+/**
  * Brauzer seansi davomida cheklar saqlanadi: boshqa bo'limga o'tib qaytilsa ham yo'qolmaydi.
  * Kalit — foydalanuvchi va bo'lim, shuning uchun boshqa xodim kirsa eskisini ko'rmaydi.
  */
@@ -180,6 +200,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
 
   const { Icon } = config
   const draftLabel = config.draftLabel ?? t('Чек')
+  const layout = config.productsOnRight ? LAYOUTS.productsOnRight : LAYOUTS.default
 
   // Parallel cheklar: har birida o'z savati va hisob-kitobi, birini tugatmasdan ikkinchisiga o'tiladi.
   // Panel sahifa sarlavhasining o'ng tomonida turadi (bo'sh joy) — tovarlar ro'yxati yuqoriga ko'tariladi.
@@ -292,9 +313,8 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
             </>
           }
         >
-          {/* Keng ekranda tovarlar roʻyxati ~440px da qoladi, qolgan joy savatga. */}
-          <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_290px] 2xl:grid-cols-[440px_minmax(0,1fr)_290px]">
-            <div className="lg:row-span-2 xl:row-span-1">
+          <div className={cn('grid items-start gap-4', layout.grid)}>
+            <div className={layout.picker}>
               <ProductPicker
                 fetchProducts={config.fetchProducts}
                 setOrderList={setOrderListFor(active.id)}
@@ -311,7 +331,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
               const visible = draft.id === active.id
               return (
                 <Fragment key={draft.id}>
-                  <div className={cn(!visible && 'hidden')}>
+                  <div className={cn(layout.cart, !visible && 'hidden')}>
                     <Cart
                       orderList={draft.orderList}
                       setOrderList={setOrderListFor(draft.id)}
@@ -322,7 +342,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                       onRemoveMasterFee={removeMasterFeeFor(draft.id)}
                     />
                   </div>
-                  <div className={cn('xl:sticky xl:top-20', !visible && 'hidden')}>
+                  <div className={cn('xl:sticky xl:top-20', layout.checkout, !visible && 'hidden')}>
                     <Checkout
                       orderList={draft.orderList}
                       submit={config.submit}
