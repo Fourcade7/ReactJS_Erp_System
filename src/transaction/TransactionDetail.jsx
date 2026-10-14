@@ -11,6 +11,8 @@ import {
   Mail,
   Pencil,
   Phone,
+  Plus,
+  Trash2,
   Undo2,
   UserRound,
   Wallet,
@@ -23,6 +25,8 @@ import { ResultModal } from '../utils/StatusModals'
 import { roundQty } from '../lib/quantity'
 import SaleReturnModal from './SaleReturnModal'
 import SaleCustomerModal from './SaleCustomerModal'
+import SaleMasterFeeModal from './SaleMasterFeeModal'
+import { isAdminRole } from '../users/roles'
 import CopyImageModal from './CopyImageModal'
 import { ClipboardUnavailableError, copySaleImage } from './cartImage'
 import { t, td } from '../i18n'
@@ -56,6 +60,9 @@ function InfoRow({ icon: Icon, label, children }) {
  *
  * `changeCustomer(saleId, customerId, userId)` berilsa, savdo qilingandan keyin kontragentni
  * almashtirish mumkin (kassir adashgan bo'lsa).
+ *
+ * `addMasterFee` berilsa — savdodan keyin usta xizmatini qo'shish (usta kech kelgan bo'lsa), `removeMasterFee` —
+ * adashib qo'shilganini o'chirish (faqat admin; backend ham tekshiradi).
  */
 function TransactionDetail({
   selectedSale,
@@ -66,6 +73,8 @@ function TransactionDetail({
   fetchDetail,
   returnFromSale,
   changeCustomer,
+  addMasterFee,
+  removeMasterFee,
 }) {
   const [showDebtEdit, setShowDebtEdit] = useState(false)
   const [debtAmount, setDebtAmount] = useState('')
@@ -83,6 +92,12 @@ function TransactionDetail({
   const [fallbackImage, setFallbackImage] = useState('')
   const [customerEdit, setCustomerEdit] = useState(false)
   const [customerDone, setCustomerDone] = useState('')
+  const [feeAdding, setFeeAdding] = useState(false)
+  // O'chirish tasdig'i kutilayotgan usta xizmati.
+  const [feeRemoving, setFeeRemoving] = useState(null)
+  const [feeRemoveError, setFeeRemoveError] = useState('')
+  const [feeRemoveBusy, setFeeRemoveBusy] = useState(false)
+  const [feeDone, setFeeDone] = useState('')
 
   useEffect(() => {
     if (copyState === 'idle') return undefined
@@ -113,6 +128,36 @@ function TransactionDetail({
   const remaining = sale.total - (totalPayed + sale.discount)
   const settled = remaining <= 0
   const returnedTotal = sale.returnedTotal ?? 0
+  // Usta xizmatidan kompaniya ulushi: `sale.total` ichida, mahsulotlar ro'yxatida alohida qator bo'lib chiqadi.
+  const masterFees = sale.masterFees ?? []
+  const companyServices = masterFees.filter((fee) => fee.companyAmount > 0)
+  const companyServiceTotal = companyServices.reduce((sum, fee) => sum + fee.companyAmount, 0)
+  const masterFeeTotal = masterFees.reduce((sum, fee) => sum + fee.amount, 0)
+  // Xizmat qo'shish/o'chirish — tafsilot yuklangach (unda shartnoma va to'lovlar aniq).
+  const canAddFee = Boolean(addMasterFee && detail)
+  const canRemoveFee = Boolean(removeMasterFee && detail && isAdminRole())
+
+  const confirmRemoveFee = async () => {
+    setFeeRemoveBusy(true)
+    setFeeRemoveError('')
+    try {
+      const res = await removeMasterFee(feeRemoving.id, localStorage.getItem('userid'))
+      const result = await res.json().catch(() => null)
+      if (!res.ok) {
+        setFeeRemoveError(
+          (Array.isArray(result?.message) ? result.message.join(', ') : result?.message) || t('Ошибка сервера'),
+        )
+        return
+      }
+      setDetail(result)
+      setFeeRemoving(null)
+      setFeeDone(t('Услуга мастера удалена'))
+    } catch {
+      setFeeRemoveError(t('Не удалось подключиться к серверу'))
+    } finally {
+      setFeeRemoveBusy(false)
+    }
+  }
 
   // Ro'yxatni rasm qilib nusxalash: mijozga messenjer orqali tashlab yuborish uchun.
   const copyAsImage = async () => {
@@ -201,31 +246,111 @@ function TransactionDetail({
             </div>
           </Card>
 
-          {/* Usta xizmati: ustaga beriladi, savdo summasi va foydaga kirmaydi. */}
-          {sale.masterFees?.length > 0 && (
+          {/* Usta xizmati: ustaning ulushi ustaga beriladi (savdo summasi va foydaga kirmaydi),
+              kompaniya ulushi savdo summasi ichida. */}
+          {(masterFees.length > 0 || canAddFee) && (
             <Card padded={false}>
               <Card.Header>
-                <Card.Title>{t('Услуги мастеров')}</Card.Title>
-                <span className="text-[11px] text-subtle">{t('не входят в сумму продажи')}</span>
+                <div className="min-w-0">
+                  <Card.Title>{t('Услуги мастеров')}</Card.Title>
+                  {masterFees.length > 0 && (
+                    <p className="text-[11px] text-subtle">
+                      {companyServiceTotal > 0
+                        ? t('в сумму продажи входит только доля компании')
+                        : t('не входят в сумму продажи')}
+                    </p>
+                  )}
+                </div>
+                {canAddFee && (
+                  <Button
+                    variant="outline-secondary"
+                    size="xs"
+                    onClick={() => setFeeAdding(true)}
+                    title={t('Добавить услугу мастера к этой продаже')}
+                  >
+                    <Plus />
+                    {t('Добавить')}
+                  </Button>
+                )}
               </Card.Header>
-              <ul className="m-0 list-none divide-y divide-line px-4">
-                {sale.masterFees.map((fee) => (
-                  <li key={fee.id} className="flex items-center gap-2.5 py-2 text-[13px]">
-                    <Wrench className="size-3.5 shrink-0 text-subtle" />
-                    <span className="min-w-0 flex-1 truncate text-fg">
-                      {fee.master ? `${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim() : '—'}
-                      {fee.note && <span className="ml-1.5 text-[11px] text-subtle">{fee.note}</span>}
+              {masterFees.length === 0 ? (
+                <p className="px-4 py-3 text-[12px] text-subtle">
+                  {t('Мастер пришёл позже? Добавьте его услугу — сумма посчитается как при оформлении продажи.')}
+                </p>
+              ) : (
+                <ul className="m-0 list-none divide-y divide-line px-4">
+                  {masterFees.map((fee) => {
+                    // Savdodan keyin qo'shilgan bo'lsa — qachon va ulush qanday to'langani ko'rinadi.
+                    const addedLater =
+                      fee.createdAt && new Date(fee.createdAt).getTime() - new Date(sale.date).getTime() > 5 * 60_000
+                    return (
+                      <li key={fee.id} className="flex flex-col gap-1 py-2 text-[13px]">
+                        <div className="flex items-center gap-2.5">
+                          <Wrench className="size-3.5 shrink-0 text-subtle" />
+                          <span className="min-w-0 flex-1 truncate text-fg">
+                            {fee.master ? `${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim() : '—'}
+                            {fee.note && <span className="ml-1.5 text-[11px] text-subtle">{fee.note}</span>}
+                            {addedLater && (
+                              <span className="ml-1.5 text-[11px] text-subtle">
+                                {t('добавлено {date}', { date: new Date(fee.createdAt).toLocaleString('uz') })}
+                                {fee.companyAmount > 0 &&
+                                  ` · ${fee.paymentMethod ? td(fee.paymentMethod) : t('в долг')}`}
+                              </span>
+                            )}
+                          </span>
+                          <span
+                            className="shrink-0 tabular-nums text-fg"
+                            title={t('Мастеру — отдельно, не входит в сумму продажи')}
+                          >
+                            {fee.companyAmount > 0 && <span className="mr-1 text-[11px] text-subtle">{t('услуга мастера')}</span>}
+                            <span className="font-semibold">{fee.amount.toLocaleString('uz')} So&apos;m</span>
+                          </span>
+                          {canRemoveFee && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFeeRemoveError('')
+                                setFeeRemoving(fee)
+                              }}
+                              title={t('Удалить услугу мастера')}
+                              aria-label={t('Удалить услугу мастера')}
+                              className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-subtle transition hover:bg-danger-soft hover:text-danger-soft-fg"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        {/* Kompaniya ulushi — ustaning ostida alohida qator: u savdo summasi ichida. */}
+                        {fee.companyAmount > 0 && (
+                          <div className="flex items-center gap-2.5 pl-6 text-[12px]">
+                            <span className="min-w-0 flex-1 truncate text-muted">
+                              {t('Доля компании — в сумме продажи')}
+                            </span>
+                            <span className="shrink-0 font-semibold tabular-nums text-primary">
+                              +{fee.companyAmount.toLocaleString('uz')} So&apos;m
+                            </span>
+                            {canRemoveFee && <span aria-hidden="true" className="size-6 shrink-0" />}
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
+                  <li className="flex items-center justify-between py-2 text-[13px]">
+                    <span className="text-muted">{t('Итого мастерам:')}</span>
+                    <span className="font-semibold tabular-nums text-fg">
+                      {masterFeeTotal.toLocaleString('uz')} So&apos;m
                     </span>
-                    <span className="font-semibold tabular-nums text-fg">{fee.amount.toLocaleString('uz')} So&apos;m</span>
                   </li>
-                ))}
-                <li className="flex items-center justify-between py-2 text-[13px]">
-                  <span className="text-muted">{t('Итого мастерам:')}</span>
-                  <span className="font-semibold tabular-nums text-fg">
-                    {(sale.masterFeeTotal ?? 0).toLocaleString('uz')} So&apos;m
-                  </span>
-                </li>
-              </ul>
+                  {companyServiceTotal > 0 && (
+                    <li className="flex items-center justify-between py-2 text-[13px]">
+                      <span className="text-muted">{t('Доля компании (в сумме продажи):')}</span>
+                      <span className="font-semibold tabular-nums text-fg">
+                        {companyServiceTotal.toLocaleString('uz')} So&apos;m
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              )}
             </Card>
           )}
         </div>
@@ -337,6 +462,28 @@ function TransactionDetail({
                   </li>
                 )
               })}
+              {/* Usta xizmatidan kompaniya ulushi: savdo summasida, qaytarilmaydi. */}
+              {companyServices.map((fee) => (
+                <li
+                  key={`service-${fee.id}`}
+                  className="flex items-center gap-2 rounded-lg border border-dashed border-line bg-surface-2/50 px-2.5 py-1.5"
+                >
+                  <Wrench className="size-3.5 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-fg">
+                    {t('Услуга мастера')}
+                    {fee.master && (
+                      <span className="ml-1.5 font-normal text-subtle">
+                        {`${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim()}
+                      </span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-right text-[13px] font-semibold tabular-nums text-fg @lg:min-w-[5.5rem]">
+                    {fee.companyAmount.toLocaleString('uz')}
+                  </span>
+                  {/* Qaytarish tugmasi ustuni bilan tekislash uchun. */}
+                  {canReturn && <span className="size-6 shrink-0" />}
+                </li>
+              ))}
             </ul>
           </Card>
 
@@ -379,6 +526,24 @@ function TransactionDetail({
             </ul>
 
             <dl className="flex flex-col gap-1.5 border-t border-line bg-surface-2/60 px-4 py-3 text-[13px]">
+              {/* Usta xizmatidan kompaniya ulushi bo'lsa: umumiy summa nimadan iboratligi alohida ko'rinadi. */}
+              {companyServiceTotal > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <dt className="text-subtle">{t('Сумма товаров')}</dt>
+                    <dd className="tabular-nums text-fg">
+                      {(sale.total - companyServiceTotal).toLocaleString('uz')} So&apos;m
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="flex items-center gap-1.5 text-subtle">
+                      <Wrench className="size-3.5" />
+                      {t('Услуга мастера (доля компании)')}
+                    </dt>
+                    <dd className="tabular-nums text-fg">+{companyServiceTotal.toLocaleString('uz')} So&apos;m</dd>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between">
                 <dt className="text-subtle">{t('Скидка')}</dt>
                 <dd className="tabular-nums text-fg">
@@ -537,9 +702,55 @@ function TransactionDetail({
         />
       )}
 
+      {feeAdding && (
+        <SaleMasterFeeModal
+          sale={sale}
+          addMasterFee={addMasterFee}
+          onHide={() => setFeeAdding(false)}
+          onDone={(updated) => {
+            setFeeAdding(false)
+            setDetail(updated)
+            setFeeDone(t('Услуга мастера добавлена'))
+          }}
+        />
+      )}
+
+      <Modal show={Boolean(feeRemoving)} onHide={feeRemoveBusy ? undefined : () => setFeeRemoving(null)} size="sm" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{t('Удалить услугу мастера?')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-2 text-[13px]">
+          <p>
+            {feeRemoving?.master
+              ? `${feeRemoving.master.username ?? ''} ${feeRemoving.master.surname ?? ''}`.trim()
+              : '—'}
+            {' · '}
+            {t('услуга мастера')} {(feeRemoving?.amount ?? 0).toLocaleString('uz')}
+          </p>
+          {feeRemoving?.companyAmount > 0 && (
+            <p className="text-muted">
+              {t('Сумма продажи уменьшится на {amount}. Если доля оплачивалась отдельно — эта оплата тоже удалится.', {
+                amount: feeRemoving.companyAmount.toLocaleString('uz'),
+              })}
+            </p>
+          )}
+          {feeRemoveError && <p className="text-[12px] text-danger-soft-fg">{feeRemoveError}</p>}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setFeeRemoving(null)} disabled={feeRemoveBusy}>
+            {t('Отмена')}
+          </Button>
+          <Button variant="danger" loading={feeRemoveBusy} onClick={confirmRemoveFee}>
+            {t('Да, удалить')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <CopyImageModal image={fallbackImage} onHide={() => setFallbackImage('')} />
 
       <ResultModal show={Boolean(customerDone)} onHide={() => setCustomerDone('')} success message={customerDone} />
+
+      <ResultModal show={Boolean(feeDone)} onHide={() => setFeeDone('')} success message={feeDone} />
 
       <ResultModal
         show={Boolean(returnDone)}

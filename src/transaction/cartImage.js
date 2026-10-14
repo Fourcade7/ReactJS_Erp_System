@@ -178,8 +178,17 @@ function renderImage(spec) {
   return canvas
 }
 
-/** Savat: narx oʻzgartirilgan boʻlsa «было … · farq» qatori va «Изменение цены» chiqadi. */
-function cartSpec(orderList, priceField) {
+/** Usta xizmatidan kompaniya ulushi (savdo summasiga kiradi) — jami ustidagi qator. */
+function serviceExtra(services) {
+  const amount = (services ?? []).reduce((sum, fee) => sum + (fee.companyAmount ?? 0), 0)
+  return { amount, extras: amount > 0 ? [{ label: t('Услуга мастера'), value: `+${money(amount)}` }] : [] }
+}
+
+/**
+ * Savat: narx oʻzgartirilgan boʻlsa «было … · farq» qatori va «Изменение цены» chiqadi.
+ * `services` — usta xizmatlari: kompaniya ulushi jamiga qo'shiladi (ustaning ulushi rasmga chiqmaydi).
+ */
+function cartSpec(orderList, priceField, services) {
   const rows = orderList.map((item) => {
     const price = Number(unitPrice(item, priceField) || 0)
     return {
@@ -194,13 +203,17 @@ function cartSpec(orderList, priceField) {
     }
   })
   const changeTotal = Math.round(rows.reduce((sum, row) => sum + row.change * row.quantity, 0))
+  const service = serviceExtra(services)
 
   return {
     title: t('Список товаров'),
     subtitle: new Date().toLocaleString(locale),
     rows,
-    extras: changeTotal !== 0 ? [{ label: t('Изменение цены'), value: `${signed(changeTotal)} So'm` }] : [],
-    total: rows.reduce((sum, row) => sum + row.sum, 0),
+    extras: [
+      ...(changeTotal !== 0 ? [{ label: t('Изменение цены'), value: `${signed(changeTotal)} So'm` }] : []),
+      ...service.extras,
+    ],
+    total: rows.reduce((sum, row) => sum + row.sum, 0) + service.amount,
   }
 }
 
@@ -228,7 +241,8 @@ function saleSpec(sale, label) {
   const paid = sale.payments.reduce((sum, item) => sum + item.amount, 0)
   const remaining = sale.total - (paid + discount)
 
-  const extras = []
+  // `sale.total` ichida usta xizmatidan kompaniya ulushi ham bor — qatorlar yig'indisiga mos kelishi uchun alohida chiqadi.
+  const extras = [...serviceExtra(sale.masterFees).extras]
   if (discount > 0) extras.push({ label: t('Скидка'), value: `−${money(discount)}` })
   if (returned > 0) extras.push({ label: t('Возвращено'), value: `−${money(returned)}` })
   if (remaining > 0) {
@@ -273,8 +287,8 @@ async function deliver(canvas) {
 }
 
 /** Savatni rasm qilib clipboard ga yozadi. Imkon bo'lmasa `ClipboardUnavailableError` otadi. */
-async function copyCartImage(orderList, priceField) {
-  return deliver(renderImage(cartSpec(orderList, priceField)))
+async function copyCartImage(orderList, priceField, services = []) {
+  return deliver(renderImage(cartSpec(orderList, priceField, services)))
 }
 
 /** Savdo (kirim, qaytarish) tafsilotini rasm qilib clipboard ga yozadi. */

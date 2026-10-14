@@ -155,6 +155,58 @@ export default {
   'Услуги мастеров': 'Usta xizmatlari',
   'Итого мастерам:': 'Ustalarga jami:',
   'Мастерам (отдельно, не входит в сумму)': "Ustalarga (alohida, summaga kirmaydi)",
+  // usta xizmatidan kompaniya ulushi (savdo summasiga kiradi)
+  '(в сумму продажи входит только доля компании)': "(savdo summasiga faqat kompaniya ulushi kiradi)",
+  'в сумму продажи входит только доля компании': "savdo summasiga faqat kompaniya ulushi kiradi",
+  'Сумма услуги мастера': 'Usta xizmati summasi',
+  'услуга мастера': 'usta xizmati',
+  'Сколько получает мастер — не входит в сумму продажи': "Usta qancha oladi — savdo summasiga kirmaydi",
+  'Доля компании': 'Kompaniya ulushi',
+  'Доля компании — в сумме продажи': 'Kompaniya ulushi — savdo summasida',
+  'Итого услуга: {total} (услуга мастера {master} + доля компании {company})':
+    'Xizmat jami: {total} (usta xizmati {master} + kompaniya ulushi {company})',
+  'Услуга мастера: {master} · доля компании: {company}': 'Usta xizmati: {master} · kompaniya ulushi: {company}',
+  'Доля компании — входит в сумму продажи': 'Kompaniya ulushi — savdo summasiga kiradi',
+  'доля компании {amount}': 'kompaniya ulushi {amount}',
+  'Мастеру — отдельно, не входит в сумму продажи': "Ustaga — alohida, savdo summasiga kirmaydi",
+  'Услуга мастера (доля компании)': 'Usta xizmati (kompaniya ulushi)',
+  'Доля компании (в сумме продажи):': 'Kompaniya ulushi (savdo summasida):',
+  'Доля компании (в продажах)': 'Kompaniya ulushi (savdolarda)',
+  'Доля компании из услуги (если указана) входит в сумму продажи.':
+    "Xizmatdan kompaniya ulushi (ko'rsatilgan bo'lsa) savdo summasiga kiradi.",
+  'Уже входит в выручку и прибыль': 'Tushum va foydaga allaqachon kirgan',
+  'Доля компании (в выручке): {amount}': 'Kompaniya ulushi (tushumda): {amount}',
+  // savdodan keyin usta xizmatini qo'shish / o'chirish
+  'Добавить': "Qo'shish",
+  'Добавить услугу мастера к этой продаже': "Ushbu savdoga usta xizmatini qo'shish",
+  'Мастер пришёл позже? Добавьте его услугу — сумма посчитается как при оформлении продажи.':
+    "Usta keyinroq keldimi? Uning xizmatini qo'shing — summa savdoni rasmiylashtirishdagidek hisoblanadi.",
+  'добавлено {date}': "qo'shilgan {date}",
+  'в долг': 'qarzga',
+  'Удалить услугу мастера': "Usta xizmatini o'chirish",
+  'Удалить услугу мастера?': "Usta xizmatini o'chirasizmi?",
+  'Услуга мастера удалена': "Usta xizmati o'chirildi",
+  'Услуга мастера добавлена': "Usta xizmati qo'shildi",
+  'Сумма продажи уменьшится на {amount}. Если доля оплачивалась отдельно — эта оплата тоже удалится.':
+    "Savdo summasi {amount} ga kamayadi. Ulush alohida to'langan bo'lsa — bu to'lov ham o'chadi.",
+  'Как оплачена доля компании': "Kompaniya ulushi qanday to'landi",
+  'Сумма продажи: {from} → {to}.': 'Savdo summasi: {from} → {to}.',
+  'Долг по продаже увеличится на {amount}.': 'Savdo qarzi {amount} ga oshadi.',
+  'Оплата {amount} будет записана сегодняшним числом.': "{amount} to'lov bugungi sana bilan yoziladi.",
+  'Сумма договора {number} тоже изменится.': "{number} shartnoma summasi ham o'zgaradi.",
+  'Доля мастера не входит в сумму продажи — она считается отдельно, как и при оформлении продажи.':
+    "Usta ulushi savdo summasiga kirmaydi — savdoni rasmiylashtirishdagidek alohida hisoblanadi.",
+  // mijoz kartochkasi: savdodagi usta xizmatlari
+  'Итого': 'Jami',
+  'Доля мастера не входит в сумму продажи; доля компании — входит.':
+    "Usta ulushi savdo summasiga kirmaydi; kompaniya ulushi — kiradi.",
+  // savdolar ro'yxati: qidiruv va filtrlar
+  'Продавец': 'Sotuvchi',
+  'Все продавцы': 'Barcha sotuvchilar',
+  'Только с долгом': 'Faqat qarzdorlar',
+  'Сбросить': 'Tozalash',
+  'Найдено: {count}': 'Topildi: {count}',
+  'Клиент, продавец, мастер, телефон или № продажи': "Mijoz, sotuvchi, usta, telefon yoki savdo №",
   'С': 'Dan',
   'По': 'Gacha',
   'Все мастера': 'Barcha ustalar',

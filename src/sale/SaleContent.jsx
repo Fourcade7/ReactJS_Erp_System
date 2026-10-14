@@ -12,11 +12,12 @@ import TransactionDetail from '../transaction/TransactionDetail'
 import {
   addNewPayment,
   addNewSale,
+  addSaleMasterFee,
   getAllCustomersForSale,
   getAllProductPaginationSearch,
-  getAllSaleDebtList,
   getAllSaleListPaginationSearch,
   getSaleDetail,
+  removeSaleMasterFee,
   returnFromSale,
   changeSaleCustomer,
 } from './SaleApi'
@@ -40,7 +41,7 @@ const SALE_CONFIG = {
   maxDiscountPercent: 20,
   // Kassada "По договору" to'lov turi: shartnoma va kuzatuv vazifasi avtomatik ochiladi.
   contractSale: true,
-  // Tovarlar ro'yxatida usta xizmati: ustaga beriladi, savdo summasi va foydaga kirmaydi.
+  // Tovarlar ro'yxatida usta xizmati: ustaning ulushi savdo summasi va foydaga kirmaydi, kompaniya ulushi — kiradi.
   masterFees: true,
   onlyStocked: false,
   autoAddSingle: true,
@@ -55,7 +56,16 @@ const SALE_CONFIG = {
   returnFromSale,
   // Savdodan keyin kontragentni almashtirish (kassir adashgan bo'lsa).
   changeCustomer: changeSaleCustomer,
+  // Savdodan keyin usta xizmatini qo'shish (usta kech kelgan bo'lsa) va o'chirish (admin).
+  addMasterFee: addSaleMasterFee,
+  removeMasterFee: removeSaleMasterFee,
+  // Ro'yxatda: usta, sotgan xodim va "Только с долгом" filtrlari.
+  listFilters: { debt: true },
+  searchPlaceholder: t('Клиент, продавец, мастер, телефон или № продажи'),
 }
+
+/** Bosh sahifadagi qarzdorlar: doim faqat qarzi borlar, qolgan filtrlar savdolar ro'yxatidagidek. */
+const DEBT_LIST_FILTERS = { fixed: { debt: true } }
 
 /** Bosh sahifadagi "qarzdor savdolar" bloki. */
 function SaleTabForHome() {
@@ -74,7 +84,9 @@ function SaleTabForHome() {
         }
       >
         <TransactionList
-          fetchAll={getAllSaleDebtList}
+          fetchPage={getAllSaleListPaginationSearch}
+          filters={DEBT_LIST_FILTERS}
+          searchPlaceholder={SALE_CONFIG.searchPlaceholder}
           label={t('Продажа')}
           icon={ShoppingBag}
           activeTab={activeTab}
@@ -101,6 +113,8 @@ function SaleTabForHome() {
             fetchDetail={getSaleDetail}
             returnFromSale={returnFromSale}
             changeCustomer={changeSaleCustomer}
+            addMasterFee={addSaleMasterFee}
+            removeMasterFee={removeSaleMasterFee}
             label={t('Продажа')}
             icon={ShoppingBag}
           />

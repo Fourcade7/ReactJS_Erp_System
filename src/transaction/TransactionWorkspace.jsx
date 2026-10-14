@@ -89,7 +89,8 @@ const makeDraft = (drafts, extra = {}) => ({
   id: makeId(),
   number: freeNumber(drafts),
   orderList: [],
-  // Usta xizmatlari (savdo summasiga kirmaydi): [{ key, master, amount }].
+  // Usta xizmatlari: [{ key, master, amount, companyAmount }] — `amount` ustaga (savdo summasiga kirmaydi),
+  // `companyAmount` kompaniyaga (savdo summasiga qo'shiladi).
   masterFees: [],
   // Hisob-kitob paneli holati (kontragent, to'lov usuli, chegirma) — chek almashganda saqlanadi.
   checkout: null,
@@ -194,7 +195,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
   }
 
   const requestClose = (draft) => {
-    if (draft.orderList.length === 0) removeDraft(draft.id)
+    if (draft.orderList.length === 0 && !draft.masterFees?.length) removeDraft(draft.id)
     else setClosing(draft)
   }
 
@@ -213,9 +214,11 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
       {drafts.map((draft) => {
         const selected = draft.id === active.id
         const count = roundQty(draft.orderList.reduce((sum, item) => sum + item.quantity, 0))
-        const total = Math.round(
-          draft.orderList.reduce((sum, item) => sum + unitPrice(item, config.priceField) * item.quantity, 0),
-        )
+        // Savdo summasi kabi: tovarlar + usta xizmatidan kompaniya ulushi.
+        const total =
+          Math.round(
+            draft.orderList.reduce((sum, item) => sum + unitPrice(item, config.priceField) * item.quantity, 0),
+          ) + (draft.masterFees ?? []).reduce((sum, fee) => sum + (fee.companyAmount ?? 0), 0)
         return (
           <div
             key={draft.id}
@@ -242,7 +245,7 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                 </span>
               )}
             </button>
-            {(drafts.length > 1 || draft.orderList.length > 0) && (
+            {(drafts.length > 1 || draft.orderList.length > 0 || draft.masterFees?.length > 0) && (
               <button
                 type="button"
                 onClick={() => requestClose(draft)}
@@ -291,6 +294,8 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
         >
           <TransactionList
             fetchPage={config.fetchPage}
+            filters={config.listFilters}
+            searchPlaceholder={config.searchPlaceholder}
             label={config.label}
             icon={Icon}
             activeTab={activeTab}
@@ -384,6 +389,8 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
               fetchDetail={config.fetchDetail}
               returnFromSale={config.returnFromSale}
               changeCustomer={config.changeCustomer}
+              addMasterFee={config.addMasterFee}
+              removeMasterFee={config.removeMasterFee}
               label={config.label}
               icon={Icon}
             />
@@ -396,7 +403,9 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
           <Modal.Title>{t('Закрыть чек {number}?', { number: closing?.number })}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {t('В чеке {count} поз. — они будут удалены, чек не оформлен.', { count: closing?.orderList.length ?? 0 })}
+          {t('В чеке {count} поз. — они будут удалены, чек не оформлен.', {
+            count: (closing?.orderList.length ?? 0) + (closing?.masterFees?.length ?? 0),
+          })}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={() => setClosing(null)}>

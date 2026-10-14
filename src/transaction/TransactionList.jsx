@@ -1,19 +1,31 @@
 import { useEffect, useState } from 'react'
-import { CalendarClock, ChevronRight, Inbox, Percent, UserRound } from 'lucide-react'
-import { Badge, EmptyState, SearchField } from '../ui'
+import { BadgeCheck, CalendarClock, ChevronRight, Inbox, Percent, UserRound, Wallet, Wrench, X } from 'lucide-react'
+import { cn } from '../lib/cn'
+import { Badge, EmptyState, Form, SearchField } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { amountsOf } from './amounts'
+import { isMaster, personName, useMembers } from './masterFee'
 import { t } from '../i18n'
+
+const NO_FILTER = { masterId: '', userId: '', debt: false }
+
+/** Savdodagi ustalar nomlari, takrorlanmasdan (bir usta bir nechta xizmat ko'rsatgan bo'lishi mumkin). */
+const mastersOf = (sale) => [...new Set((sale.masterFees ?? []).map((fee) => personName(fee.master) || '—'))]
 
 /**
  * Operatsiyalar roʻyxati (savdo / kirim / qaytarish).
  *
- * - `fetchPage(page, size, search)` berilsa — qidiruv va sahifalash bilan;
- * - `fetchAll()` berilsa — bitta soʻrovda butun roʻyxat (masalan, qarzdorlar).
+ * - `fetchPage(page, size, search, filters)` berilsa — qidiruv va sahifalash bilan;
+ * - `fetchAll()` berilsa — bitta soʻrovda butun roʻyxat.
+ *
+ * `filters` (savdolar uchun) — qidiruv yonida filtrlar: usta, sotgan xodim (kassir/admin) va `debt: true` bo'lsa
+ * "Только с долгом". `filters.fixed` — doim qo'shiladigan filtr (masalan, bosh sahifadagi qarzdorlar: `{ debt: true }`).
  */
 function TransactionList({
   fetchPage,
   fetchAll,
+  filters,
+  searchPlaceholder,
   label,
   icon: Icon = Inbox,
   activeTab,
@@ -25,7 +37,21 @@ function TransactionList({
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [saleList, setSaleList] = useState([])
   const [pageCount, setPageCount] = useState(0)
+  const [found, setFound] = useState(0)
   const [active, setActive] = useState(1)
+  const [filter, setFilter] = useState(NO_FILTER)
+
+  const filterable = Boolean(fetchPage && filters)
+  const members = useMembers(filterable)
+  const masters = members.filter(isMaster)
+  // Sotuvchilar: ustalardan boshqa hamma xodim (kassir, admin ...).
+  const sellers = members.filter((member) => !isMaster(member))
+  const filtered = Boolean(filter.masterId || filter.userId || filter.debt)
+
+  const changeFilter = (patch) => {
+    setFilter((current) => ({ ...current, ...patch }))
+    setActive(1)
+  }
 
   useEffect(() => {
     if (!fetchPage) return
@@ -40,8 +66,9 @@ function TransactionList({
     async function load() {
       try {
         if (fetchPage) {
-          const page = await fetchPage(active, 10, debouncedSearch)
+          const page = await fetchPage(active, 10, debouncedSearch, { ...filter, ...filters?.fixed })
           setPageCount(page.meta.totalPages)
+          setFound(page.meta.total)
           setSaleList(page.data)
         } else {
           setSaleList(await fetchAll())
@@ -52,7 +79,7 @@ function TransactionList({
     }
 
     if (activeTab === 'home') load()
-  }, [active, activeTab, debouncedSearch, fetchPage, fetchAll])
+  }, [active, activeTab, debouncedSearch, fetchPage, fetchAll, filter, filters])
 
   // Chegirma va holat ustunlari faqat sahifada kamida bitta shunday qator bo'lsa joy oladi.
   const anyDiscount = saleList.some((sale) => sale.discount > 0)
@@ -61,14 +88,79 @@ function TransactionList({
   return (
     <div className="flex flex-col gap-3">
       {fetchPage && (
-        <SearchField
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value)
-            setActive(1)
-          }}
-          onClear={() => setSearchTerm('')}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchField
+            className="min-w-56 flex-1"
+            value={searchTerm}
+            placeholder={searchPlaceholder}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setActive(1)
+            }}
+            onClear={() => setSearchTerm('')}
+          />
+          {filterable && (
+            <>
+              <div className="w-full sm:w-44">
+                <Form.Select
+                  aria-label={t('Мастер')}
+                  value={filter.masterId}
+                  onChange={(e) => changeFilter({ masterId: e.target.value })}
+                >
+                  <option value="">{t('Все мастера')}</option>
+                  {masters.map((master) => (
+                    <option key={master.id} value={master.id}>
+                      {personName(master)}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
+              <div className="w-full sm:w-44">
+                <Form.Select
+                  aria-label={t('Продавец')}
+                  value={filter.userId}
+                  onChange={(e) => changeFilter({ userId: e.target.value })}
+                >
+                  <option value="">{t('Все продавцы')}</option>
+                  {sellers.map((seller) => (
+                    <option key={seller.id} value={seller.id}>
+                      {personName(seller)}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
+              {filters.debt && (
+                <button
+                  type="button"
+                  aria-pressed={filter.debt}
+                  onClick={() => changeFilter({ debt: !filter.debt })}
+                  className={cn(
+                    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-[12.5px] font-medium transition',
+                    filter.debt
+                      ? 'border-danger/50 bg-danger-soft text-danger-soft-fg'
+                      : 'border-line bg-surface text-muted hover:text-fg',
+                  )}
+                >
+                  <Wallet className="size-3.5" />
+                  {t('Только с долгом')}
+                </button>
+              )}
+              {filtered && (
+                <button
+                  type="button"
+                  onClick={() => changeFilter(NO_FILTER)}
+                  className="inline-flex h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-[12px] text-subtle transition hover:text-fg"
+                >
+                  <X className="size-3.5" />
+                  {t('Сбросить')}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+      {filterable && (filtered || debouncedSearch.trim()) && (
+        <p className="-mt-1 text-[12px] text-subtle">{t('Найдено: {count}', { count: found })}</p>
       )}
 
       {saleList.length === 0 ? (
@@ -131,6 +223,35 @@ function TransactionList({
                         {/* Список продаж ichidan qilingan qaytarish */}
                         {sale.sale && <span className="ml-1">{t('· из продажи #{id}', { id: sale.sale.id })}</span>}
                       </span>
+                      {/* Kim sotgan (kassir/admin) — qidiruv va filtr shu bo'yicha ham ishlaydi. */}
+                      {filterable && personName(sale.user) && (
+                        <span className="inline-flex min-w-0 items-center gap-1" title={t('Продавец')}>
+                          <span aria-hidden="true">·</span>
+                          <BadgeCheck className="size-3 shrink-0" />
+                          <span className="truncate">{personName(sale.user)}</span>
+                        </span>
+                      )}
+                      {/* Usta — sotuvchidan keyin, shu qatorda (qator balandligi o'zgarmaydi); bir nechta bo'lsa — "+N". */}
+                      {mastersOf(sale).length > 0 && (
+                        <span
+                          title={sale.masterFees
+                            .map((fee) =>
+                              `${personName(fee.master) || '—'}: ${t('Услуга мастера: {master} · доля компании: {company}', {
+                                master: fee.amount.toLocaleString('uz'),
+                                company: fee.companyAmount.toLocaleString('uz'),
+                              })}`,
+                            )
+                            .join('\n')}
+                          className="inline-flex min-w-0 items-center gap-1"
+                        >
+                          <span aria-hidden="true">·</span>
+                          <Wrench className="size-3 shrink-0 text-primary" />
+                          <span className="truncate">{mastersOf(sale)[0]}</span>
+                          {mastersOf(sale).length > 1 && (
+                            <span className="shrink-0">+{mastersOf(sale).length - 1}</span>
+                          )}
+                        </span>
+                      )}
                     </p>
                   </div>
 

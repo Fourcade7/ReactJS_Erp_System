@@ -121,8 +121,11 @@ function CustomerPicker({ fetchCustomers, label, setLabel, setCustomerId, setCus
 
 const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString('uz')}`
 
-/** Chop etiladigan chek. Tema qanday boʻlishidan qatʼi nazar oq fonda. */
-function CheckScreen({ orderList, discountAmount, finalCost, printType, priceField }) {
+/**
+ * Chop etiladigan chek. Tema qanday boʻlishidan qatʼi nazar oq fonda.
+ * `services` — usta xizmatidan kompaniya ulushi (savdo summasida): tovarlardan keyin alohida qator.
+ */
+function CheckScreen({ orderList, services = [], discountAmount, finalCost, printType, priceField }) {
   // Savatda qoʻlda oʻzgartirilgan narxlar boʻyicha jami farq (odatiy narxga nisbatan).
   const changeTotal = Math.round(
     orderList.reduce((sum, item) => sum + priceChange(item, priceField) * item.quantity, 0),
@@ -161,6 +164,17 @@ function CheckScreen({ orderList, discountAmount, finalCost, printType, priceFie
             </div>
           )
         })}
+        {services.map((fee) => (
+          <div key={fee.key} className="border-b border-dashed border-black/30 py-1">
+            <div className="flex justify-between gap-2 font-semibold">
+              <span>
+                {t('Услуга мастера')}
+                {fee.master ? ` (${`${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim()})` : ''}
+              </span>
+              <span className="font-bold">{fee.companyAmount.toLocaleString('uz')} So&apos;m</span>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="mt-2">
@@ -254,9 +268,15 @@ function Checkout({
   const [showSuccess, setShowSuccess] = useState(false)
 
   // Miqdor o'nli bo'lishi mumkin, summalar esa bazada butun son.
-  const totalCost = Math.round(
+  const goodsTotal = Math.round(
     orderList.reduce((sum, item) => sum + unitPrice(item, priceField) * item.quantity, 0),
   )
+  // Usta xizmati: kompaniya ulushi savdo summasiga qo'shiladi, ustaning ulushi — alohida (summaga kirmaydi).
+  const services = masterFees.filter((fee) => fee.companyAmount > 0)
+  const serviceTotal = services.reduce((sum, fee) => sum + fee.companyAmount, 0)
+  const masterFeeTotal = masterFees.reduce((sum, fee) => sum + fee.amount, 0)
+  // Savdo summasi — backend dagi `sale.total` bilan bir xil (tovarlar + kompaniya ulushi).
+  const totalCost = goodsTotal + serviceTotal
 
   // Backend ham xuddi shu chegarani (pastga yaxlitlangan) tekshiradi.
   const maxDiscount =
@@ -297,7 +317,6 @@ function Checkout({
   // "По договору" da standart — ochish (avvalgidek), tashkilotga boshqa to'lov turida — ochmaslik.
   const askContract = contractSale && (isContract || customerType === 'organization')
   const openContract = contractChoice ?? isContract
-  const masterFeeTotal = masterFees.reduce((sum, fee) => sum + fee.amount, 0)
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -561,8 +580,14 @@ function Checkout({
         <dl className="flex flex-col gap-1 border-t border-line pt-3 text-xs">
           <div className="flex justify-between text-muted">
             <dt>{t('Сумма товаров')}</dt>
-            <dd className="tabular-nums">{totalCost.toLocaleString('uz')}</dd>
+            <dd className="tabular-nums">{goodsTotal.toLocaleString('uz')}</dd>
           </div>
+          {serviceTotal > 0 && (
+            <div className="flex justify-between text-muted">
+              <dt>{t('Услуга мастера (доля компании)')}</dt>
+              <dd className="tabular-nums">+{serviceTotal.toLocaleString('uz')}</dd>
+            </div>
+          )}
           <div className="flex justify-between text-muted">
             <dt>{t('Скидка')}</dt>
             <dd className="tabular-nums">−{Number(discountAmount || 0).toLocaleString('uz')}</dd>
@@ -634,6 +659,7 @@ function Checkout({
             <div ref={componentRef}>
               <CheckScreen
                 orderList={orderList}
+                services={services}
                 discountAmount={discountAmount}
                 finalCost={finalCost}
                 printType={printType}

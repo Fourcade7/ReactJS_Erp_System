@@ -199,7 +199,7 @@ function Cart({
 
   const copyAsImage = async () => {
     try {
-      await copyCartImage(orderList, priceField)
+      await copyCartImage(orderList, priceField, masterFees)
       setCopyState('done')
     } catch (error) {
       console.log(error.message)
@@ -395,11 +395,14 @@ function Cart({
         </ul>
       )}
 
-      {/* Usta xizmatlari: savdo summasiga kirmaydi, ustaga beriladi. */}
+      {/* Usta xizmatlari: ustaning ulushi savdo summasiga kirmaydi (ustaga beriladi), kompaniya ulushi — kiradi. */}
       {masterFees.length > 0 && (
         <div className="flex flex-col gap-1 rounded-card border border-dashed border-line bg-surface-2/50 p-2">
           <p className="m-0 text-[11px] font-medium uppercase tracking-wide text-subtle">
-            {t('Услуги мастеров')} · {t('не входят в сумму продажи')}
+            {t('Услуги мастеров')} ·{' '}
+            {masterFees.some((fee) => fee.companyAmount > 0)
+              ? t('в сумму продажи входит только доля компании')
+              : t('не входят в сумму продажи')}
           </p>
           {masterFees.map((fee) => (
             <div key={fee.key} className="flex items-center gap-2 text-[13px]">
@@ -407,7 +410,18 @@ function Cart({
               <span className="min-w-0 flex-1 truncate text-fg">
                 {`${fee.master.username ?? ''} ${fee.master.surname ?? ''}`.trim()}
               </span>
-              <span className="font-semibold tabular-nums text-fg">{fee.amount.toLocaleString('uz')}</span>
+              {fee.companyAmount > 0 && (
+                <span
+                  title={t('Доля компании — входит в сумму продажи')}
+                  className="shrink-0 rounded-md border border-primary/30 bg-primary-soft px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-primary-soft-fg"
+                >
+                  {t('доля компании {amount}', { amount: fee.companyAmount.toLocaleString('uz') })}
+                </span>
+              )}
+              <span className="shrink-0 tabular-nums text-fg" title={t('Мастеру — отдельно, не входит в сумму продажи')}>
+                {fee.companyAmount > 0 && <span className="mr-1 text-[11px] text-subtle">{t('услуга мастера')}</span>}
+                <span className="font-semibold">{fee.amount.toLocaleString('uz')}</span>
+              </span>
               <button
                 type="button"
                 onClick={() => onRemoveMasterFee?.(fee.key)}

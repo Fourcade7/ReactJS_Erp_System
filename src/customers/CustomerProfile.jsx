@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   Undo2,
   UserRound,
+  Wrench,
 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Alert, Badge, Button, Card, EmptyState, Spinner, Table, Tab, Tabs } from '../ui'
@@ -153,31 +154,101 @@ function MonthsChart({ months }) {
   )
 }
 
+/**
+ * Savdodagi usta xizmatlari (qatorda, ochmasdan ko'rinadi): usta va xizmat summasi. To'liq xizmat = ustaga + kompaniyaga;
+ * sichqoncha bilan ustiga borilsa — qanday bo'lingani.
+ */
+function MasterFeeChips({ fees }) {
+  if (!fees?.length) return null
+  return (
+    <div className="mt-1 flex flex-wrap gap-1">
+      {fees.map((fee, index) => (
+        <span
+          key={index}
+          title={t('Услуга мастера: {master} · доля компании: {company}', {
+            master: formatMoney(fee.amount),
+            company: formatMoney(fee.companyAmount),
+          })}
+          className="inline-flex max-w-full items-center gap-1 rounded border border-line bg-surface-2 px-1.5 py-0.5 text-[11px] text-muted"
+        >
+          <Wrench className="size-3 shrink-0 text-primary" />
+          <span className="truncate">{fullName(fee.master) || '—'}</span>
+          <span className="shrink-0 tabular-nums text-fg">{formatMoney(fee.amount + fee.companyAmount)}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 /** Satrlar va to'lovlar: operatsiya qatori bosilganda ochiladi. */
 function OperationDetails({ op }) {
   const kind = OP_TYPES[op.type]
+  const fees = op.masterFees ?? []
+  // Kompaniya ulushi savdo summasida — tovarlar ro'yxatida alohida qator, summa mos kelishi uchun.
+  const services = fees.filter((fee) => fee.companyAmount > 0)
   return (
     <div className="grid gap-5 py-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <div>
-        <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">{t('Товары')}</p>
-        {op.items.length === 0 ? (
-          <p className="text-xs text-subtle">—</p>
-        ) : (
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-x-4 gap-y-1.5 text-[12px]">
-            <span className="text-subtle">{t('Товар')}</span>
-            <span className="text-right text-subtle">{t('Кол-во')}</span>
-            <span className="text-right text-subtle">{t('Цена')}</span>
-            <span className="text-right text-subtle">{t('Сумма')}</span>
-            {op.items.map((item, index) => (
-              <Fragment key={index}>
-                <span className="truncate text-fg">{item.name ?? '—'}</span>
-                <span className="text-right tabular-nums text-muted">
-                  {item.quantity.toLocaleString(locale)} {item.unit ? td(item.unit) : ''}
-                </span>
-                <span className="text-right tabular-nums text-muted">{formatMoney(item.price)}</span>
-                <span className="text-right font-medium tabular-nums text-fg">{formatMoney(item.amount)}</span>
-              </Fragment>
-            ))}
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">{t('Товары')}</p>
+          {op.items.length === 0 && services.length === 0 ? (
+            <p className="text-xs text-subtle">—</p>
+          ) : (
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-x-4 gap-y-1.5 text-[12px]">
+              <span className="text-subtle">{t('Товар')}</span>
+              <span className="text-right text-subtle">{t('Кол-во')}</span>
+              <span className="text-right text-subtle">{t('Цена')}</span>
+              <span className="text-right text-subtle">{t('Сумма')}</span>
+              {op.items.map((item, index) => (
+                <Fragment key={index}>
+                  <span className="truncate text-fg">{item.name ?? '—'}</span>
+                  <span className="text-right tabular-nums text-muted">
+                    {item.quantity.toLocaleString(locale)} {item.unit ? td(item.unit) : ''}
+                  </span>
+                  <span className="text-right tabular-nums text-muted">{formatMoney(item.price)}</span>
+                  <span className="text-right font-medium tabular-nums text-fg">{formatMoney(item.amount)}</span>
+                </Fragment>
+              ))}
+              {services.map((fee, index) => (
+                <Fragment key={`service-${index}`}>
+                  <span className="col-span-3 truncate text-fg">
+                    {t('Услуга мастера (доля компании)')}
+                    {fee.master && <span className="ml-1 text-subtle">· {fullName(fee.master)}</span>}
+                  </span>
+                  <span className="text-right font-medium tabular-nums text-fg">{formatMoney(fee.companyAmount)}</span>
+                </Fragment>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {fees.length > 0 && (
+          <div>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">{t('Услуги мастеров')}</p>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-x-4 gap-y-1.5 text-[12px]">
+              <span className="text-subtle">{t('Мастер')}</span>
+              <span className="text-right text-subtle">{t('Итого')}</span>
+              <span className="text-right text-subtle">{t('Сумма услуги мастера')}</span>
+              <span className="text-right text-subtle">{t('Доля компании')}</span>
+              {fees.map((fee, index) => (
+                <Fragment key={index}>
+                  <span className="flex min-w-0 items-center gap-1.5 text-fg">
+                    <Wrench className="size-3 shrink-0 text-primary" />
+                    <span className="truncate">{fullName(fee.master) || '—'}</span>
+                  </span>
+                  <span className="text-right font-medium tabular-nums text-fg">
+                    {formatMoney(fee.amount + fee.companyAmount)}
+                  </span>
+                  <span className="text-right tabular-nums text-muted">{formatMoney(fee.amount)}</span>
+                  <span className="text-right tabular-nums text-muted">
+                    {fee.companyAmount > 0 ? formatMoney(fee.companyAmount) : '—'}
+                  </span>
+                </Fragment>
+              ))}
+            </div>
+            <p className="mt-1.5 text-[11px] text-subtle">
+              {t('Доля мастера не входит в сумму продажи; доля компании — входит.')}
+            </p>
           </div>
         )}
       </div>
@@ -299,6 +370,7 @@ function Operations({ customerId, summary, version }) {
                           <kind.Icon />
                           {kind.label} #{op.id}
                         </Badge>
+                        <MasterFeeChips fees={op.masterFees} />
                       </td>
                       <td className="whitespace-nowrap text-right font-semibold tabular-nums text-fg">
                         {kind.sign}

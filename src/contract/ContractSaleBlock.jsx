@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Landmark, Save, ShoppingBag } from 'lucide-react'
+import { Landmark, Save, ShoppingBag, Wrench } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Badge, Button, Form } from '../ui'
 import { t, td } from '../i18n'
@@ -42,11 +42,24 @@ function SaleBlock({ sale, canWork, busy, onPay }) {
             <span className="shrink-0 text-[13px] font-medium tabular-nums text-fg">{formatNumber(item.sum)}</span>
           </li>
         ))}
+        {/* Usta xizmatidan kompaniya ulushi: savdo summasi ichida. */}
+        {(sale.services ?? []).map((service) => (
+          <li key={`service-${service.id}`} className="flex items-start justify-between gap-3 px-3 py-2">
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 truncate text-[13px] text-fg">
+                <Wrench className="size-3.5 shrink-0 text-primary" />
+                {t('Услуга мастера')}
+              </p>
+              {service.master && <p className="text-[11px] text-subtle">{fullName(service.master)}</p>}
+            </div>
+            <span className="shrink-0 text-[13px] font-medium tabular-nums text-fg">{formatNumber(service.amount)}</span>
+          </li>
+        ))}
       </ul>
 
       <dl className="flex flex-col gap-1 border-t border-line bg-surface-2/60 px-3 py-2.5 text-[13px]">
         <div className="flex justify-between text-muted">
-          <dt>{t('Сумма товаров')}</dt>
+          <dt>{sale.services?.length ? t('Сумма') : t('Сумма товаров')}</dt>
           <dd className="tabular-nums">{formatAmount(sale.total)}</dd>
         </div>
         {sale.discount > 0 && (

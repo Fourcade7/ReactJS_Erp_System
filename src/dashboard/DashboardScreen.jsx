@@ -730,6 +730,12 @@ function DashboardScreen() {
                   </span>
                   <span>{t('Продаж: {count}', { count: data.masterFees.salesCount })}</span>
                   <span>{t('Мастеров: {count}', { count: data.masterFees.mastersCount })}</span>
+                  {/* Kompaniya ulushi savdo summasida — tushum va foydaga allaqachon kirgan. */}
+                  {data.masterFees.companyTotal > 0 && (
+                    <span title={t('Уже входит в выручку и прибыль')}>
+                      {t('Доля компании (в выручке): {amount}', { amount: formatMoney(data.masterFees.companyTotal) })}
+                    </span>
+                  )}
                 </div>
                 <SimpleTable
                   rows={data.masterFees.top}

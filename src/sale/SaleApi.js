@@ -6,12 +6,18 @@ import { t } from '../i18n'
 
 
 
-async function getAllSaleListPaginationSearch(page,limit,search){
+// `filters`: { debt, masterId, userId } — faqat qarzi borlar, usta va sotgan xodim bo'yicha (bo'sh qiymatlar yuborilmaydi).
+// Qidiruv (`search`) kontragent, sotgan xodim, usta nomi va savdo raqami bo'yicha ishlaydi.
+async function getAllSaleListPaginationSearch(page,limit,search,filters = {}){
 
-   
+    const extra = new URLSearchParams()
+    if (filters.debt) extra.set('debt', 'true')
+    if (filters.masterId) extra.set('master_id', filters.masterId)
+    if (filters.userId) extra.set('user_id', filters.userId)
+    const query = extra.toString()
 
     try{
-        let response = await fetch(`${API_BASE}/sale/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}`,{ 
+        let response = await fetch(`${API_BASE}/sale/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${query ? `&${query}` : ""}`,{
             method:"GET"
 
         });
@@ -141,7 +147,12 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
                 payments,
                 open_contract: extra.openContract,
                 master_fees: extra.masterFees?.length
-                    ? extra.masterFees.map((fee) => ({ master_id: fee.master.id, amount: fee.amount, note: fee.note }))
+                    ? extra.masterFees.map((fee) => ({
+                        master_id: fee.master.id,
+                        amount: fee.amount,
+                        company_amount: fee.companyAmount ?? 0,
+                        note: fee.note,
+                    }))
                     : undefined                               
             })
         });
@@ -252,4 +263,33 @@ async function changeSaleCustomer(saleId, customerId, userId, byContract = false
 }
 
 
-export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale,changeSaleCustomer}
+// Savdodan keyin usta xizmatini qo'shish (usta kech kelgan bo'lsa). `fee`: { masterId, amount, companyAmount, method }:
+// `amount` — ustaning ulushi, `companyAmount` — savdo summasiga qo'shiladi, `method` — ulush qanday to'landi ("В долг" — qarzga).
+async function addSaleMasterFee(saleId, fee, userId) {
+
+    return fetch(`${API_BASE}/sale/master-fee/${saleId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            user_id: Number(userId),
+            master_id: fee.masterId,
+            amount: fee.amount,
+            company_amount: fee.companyAmount,
+            method: fee.method
+        })
+    });
+}
+
+
+// Usta xizmatini o'chirish — faqat admin.
+async function removeSaleMasterFee(feeId, userId) {
+
+    return fetch(`${API_BASE}/sale/master-fee/${feeId}?user_id=${encodeURIComponent(userId ?? "")}`, {
+        method: "DELETE"
+    });
+}
+
+
+export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale,changeSaleCustomer,addSaleMasterFee,removeSaleMasterFee}

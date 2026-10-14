@@ -7,7 +7,11 @@ import { t } from '../i18n'
 
 const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
 const personName = (person) => `${person?.username ?? ''} ${person?.surname ?? ''}`.trim() || '—'
-const todayIso = () => new Date().toISOString().slice(0, 10)
+// Mahalliy sana: `toISOString` UTC beradi — Toshkentda 00:00–05:00 orasida kechagi sana chiqib, bugungi savdolar ko'rinmasdi.
+const todayIso = () => {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
 
 const monthStart = () => {
   const now = new Date()
@@ -113,10 +117,11 @@ function MasterDetail({ masterId, start, end, onStart, onEnd, onBack }) {
         </div>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label={t('Продаж')} value={data.totals.sales} />
             <Stat label={t('Сумма продаж')} value={money(data.totals.salesTotal)} />
             <Stat label={t('Услуги (его заработок)')} value={money(data.totals.amount)} />
+            <Stat label={t('Доля компании (в продажах)')} value={money(data.totals.companyAmount)} />
           </div>
 
           {data.data.length === 0 ? (
@@ -138,6 +143,11 @@ function MasterDetail({ masterId, start, end, onStart, onEnd, onBack }) {
                           <span className="text-muted">
                             {t('Сумма продажи')}: <span className="text-fg">{money(sale.saleTotal)}</span>
                           </span>
+                          {sale.companyAmount > 0 && (
+                            <span className="text-muted">
+                              {t('Доля компании')}: <span className="text-fg">{money(sale.companyAmount)}</span>
+                            </span>
+                          )}
                           <span className="font-semibold text-fg">{money(sale.amount)}</span>
                         </span>
                       </div>
@@ -164,7 +174,8 @@ function MasterDetail({ masterId, start, end, onStart, onEnd, onBack }) {
 
 /**
  * "Услуги мастеров": ustalarga beriladigan haqlar. Bu summalar savdo summasi, foyda va hisobotlarga kirmaydi —
- * shu yerda alohida hisoblanadi. Ro'yxat (qidiruv, sana oralig'i, sahifalash) → usta tafsiloti.
+ * shu yerda alohida hisoblanadi. Xizmatdan kompaniya ulushi esa savdo summasida (bu yerda faqat ma'lumot uchun).
+ * Ro'yxat (qidiruv, sana oralig'i, sahifalash) → usta tafsiloti.
  */
 function MasterFeesPanel() {
   const [start, setStart] = useState(monthStart)
@@ -233,7 +244,8 @@ function MasterFeesPanel() {
       />
 
       <Alert variant="info">
-        {t('Услуги мастеров не входят в сумму продаж и прибыль — это деньги мастеров, они считаются отдельно.')}
+        {t('Услуги мастеров не входят в сумму продаж и прибыль — это деньги мастеров, они считаются отдельно.')}{' '}
+        {t('Доля компании из услуги (если указана) входит в сумму продажи.')}
       </Alert>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -244,10 +256,11 @@ function MasterFeesPanel() {
         </div>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label={t('Мастеров')} value={data.totals.masters} />
             <Stat label={t('Продаж')} value={data.totals.sales} />
             <Stat label={t('Итого мастерам:')} value={money(data.totals.amount)} />
+            <Stat label={t('Доля компании (в продажах)')} value={money(data.totals.companyAmount)} />
           </div>
 
           {data.data.length === 0 ? (
@@ -280,6 +293,11 @@ function MasterFeesPanel() {
                       <span className="min-w-32 text-right text-[12px] tabular-nums text-muted">
                         {t('Сумма продаж')}: <span className="text-fg">{money(master.salesTotal)}</span>
                       </span>
+                      {master.companyAmount > 0 && (
+                        <span className="text-right text-[12px] tabular-nums text-muted">
+                          {t('Доля компании')}: <span className="text-fg">{money(master.companyAmount)}</span>
+                        </span>
+                      )}
                       <span className="min-w-28 text-right text-[13px] font-semibold tabular-nums text-fg">
                         {money(master.amount)}
                       </span>
