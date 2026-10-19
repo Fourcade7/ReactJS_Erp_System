@@ -6,6 +6,7 @@ import {
   peekMasterOrderHandoff,
 } from '../masterorder/handoff'
 import { completeMasterOrder } from '../masterorder/MasterOrderApi'
+import { clearSaleHandoff, peekSaleHandoff } from './saleHandoff'
 import TransactionWorkspace from '../transaction/TransactionWorkspace'
 import TransactionList from '../transaction/TransactionList'
 import TransactionDetail from '../transaction/TransactionDetail'
@@ -127,13 +128,17 @@ function SaleTabForHome() {
 function SaleScreen() {
   // "Заказы мастеров" dan o'tgan zakaz bo'lsa — savat va kontragent tayyor holda ochiladi.
   const [handoff] = useState(peekMasterOrderHandoff)
+  // Mijoz kartochkasidan "Продажа #id" bosilgan bo'lsa — shu savdoning tafsiloti ochiladi.
+  const [openSaleId] = useState(peekSaleHandoff)
   useEffect(() => {
     clearMasterOrderHandoff()
+    clearSaleHandoff()
   }, [])
 
   return (
     <TransactionWorkspace
       config={SALE_CONFIG}
+      initialSaleId={openSaleId}
       initialOrderList={handoff?.orderList}
       initialCustomer={handoff?.customer}
       // Savdo yozilgach zakaz yakunlanadi va savdoga bog'lanadi.

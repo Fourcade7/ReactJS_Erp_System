@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useCallback, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowDownLeft,
   ArrowDownRight,
@@ -15,10 +15,9 @@ import {
 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { formatCompact, formatMoney, plural, RECORDS, SALES } from '../lib/format'
-import { NavbarScreen } from '../navbar/NavbarContent'
 import { useMenuAccess } from '../main/menuAccess'
 import { NAV_ITEMS, isVisible, roleKey } from '../main/menuItems'
-import { Alert, Button, Card, Container, EmptyState, Form, Spinner, Table } from '../ui'
+import { Alert, Button, Card, EmptyState, Form, Spinner, Table } from '../ui'
 import CustomPaginationScreen from '../utils/CustomPaginationContent'
 import { useRequest } from '../lib/useRequest'
 import { getDashboard, getHistory, getKpis } from './DashboardApi'
@@ -327,8 +326,11 @@ function HistoryCard({ from, to }) {
 
 // ------------------------------------------------------------------ sahifa
 
+/**
+ * Dashboard — /dashboard manzilida, asosiy qobiq (navbar + sidebar) ichida chiziladi;
+ * kirmagan foydalanuvchini /login ga qobiqning o'zi yuboradi.
+ */
 function DashboardScreen() {
-  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const colors = useChartColors()
   const role = roleKey(localStorage.getItem('role'))
@@ -338,10 +340,6 @@ function DashboardScreen() {
 
   const [reload, setReload] = useState(0)
   const [dismissedError, setDismissedError] = useState(null)
-
-  useEffect(() => {
-    if (!signedIn) navigate('/login')
-  }, [signedIn, navigate])
 
   const kpiRequest = useRequest(getKpis, signedIn ? `kpis-${reload}` : null)
   const kpis = kpiRequest.data
@@ -398,28 +396,21 @@ function DashboardScreen() {
 
   // Dashboard kimga ochiqligini administrator "Настройки" da belgilaydi (standart — faqat admin).
   if (signedIn && !dashboardAllowed) {
-    return (
-      <div className="min-h-svh">
-        <NavbarScreen />
-        <Container className="py-10">
-          {menuLoaded ? (
-            <EmptyState
-              icon={BarChart3}
-              title={t('Недостаточно прав')}
-              description={t('Дашборд вам не открыт. Обратитесь к администратору.')}
-              action={
-                <Button as={Link} to="/home" variant="outline-primary">
-                  <ArrowLeft />
-                  {t('Вернуться в систему')}
-                </Button>
-              }
-            />
-          ) : (
-            <div className="flex justify-center py-16">
-              <Spinner />
-            </div>
-          )}
-        </Container>
+    return menuLoaded ? (
+      <EmptyState
+        icon={BarChart3}
+        title={t('Недостаточно прав')}
+        description={t('Дашборд вам не открыт. Обратитесь к администратору.')}
+        action={
+          <Button as={Link} to="/home" variant="outline-primary">
+            <ArrowLeft />
+            {t('Вернуться в систему')}
+          </Button>
+        }
+      />
+    ) : (
+      <div className="flex justify-center py-16">
+        <Spinner />
       </div>
     )
   }
@@ -429,334 +420,327 @@ function DashboardScreen() {
   const monthly = granularity === 'month' || granularity === 'year'
 
   return (
-    <div className="min-h-svh">
-      <NavbarScreen />
-      <Container size="full" className="flex flex-col gap-5 py-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-2.5">
-            <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-primary">
-              <BarChart3 className="size-4" />
-            </span>
-            <div>
-              <h1 className="text-base font-semibold tracking-tight text-fg">{t('Дашборд')}</h1>
-              <p className="mt-0.5 text-xs text-subtle">
-                {t('Выручка, прибыль, расходы и динамика продаж {v}', { v: kpis && t(' · время {timezone}', { timezone: kpis.timezone }) })}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button as={Link} to="/home" variant="outline-secondary" size="sm">
-              <ArrowLeft />
-              {t('В систему')}
-            </Button>
-            <Button variant="outline-secondary" size="sm" onClick={() => setReload((n) => n + 1)} loading={loading}>
-              <RefreshCw />
-              {t('Обновить')}
-            </Button>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-primary">
+            <BarChart3 className="size-4" />
+          </span>
+          <div>
+            <h1 className="text-base font-semibold tracking-tight text-fg">{t('Дашборд')}</h1>
+            <p className="mt-0.5 text-xs text-subtle">
+              {t('Выручка, прибыль, расходы и динамика продаж {v}', { v: kpis && t(' · время {timezone}', { timezone: kpis.timezone }) })}
+            </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline-secondary" size="sm" onClick={() => setReload((n) => n + 1)} loading={loading}>
+            <RefreshCw />
+            {t('Обновить')}
+          </Button>
+        </div>
+      </div>
 
-        <KpiTiles kpis={kpis} />
+      <KpiTiles kpis={kpis} />
 
-        {/* O'z yil tanlovi bor, pastdagi davr filtriga bog'liq emas. Kunni bosish — pastdagi hammasi shu kunga o'tadi. */}
-        {kpis && (
-          <ChartCard title={t('Календарь продаж')} subtitle={t('Активность по дням за год — нажмите на день, чтобы открыть его статистику')}>
-            <YearCalendar
-              initialYear={Number(kpis.today.slice(0, 4))}
-              onSelectDay={(date) => {
-                update({ p: 'custom', from: date, to: date, g: null })
-                document.getElementById('dashboard-filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }}
+      {/* O'z yil tanlovi bor, pastdagi davr filtriga bog'liq emas. Kunni bosish — pastdagi hammasi shu kunga o'tadi. */}
+      {kpis && (
+        <ChartCard title={t('Календарь продаж')} subtitle={t('Активность по дням за год — нажмите на день, чтобы открыть его статистику')}>
+          <YearCalendar
+            initialYear={Number(kpis.today.slice(0, 4))}
+            onSelectDay={(date) => {
+              update({ p: 'custom', from: date, to: date, g: null })
+              document.getElementById('dashboard-filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
+          />
+        </ChartCard>
+      )}
+
+      {/* Bitta filtr qatori — undan pastdagi hamma narsa shu davr bo'yicha. */}
+      <div
+        id="dashboard-filters"
+        className="flex scroll-mt-20 flex-wrap items-center gap-2 rounded-card border border-line bg-surface p-2 shadow-soft"
+      >
+        <Segmented
+          label={t('Период')}
+          value={presetDef ? preset : 'custom'}
+          options={PRESETS.map((item) => ({ key: item.key, label: item.label }))}
+          onChange={(key) => update({ p: key, from: null, to: null, g: null })}
+        />
+        <div className="flex items-center gap-1.5">
+          <Form.Control
+            type="date"
+            size="sm"
+            aria-label={t('С даты')}
+            className="w-36"
+            value={from ?? ''}
+            max={today}
+            onChange={(e) => e.target.value && update({ p: 'custom', from: e.target.value, to, g: null })}
+          />
+          <span className="text-xs text-subtle">—</span>
+          <Form.Control
+            type="date"
+            size="sm"
+            aria-label={t('По дату')}
+            className="w-36"
+            value={to ?? ''}
+            max={today}
+            onChange={(e) => e.target.value && update({ p: 'custom', from, to: e.target.value, g: null })}
+          />
+        </div>
+        <div className="ml-auto">
+          <Segmented
+            label={t('Шаг')}
+            value={granularity}
+            options={GRANULARITIES.map((g) => ({
+              key: g.key,
+              label: g.label,
+              disabled: !validRange || !granularityAllowed(g.key, from, to),
+            }))}
+            onChange={(key) => update({ g: key })}
+          />
+        </div>
+      </div>
+
+      {!validRange && today && <Alert variant="warning">{t('Выберите корректный период: дата начала не позже даты окончания.')}</Alert>}
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setDismissedError(failure)}>
+          {error}
+        </Alert>
+      )}
+
+      {!data ? (
+        <div className="flex justify-center py-16">
+          {failure ? (
+            <Button variant="outline-primary" onClick={() => setReload((n) => n + 1)}>
+              <RefreshCw />
+              {t('Повторить')}
+            </Button>
+          ) : (
+            <Spinner size="lg" />
+          )}
+        </div>
+      ) : (
+        <div className={cn('flex flex-col gap-5 transition-opacity', loading && 'opacity-60')}>
+          {/* Asosiy raqam */}
+          <Card padded={false} className="p-5">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium text-muted">
+                  {t('Выручка за период · {from} — {to} ({days} дн.)', { from: formatDate(data.range.from), to: formatDate(data.range.to), days: data.range.days })}
+                </p>
+                <p className="mt-1 text-5xl font-semibold tracking-tight text-fg">
+                  {formatMoney(s.revenue)}
+                  <span className="ml-2 text-lg font-medium text-subtle">{t('сум')}</span>
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <Delta current={s.revenue} previous={p.revenue} suffix={t('к предыдущему периоду')} />
+                  <span className="text-[11px] text-subtle">
+                    {t('{from} — {to}: {amount} сум', { from: formatDate(data.previousRange.from), to: formatDate(data.previousRange.to), amount: formatMoney(p.revenue) })}
+                  </span>
+                </div>
+              </div>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
+                {[
+                  [t('Продажи'), s.gross],
+                  [t('Скидки'), s.discount],
+                  [t('Возвраты'), s.returns],
+                  [t('Себестоимость ≈'), s.cogs],
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="text-subtle">{label}</dt>
+                    <dd className="font-semibold tabular-nums text-fg">{formatMoney(value)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </Card>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+            <MetricTile label={t('Поступления в кассу')} value={s.cashIn} previous={p.cashIn} hint={t('оплаты по продажам')} />
+            <MetricTile label={t('Валовая прибыль ≈')} value={s.grossProfit} previous={p.grossProfit} hint={t('по текущей закупочной цене')} />
+            <MetricTile label={t('Расходы')} value={s.expenses} previous={p.expenses} good="down" hint={t('{count}, по месяцам', { count: plural(s.expensesCount, RECORDS) })} />
+            <MetricTile label={t('Чистая прибыль ≈')} value={s.netProfit} previous={p.netProfit} hint={t('валовая − расходы')} />
+            <MetricTile label={t('Средний чек')} value={s.averageCheck} previous={p.averageCheck} />
+            <MetricTile label={t('Продаж')} value={s.salesCount} previous={p.salesCount} unit="" hint={t('клиентов: {customers}', { customers: s.customers })} />
+            <MetricTile label={t('Продано единиц')} value={s.itemsSold} previous={p.itemsSold} unit="" format={(v) => v.toLocaleString(locale)} />
+            <MetricTile label={t('Возвраты')} value={s.returns} previous={p.returns} good="down" hint={t('{returnsCount} шт.', { returnsCount: s.returnsCount })} />
+            <MetricTile label={t('Закупки')} value={s.purchases} previous={p.purchases} good={null} hint={plural(s.purchasesCount, ['приход', 'прихода', 'приходов'])} />
+            <MetricTile label={t('Долг клиентов')} value={data.debt.amount} hint={t('{count} в долг · сейчас', { count: plural(data.debt.sales, SALES) })} />
+          </div>
+
+          <ChartCard
+            title={t('Динамика выручки')}
+            subtitle={t('Шаг: {step}', { step: GRANULARITIES.find((g) => g.key === granularity).label.toLowerCase() })}
+            legend={<ChartLegend items={trendSeries} />}
+          >
+            <TrendChart data={data.series} granularity={granularity} series={trendSeries} />
+          </ChartCard>
+
+          <div className="grid gap-5 xl:grid-cols-2">
+            <ChartCard title={t('Количество продаж')} subtitle={t('Чеков за каждый период')}>
+              <ColumnChart data={data.series} granularity={granularity} series={countSeries} unit="" />
+            </ChartCard>
+            <ChartCard
+              title={t('Прибыль и расходы')}
+              subtitle={t('Расходы учитываются по месяцу, за который они внесены')}
+              legend={monthly && <ChartLegend items={profitSeries} shape="rect" />}
+            >
+              {monthly ? (
+                <ColumnChart data={data.series} granularity={granularity} series={profitSeries} />
+              ) : (
+                <EmptyState
+                  icon={ReceiptText}
+                  title={t('Расходы ведутся по месяцам')}
+                  description={t('Чтобы сравнить прибыль с расходами, выберите шаг «Месяц».')}
+                  action={
+                    granularityAllowed('month', data.range.from, data.range.to) && (
+                      <Button variant="outline-primary" size="sm" onClick={() => update({ g: 'month' })}>
+                        {t('Показать по месяцам')}
+                      </Button>
+                    )
+                  }
+                  className="h-60 border-0"
+                />
+              )}
+            </ChartCard>
+          </div>
+
+          <ChartCard title={t('По периодам')} subtitle={t('Таблица к графикам выше, рост — к предыдущей строке')}>
+            <PeriodTable series={data.series} granularity={granularity} />
+          </ChartCard>
+
+          <div className="grid gap-5 xl:grid-cols-2">
+            <ChartCard title={t('Структура выручки')} subtitle={t('Доля категорий товаров')}>
+              <DonutChart
+                centerLabel={t('Выручка')}
+                total={s.salesNet}
+                rows={data.categories.map((row) => ({ key: String(row.id ?? row.name), label: row.name, value: row.revenue }))}
+                emptyText={t('Продаж за период нет')}
+              />
+            </ChartCard>
+            <ChartCard title={t('Способы оплаты')} subtitle={t('Поступления по продажам')}>
+              <DonutChart
+                centerLabel={t('Поступления')}
+                total={s.cashIn}
+                order={PAYMENT_ORDER}
+                rows={data.paymentMethods.map((row) => ({ key: row.method, label: td(row.method), value: row.amount }))}
+                emptyText={t('Оплат за период нет')}
+              />
+            </ChartCard>
+            <ChartCard title={t('Структура расходов')} subtitle={t('Расходы учитываются по месяцу')}>
+              <DonutChart
+                centerLabel={t('Расходы')}
+                total={s.expenses}
+                rows={data.expensesByCategory.map((row) => ({ key: row.category, label: row.category, value: row.amount }))}
+                emptyText={t('Расходов за период нет')}
+              />
+            </ChartCard>
+            <ChartCard title={t('Доля кассиров')} subtitle={t('Выручка по сотрудникам')}>
+              <DonutChart
+                centerLabel={t('Выручка')}
+                total={s.salesNet}
+                rows={data.cashiers.map((row) => ({ key: String(row.id), label: row.name ?? '—', value: row.revenue }))}
+                emptyText={t('Продаж за период нет')}
+              />
+            </ChartCard>
+          </div>
+
+          <ChartCard title={t('Топ товаров')} subtitle={t('По выручке с учётом скидки на чек')}>
+            <SimpleTable
+              rows={data.topProducts}
+              columns={[
+                { key: 'n', label: '#', render: (_, i) => <span className="text-subtle">{i + 1}</span> },
+                { key: 'name', label: t('Товар'), className: 'max-w-72 truncate font-medium text-fg' },
+                { key: 'quantity', label: t('Кол-во'), align: 'right', render: (r) => `${r.quantity.toLocaleString(locale)} ${td(r.unit)}` },
+                { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
+                {
+                  key: 'share',
+                  label: t('Доля'),
+                  align: 'right',
+                  render: (r) => <span className="text-muted">{formatShare(r.revenue, s.salesNet)}</span>,
+                },
+                { key: 'profit', label: t('Прибыль ≈'), align: 'right', render: (r) => formatMoney(r.profit) },
+              ]}
             />
           </ChartCard>
-        )}
 
-        {/* Bitta filtr qatori — undan pastdagi hamma narsa shu davr bo'yicha. */}
-        <div
-          id="dashboard-filters"
-          className="flex scroll-mt-20 flex-wrap items-center gap-2 rounded-card border border-line bg-surface p-2 shadow-soft"
-        >
-          <Segmented
-            label={t('Период')}
-            value={presetDef ? preset : 'custom'}
-            options={PRESETS.map((item) => ({ key: item.key, label: item.label }))}
-            onChange={(key) => update({ p: key, from: null, to: null, g: null })}
-          />
-          <div className="flex items-center gap-1.5">
-            <Form.Control
-              type="date"
-              size="sm"
-              aria-label={t('С даты')}
-              className="w-36"
-              value={from ?? ''}
-              max={today}
-              onChange={(e) => e.target.value && update({ p: 'custom', from: e.target.value, to, g: null })}
-            />
-            <span className="text-xs text-subtle">—</span>
-            <Form.Control
-              type="date"
-              size="sm"
-              aria-label={t('По дату')}
-              className="w-36"
-              value={to ?? ''}
-              max={today}
-              onChange={(e) => e.target.value && update({ p: 'custom', from, to: e.target.value, g: null })}
-            />
-          </div>
-          <div className="ml-auto">
-            <Segmented
-              label={t('Шаг')}
-              value={granularity}
-              options={GRANULARITIES.map((g) => ({
-                key: g.key,
-                label: g.label,
-                disabled: !validRange || !granularityAllowed(g.key, from, to),
-              }))}
-              onChange={(key) => update({ g: key })}
-            />
-          </div>
-        </div>
-
-        {!validRange && today && <Alert variant="warning">{t('Выберите корректный период: дата начала не позже даты окончания.')}</Alert>}
-        {error && (
-          <Alert variant="danger" dismissible onClose={() => setDismissedError(failure)}>
-            {error}
-          </Alert>
-        )}
-
-        {!data ? (
-          <div className="flex justify-center py-16">
-            {failure ? (
-              <Button variant="outline-primary" onClick={() => setReload((n) => n + 1)}>
-                <RefreshCw />
-                {t('Повторить')}
-              </Button>
-            ) : (
-              <Spinner size="lg" />
-            )}
-          </div>
-        ) : (
-          <div className={cn('flex flex-col gap-5 transition-opacity', loading && 'opacity-60')}>
-            {/* Asosiy raqam */}
-            <Card padded={false} className="p-5">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="text-xs font-medium text-muted">
-                    {t('Выручка за период · {from} — {to} ({days} дн.)', { from: formatDate(data.range.from), to: formatDate(data.range.to), days: data.range.days })}
-                  </p>
-                  <p className="mt-1 text-5xl font-semibold tracking-tight text-fg">
-                    {formatMoney(s.revenue)}
-                    <span className="ml-2 text-lg font-medium text-subtle">{t('сум')}</span>
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <Delta current={s.revenue} previous={p.revenue} suffix={t('к предыдущему периоду')} />
-                    <span className="text-[11px] text-subtle">
-                      {t('{from} — {to}: {amount} сум', { from: formatDate(data.previousRange.from), to: formatDate(data.previousRange.to), amount: formatMoney(p.revenue) })}
-                    </span>
-                  </div>
-                </div>
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
-                  {[
-                    [t('Продажи'), s.gross],
-                    [t('Скидки'), s.discount],
-                    [t('Возвраты'), s.returns],
-                    [t('Себестоимость ≈'), s.cogs],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <dt className="text-subtle">{label}</dt>
-                      <dd className="font-semibold tabular-nums text-fg">{formatMoney(value)}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            </Card>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-              <MetricTile label={t('Поступления в кассу')} value={s.cashIn} previous={p.cashIn} hint={t('оплаты по продажам')} />
-              <MetricTile label={t('Валовая прибыль ≈')} value={s.grossProfit} previous={p.grossProfit} hint={t('по текущей закупочной цене')} />
-              <MetricTile label={t('Расходы')} value={s.expenses} previous={p.expenses} good="down" hint={t('{count}, по месяцам', { count: plural(s.expensesCount, RECORDS) })} />
-              <MetricTile label={t('Чистая прибыль ≈')} value={s.netProfit} previous={p.netProfit} hint={t('валовая − расходы')} />
-              <MetricTile label={t('Средний чек')} value={s.averageCheck} previous={p.averageCheck} />
-              <MetricTile label={t('Продаж')} value={s.salesCount} previous={p.salesCount} unit="" hint={t('клиентов: {customers}', { customers: s.customers })} />
-              <MetricTile label={t('Продано единиц')} value={s.itemsSold} previous={p.itemsSold} unit="" format={(v) => v.toLocaleString(locale)} />
-              <MetricTile label={t('Возвраты')} value={s.returns} previous={p.returns} good="down" hint={t('{returnsCount} шт.', { returnsCount: s.returnsCount })} />
-              <MetricTile label={t('Закупки')} value={s.purchases} previous={p.purchases} good={null} hint={plural(s.purchasesCount, ['приход', 'прихода', 'приходов'])} />
-              <MetricTile label={t('Долг клиентов')} value={data.debt.amount} hint={t('{count} в долг · сейчас', { count: plural(data.debt.sales, SALES) })} />
-            </div>
-
-            <ChartCard
-              title={t('Динамика выручки')}
-              subtitle={t('Шаг: {step}', { step: GRANULARITIES.find((g) => g.key === granularity).label.toLowerCase() })}
-              legend={<ChartLegend items={trendSeries} />}
-            >
-              <TrendChart data={data.series} granularity={granularity} series={trendSeries} />
-            </ChartCard>
-
-            <div className="grid gap-5 xl:grid-cols-2">
-              <ChartCard title={t('Количество продаж')} subtitle={t('Чеков за каждый период')}>
-                <ColumnChart data={data.series} granularity={granularity} series={countSeries} unit="" />
-              </ChartCard>
-              <ChartCard
-                title={t('Прибыль и расходы')}
-                subtitle={t('Расходы учитываются по месяцу, за который они внесены')}
-                legend={monthly && <ChartLegend items={profitSeries} shape="rect" />}
-              >
-                {monthly ? (
-                  <ColumnChart data={data.series} granularity={granularity} series={profitSeries} />
-                ) : (
-                  <EmptyState
-                    icon={ReceiptText}
-                    title={t('Расходы ведутся по месяцам')}
-                    description={t('Чтобы сравнить прибыль с расходами, выберите шаг «Месяц».')}
-                    action={
-                      granularityAllowed('month', data.range.from, data.range.to) && (
-                        <Button variant="outline-primary" size="sm" onClick={() => update({ g: 'month' })}>
-                          {t('Показать по месяцам')}
-                        </Button>
-                      )
-                    }
-                    className="h-60 border-0"
-                  />
-                )}
-              </ChartCard>
-            </div>
-
-            <ChartCard title={t('По периодам')} subtitle={t('Таблица к графикам выше, рост — к предыдущей строке')}>
-              <PeriodTable series={data.series} granularity={granularity} />
-            </ChartCard>
-
-            <div className="grid gap-5 xl:grid-cols-2">
-              <ChartCard title={t('Структура выручки')} subtitle={t('Доля категорий товаров')}>
-                <DonutChart
-                  centerLabel={t('Выручка')}
-                  total={s.salesNet}
-                  rows={data.categories.map((row) => ({ key: String(row.id ?? row.name), label: row.name, value: row.revenue }))}
-                  emptyText={t('Продаж за период нет')}
-                />
-              </ChartCard>
-              <ChartCard title={t('Способы оплаты')} subtitle={t('Поступления по продажам')}>
-                <DonutChart
-                  centerLabel={t('Поступления')}
-                  total={s.cashIn}
-                  order={PAYMENT_ORDER}
-                  rows={data.paymentMethods.map((row) => ({ key: row.method, label: td(row.method), value: row.amount }))}
-                  emptyText={t('Оплат за период нет')}
-                />
-              </ChartCard>
-              <ChartCard title={t('Структура расходов')} subtitle={t('Расходы учитываются по месяцу')}>
-                <DonutChart
-                  centerLabel={t('Расходы')}
-                  total={s.expenses}
-                  rows={data.expensesByCategory.map((row) => ({ key: row.category, label: row.category, value: row.amount }))}
-                  emptyText={t('Расходов за период нет')}
-                />
-              </ChartCard>
-              <ChartCard title={t('Доля кассиров')} subtitle={t('Выручка по сотрудникам')}>
-                <DonutChart
-                  centerLabel={t('Выручка')}
-                  total={s.salesNet}
-                  rows={data.cashiers.map((row) => ({ key: String(row.id), label: row.name ?? '—', value: row.revenue }))}
-                  emptyText={t('Продаж за период нет')}
-                />
-              </ChartCard>
-            </div>
-
-            <ChartCard title={t('Топ товаров')} subtitle={t('По выручке с учётом скидки на чек')}>
+          <div className="grid gap-5 xl:grid-cols-3">
+            <ChartCard title={t('Топ клиентов')}>
               <SimpleTable
-                rows={data.topProducts}
+                rows={data.topCustomers}
                 columns={[
-                  { key: 'n', label: '#', render: (_, i) => <span className="text-subtle">{i + 1}</span> },
-                  { key: 'name', label: t('Товар'), className: 'max-w-72 truncate font-medium text-fg' },
-                  { key: 'quantity', label: t('Кол-во'), align: 'right', render: (r) => `${r.quantity.toLocaleString(locale)} ${td(r.unit)}` },
+                  { key: 'name', label: t('Клиент'), className: 'max-w-40 truncate font-medium text-fg' },
+                  { key: 'salesCount', label: t('Продаж'), align: 'right' },
                   { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
-                  {
-                    key: 'share',
-                    label: t('Доля'),
-                    align: 'right',
-                    render: (r) => <span className="text-muted">{formatShare(r.revenue, s.salesNet)}</span>,
-                  },
-                  { key: 'profit', label: t('Прибыль ≈'), align: 'right', render: (r) => formatMoney(r.profit) },
+                ]}
+                empty={t('Продаж с контрагентом нет')}
+              />
+            </ChartCard>
+            <ChartCard title={t('Должники')} subtitle={t('Текущий долг, за всё время')}>
+              <SimpleTable
+                rows={data.debtors}
+                columns={[
+                  { key: 'name', label: t('Клиент'), className: 'max-w-40 truncate font-medium text-fg' },
+                  { key: 'phone', label: t('Телефон'), className: 'whitespace-nowrap text-muted' },
+                  { key: 'debt', label: t('Долг'), align: 'right', strong: true, render: (r) => formatMoney(r.debt) },
+                ]}
+                empty={t('Долгов нет')}
+              />
+            </ChartCard>
+            <ChartCard title={t('Кассиры')}>
+              <SimpleTable
+                rows={data.cashiers}
+                columns={[
+                  { key: 'name', label: t('Сотрудник'), className: 'max-w-40 truncate font-medium text-fg' },
+                  { key: 'salesCount', label: t('Продаж'), align: 'right' },
+                  { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
                 ]}
               />
             </ChartCard>
-
-            <div className="grid gap-5 xl:grid-cols-3">
-              <ChartCard title={t('Топ клиентов')}>
-                <SimpleTable
-                  rows={data.topCustomers}
-                  columns={[
-                    { key: 'name', label: t('Клиент'), className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'salesCount', label: t('Продаж'), align: 'right' },
-                    { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
-                  ]}
-                  empty={t('Продаж с контрагентом нет')}
-                />
-              </ChartCard>
-              <ChartCard title={t('Должники')} subtitle={t('Текущий долг, за всё время')}>
-                <SimpleTable
-                  rows={data.debtors}
-                  columns={[
-                    { key: 'name', label: t('Клиент'), className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'phone', label: t('Телефон'), className: 'whitespace-nowrap text-muted' },
-                    { key: 'debt', label: t('Долг'), align: 'right', strong: true, render: (r) => formatMoney(r.debt) },
-                  ]}
-                  empty={t('Долгов нет')}
-                />
-              </ChartCard>
-              <ChartCard title={t('Кассиры')}>
-                <SimpleTable
-                  rows={data.cashiers}
-                  columns={[
-                    { key: 'name', label: t('Сотрудник'), className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'salesCount', label: t('Продаж'), align: 'right' },
-                    { key: 'revenue', label: t('Выручка'), align: 'right', strong: true, render: (r) => formatMoney(r.revenue) },
-                  ]}
-                />
-              </ChartCard>
-            </div>
-
-            {/* Usta xizmatlari: do'konniki emas — daromad va foydaga kirmaydi, alohida ko'rsatiladi. */}
-            {data.masterFees && (
-              <ChartCard
-                title={t('Услуги мастеров')}
-                subtitle={t('Не входят в выручку и прибыль — это деньги мастеров')}
-              >
-                <div className="mb-3 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[13px] text-muted">
-                  <span>
-                    {t('Итого мастерам:')}{' '}
-                    <span className="text-lg font-semibold tabular-nums text-fg">
-                      {formatMoney(data.masterFees.total)}
-                    </span>
-                  </span>
-                  <span>{t('Продаж: {count}', { count: data.masterFees.salesCount })}</span>
-                  <span>{t('Мастеров: {count}', { count: data.masterFees.mastersCount })}</span>
-                  {/* Kompaniya ulushi savdo summasida — tushum va foydaga allaqachon kirgan. */}
-                  {data.masterFees.companyTotal > 0 && (
-                    <span title={t('Уже входит в выручку и прибыль')}>
-                      {t('Доля компании (в выручке): {amount}', { amount: formatMoney(data.masterFees.companyTotal) })}
-                    </span>
-                  )}
-                </div>
-                <SimpleTable
-                  rows={data.masterFees.top}
-                  columns={[
-                    { key: 'name', label: t('Мастер'), className: 'max-w-40 truncate font-medium text-fg' },
-                    { key: 'salesCount', label: t('Продаж'), align: 'right' },
-                    { key: 'amount', label: t('Сумма'), align: 'right', strong: true, render: (r) => formatMoney(r.amount) },
-                  ]}
-                  empty={t('Услуг мастеров за период нет')}
-                />
-              </ChartCard>
-            )}
-
-            <HistoryCard from={data.range.from} to={data.range.to} />
-
-            <p className="text-center text-[11px] text-subtle">
-              {t('Прибыль ≈ — оценка: себестоимость считается по текущей закупочной цене товара. Сравнение — с предыдущим периодом такой же длины. Компактные числа: {formatCompact} = 1 250 000.', { formatCompact: formatCompact(1_250_000) })}
-            </p>
           </div>
-        )}
-      </Container>
+
+          {/* Usta xizmatlari: do'konniki emas — daromad va foydaga kirmaydi, alohida ko'rsatiladi. */}
+          {data.masterFees && (
+            <ChartCard
+              title={t('Услуги мастеров')}
+              subtitle={t('Не входят в выручку и прибыль — это деньги мастеров')}
+            >
+              <div className="mb-3 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[13px] text-muted">
+                <span>
+                  {t('Итого мастерам:')}{' '}
+                  <span className="text-lg font-semibold tabular-nums text-fg">
+                    {formatMoney(data.masterFees.total)}
+                  </span>
+                </span>
+                <span>{t('Продаж: {count}', { count: data.masterFees.salesCount })}</span>
+                <span>{t('Мастеров: {count}', { count: data.masterFees.mastersCount })}</span>
+                {/* Kompaniya ulushi savdo summasida — tushum va foydaga allaqachon kirgan. */}
+                {data.masterFees.companyTotal > 0 && (
+                  <span title={t('Уже входит в выручку и прибыль')}>
+                    {t('Доля компании (в выручке): {amount}', { amount: formatMoney(data.masterFees.companyTotal) })}
+                  </span>
+                )}
+              </div>
+              <SimpleTable
+                rows={data.masterFees.top}
+                columns={[
+                  { key: 'name', label: t('Мастер'), className: 'max-w-40 truncate font-medium text-fg' },
+                  { key: 'salesCount', label: t('Продаж'), align: 'right' },
+                  { key: 'amount', label: t('Сумма'), align: 'right', strong: true, render: (r) => formatMoney(r.amount) },
+                ]}
+                empty={t('Услуг мастеров за период нет')}
+              />
+            </ChartCard>
+          )}
+
+          <HistoryCard from={data.range.from} to={data.range.to} />
+
+          <p className="text-center text-[11px] text-subtle">
+            {t('Прибыль ≈ — оценка: себестоимость считается по текущей закупочной цене товара. Сравнение — с предыдущим периодом такой же длины. Компактные числа: {formatCompact} = 1 250 000.', { formatCompact: formatCompact(1_250_000) })}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

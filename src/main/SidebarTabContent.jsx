@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { LockKeyhole, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { EmptyState } from '../ui'
@@ -20,12 +20,14 @@ import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
 import { ExpenseScreen } from '../expense/ExpenseContent'
 import { TaskScreen } from '../task/TaskContent'
 import { ContractScreen } from '../contract/ContractContent'
+import DashboardScreen from '../dashboard/DashboardScreen'
 import { useMenuAccess } from './menuAccess'
-import { NAV_ITEMS, roleKey, visibleGroups } from './menuItems'
+import { NAV_ITEMS, roleKey, saveActiveTab, useActiveTab, visibleGroups } from './menuItems'
 import { t } from '../i18n'
 
 const SCREENS = {
   first: HomeScreen,
+  dashboard: DashboardScreen,
   second: UserScreen,
   thrid: CustomerScreen,
   fourth: WareHouseScreen,
@@ -43,10 +45,13 @@ const SCREENS = {
   integration: IntegrationScreen,
 }
 
-/** Rolga ruxsat etilgan bo'limlar orasidan ochiladigani: saqlangan, bo'lmasa odatdagi, bo'lmasa birinchisi. */
+/**
+ * Rolga ruxsat etilgan bo'limlar orasidan ochiladigani: saqlangan, bo'lmasa odatdagi
+ * (asosiysi — "Задачи"), bo'lmasa birinchisi.
+ */
 function pickTab(saved, allowed) {
   if (saved && allowed.includes(saved)) return saved
-  return ['first', 'teenth', 'tasks'].find((key) => allowed.includes(key)) ?? allowed[0] ?? null
+  return ['tasks', 'first', 'teenth'].find((key) => allowed.includes(key)) ?? allowed[0] ?? null
 }
 
 function NavButton({ item, active, onSelect, badge = 0 }) {
@@ -89,18 +94,21 @@ function NavButton({ item, active, onSelect, badge = 0 }) {
  */
 function LeftTab({ mobileOpen = false, onCloseMobile }) {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const role = roleKey(localStorage.getItem('role'))
   const { overrides } = useMenuAccess({ poll: true })
-  const [savedTab, setSavedTab] = useState(() => localStorage.getItem('activeTab'))
+  // Navbar dagi tezkor "Продажа" tugmasi ham shu qiymatni o'zgartiradi — sidebar darrov ergashadi.
+  const savedTab = useActiveTab()
   const [newMasterOrders, setNewMasterOrders] = useState(0)
 
   const groups = useMemo(() => visibleGroups(role, overrides), [role, overrides])
-  // Alohida sahifaga o'tuvchi bo'limlar (href) ekran emas — "ochiq tab" bo'la olmaydi.
+  // O'z manzili bor bo'limlar (href) saqlanadigan "ochiq tab" bo'lmaydi — ular manzildan aniqlanadi.
   const tabKeys = useMemo(
     () => groups.flatMap((group) => group.items).filter((item) => !item.href).map((item) => item.key),
     [groups],
   )
-  const activeTab = pickTab(savedTab, tabKeys)
+  const routeTab = NAV_ITEMS.find((item) => item.href === pathname)?.key
+  const activeTab = routeTab ?? pickTab(savedTab, tabKeys)
 
   // Socketsiz: yangi zakazlar sonini vaqti-vaqti bilan so'raymiz (bo'lim ko'rinmasa — so'ramaymiz).
   const mastersVisible = tabKeys.includes('masters')
@@ -122,14 +130,15 @@ function LeftTab({ mobileOpen = false, onCloseMobile }) {
   }, [mastersVisible])
 
   const select = (key) => {
+    onCloseMobile?.()
     const href = NAV_ITEMS.find((item) => item.key === key)?.href
     if (href) {
-      navigate(href)
+      if (pathname !== href) navigate(href)
       return
     }
-    setSavedTab(key)
-    localStorage.setItem('activeTab', key)
-    onCloseMobile?.()
+    saveActiveTab(key)
+    // Masalan, /dashboard dan oddiy bo'limga — tablar /home da ochiladi.
+    if (pathname !== '/home') navigate('/home')
   }
 
   // Drawer ochiq turganda orqa fonni skroll qilmaslik.

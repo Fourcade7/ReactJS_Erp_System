@@ -91,7 +91,7 @@ function AddNewCustomer(props) {
   )
 }
 
-function CustomerTabs() {
+function CustomerTabs({ goTo }) {
   const [activeTab, setActiveTab] = useState('home')
 
   return (
@@ -105,7 +105,7 @@ function CustomerTabs() {
           </>
         }
       >
-        <CustomerListGroup activeTab={activeTab} />
+        <CustomerListGroup activeTab={activeTab} goTo={goTo} />
       </Tab>
       <Tab
         eventKey="profile"
@@ -122,7 +122,8 @@ function CustomerTabs() {
   )
 }
 
-function CustomerScreen() {
+/** `goTo(key)` — boshqa bo'limga o'tish (asosiy menyudan beriladi): kartochkadan savdoga o'tish uchun. */
+function CustomerScreen({ goTo }) {
   return (
     <div>
       <PageHeader
@@ -130,7 +131,7 @@ function CustomerScreen() {
         title={t('Клиенты')}
         description={t('База покупателей и их контактные данные')}
       />
-      <CustomerTabs />
+      <CustomerTabs goTo={goTo} />
     </div>
   )
 }

@@ -11,15 +11,14 @@ export const personName = (user) => `${user?.username ?? ''} ${user?.surname ?? 
 
 /**
  * Kassir ikkala summani alohida yozadi — hech biri ikkinchisidan ayirilmaydi: `amount` ustaga (savdo summasiga
- * kirmaydi), `companyAmount` kompaniyaga (savdo summasiga qo'shiladi). Bo'sh maydon — 0. Ikkalasi ham butun,
- * manfiy emas va birgalikda noldan katta bo'lishi kerak (backend ham shuni tekshiradi).
+ * kirmaydi), `companyAmount` kompaniyaga (savdo summasiga qo'shiladi). Maydonlar majburiy emas: bo'sh — 0, ikkalasi
+ * bo'sh bo'lsa ham usta savdoga 0 / 0 bilan bog'lanadi. Faqat butun va manfiy bo'lmasligi shart (backend ham tekshiradi).
  * Masalan, ustaga 500 000 va kompaniyaga 20 000 → mijoz xizmat uchun jami 520 000 to'laydi.
  */
 export function readFee(masterInput, companyInput) {
   const amount = `${masterInput}`.trim() === '' ? 0 : parseSum(masterInput)
   const companyAmount = `${companyInput}`.trim() === '' ? 0 : parseSum(companyInput)
-  const valid =
-    Number.isFinite(amount) && amount >= 0 && Number.isFinite(companyAmount) && companyAmount >= 0 && amount + companyAmount > 0
+  const valid = Number.isFinite(amount) && amount >= 0 && Number.isFinite(companyAmount) && companyAmount >= 0
   return { amount, companyAmount, total: amount + companyAmount, valid }
 }
 

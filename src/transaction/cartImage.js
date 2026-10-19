@@ -29,7 +29,9 @@ const COLORS = {
   fg: '#111827',
   muted: '#6b7280',
   line: '#e5e7eb',
+  strongLine: '#d1d5db',
   accent: '#4f46e5',
+  danger: '#dc2626',
 }
 
 const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
@@ -37,6 +39,20 @@ const signed = (value) => `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleS
 
 function fontFamily() {
   return getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif'
+}
+
+/** `font(600, 14)` → canvas uchun shrift satri (sahifa shrifti bilan). */
+function makeFont() {
+  const family = fontFamily()
+  return (weight, size) => `${weight} ${size}px ${family}`
+}
+
+/** Bir qatorga sig'masa — oxiri «…» bilan qirqiladi. */
+function fitText(ctx, text, maxWidth) {
+  if (ctx.measureText(text).width <= maxWidth) return text
+  let out = text
+  while (out.length > 1 && ctx.measureText(`${out}…`).width > maxWidth) out = out.slice(0, -1)
+  return `${out}…`
 }
 
 /** Matnni berilgan kenglikka soʻzma-soʻz boʻladi; juda uzun soʻz harfma-harf boʻlinadi. */
@@ -65,9 +81,56 @@ function wrapText(ctx, text, maxWidth) {
   return lines.length ? lines : ['—']
 }
 
+// Oʻng ustun: summa, «son × narx» va (oʻzgargan boʻlsa) «было … · farq».
+const rowHeight = (row) => Math.max(row.lines.length, row.change !== 0 ? 3 : 2) * LINE_H + 20
+
+/** Bitta tovar qatori (`row.lines` — oʻralgan nom): tartib raqami, nom, oʻngda summa va «son × narx». Pastki chiziq yangi `y`. */
+function drawItemRow(g, font, row, index, y) {
+  const top = y + 10
+  const right = WIDTH - PAD
+
+  g.textAlign = 'left'
+  g.fillStyle = COLORS.muted
+  g.font = font(600, 13)
+  g.fillText(`${index + 1}.`, PAD, top + 1)
+
+  g.fillStyle = COLORS.fg
+  g.font = font(500, 14)
+  row.lines.forEach((line, i) => g.fillText(line, PAD + INDEX_W, top + i * LINE_H))
+
+  g.textAlign = 'right'
+  g.font = font(700, 14)
+  g.fillText(money(row.sum), right, top)
+  g.fillStyle = COLORS.muted
+  g.font = font(400, 12)
+  const unit = row.unit ? ` ${row.unit}` : ''
+  const wholesale = row.wholesale ? t(' (опт)') : ''
+  g.fillText(
+    `${row.quantity}${unit} × ${Number(row.price).toLocaleString('uz')}${wholesale}`,
+    right,
+    top + LINE_H + 1,
+  )
+  if (row.change !== 0) {
+    // Yuqoridagi «son × narx» qatori bilan bir xil rangda, biroz kichikroq.
+    g.font = font(400, 11)
+    g.fillText(
+      t('было {price} · {change}', {
+        price: Number(row.was).toLocaleString('uz'),
+        change: signed(Math.round(row.change * row.quantity)),
+      }),
+      right,
+      top + LINE_H * 2 + 1,
+    )
+  }
+
+  const next = y + rowHeight(row)
+  g.fillStyle = COLORS.line
+  g.fillRect(PAD, next, WIDTH - PAD * 2, 1)
+  return next
+}
+
 function renderImage(spec) {
-  const family = fontFamily()
-  const font = (weight, size) => `${weight} ${size}px ${family}`
+  const font = makeFont()
 
   const ctx = document.createElement('canvas').getContext('2d')
   ctx.font = font(500, 14)
@@ -79,8 +142,6 @@ function renderImage(spec) {
   const HEADER_H = 74
   const EXTRAS_H = extras.length * EXTRA_H
   const FOOTER_H = 90 + EXTRAS_H
-  // Oʻng ustun: summa, «son × narx» va (oʻzgargan boʻlsa) «было … · farq».
-  const rowHeight = (row) => Math.max(row.lines.length, row.change !== 0 ? 3 : 2) * LINE_H + 20
   const height = HEADER_H + rows.reduce((sum, row) => sum + rowHeight(row), 0) + FOOTER_H
 
   const canvas = document.createElement('canvas')
@@ -110,45 +171,7 @@ function renderImage(spec) {
 
   // Qatorlar
   rows.forEach((row, index) => {
-    const top = y + 10
-    const right = WIDTH - PAD
-
-    g.textAlign = 'left'
-    g.fillStyle = COLORS.muted
-    g.font = font(600, 13)
-    g.fillText(`${index + 1}.`, PAD, top + 1)
-
-    g.fillStyle = COLORS.fg
-    g.font = font(500, 14)
-    row.lines.forEach((line, i) => g.fillText(line, PAD + INDEX_W, top + i * LINE_H))
-
-    g.textAlign = 'right'
-    g.font = font(700, 14)
-    g.fillText(money(row.sum), right, top)
-    g.fillStyle = COLORS.muted
-    g.font = font(400, 12)
-    const unit = row.unit ? ` ${row.unit}` : ''
-    const wholesale = row.wholesale ? t(' (опт)') : ''
-    g.fillText(
-      `${row.quantity}${unit} × ${Number(row.price).toLocaleString('uz')}${wholesale}`,
-      right,
-      top + LINE_H + 1,
-    )
-    if (row.change !== 0) {
-      // Yuqoridagi «son × narx» qatori bilan bir xil rangda, biroz kichikroq.
-      g.font = font(400, 11)
-      g.fillText(
-        t('было {price} · {change}', {
-          price: Number(row.was).toLocaleString('uz'),
-          change: signed(Math.round(row.change * row.quantity)),
-        }),
-        right,
-        top + LINE_H * 2 + 1,
-      )
-    }
-
-    y += rowHeight(row)
-    divider(y)
+    y = drawItemRow(g, font, row, index, y)
   })
 
   // Jami
@@ -174,6 +197,105 @@ function renderImage(spec) {
   g.fillStyle = COLORS.accent
   g.font = font(800, 22)
   g.fillText(money(spec.total), WIDTH - PAD, y + 42 + EXTRAS_H)
+
+  return canvas
+}
+
+/**
+ * Bir nechta savdo bitta rasmda (mijozning qarzlari): har savdo — alohida bo'lim (sarlavha va o'ngda shu savdo qarzi,
+ * tovarlar, ostida summa/to'langan izohi), oxirida umumiy jami. Spec: `{ title, subtitle, sections: [{ heading, rows,
+ * note, debt }], countLabel, totalLabel, total }`.
+ */
+function renderDebtsImage(spec) {
+  const font = makeFont()
+  const ctx = document.createElement('canvas').getContext('2d')
+  const FULL_W = WIDTH - PAD * 2
+  const SECTION_HEAD_H = 36
+  const NOTE_LINE_H = 17
+
+  const sections = spec.sections.map((section) => {
+    ctx.font = font(500, 14)
+    const rows = section.rows.map((row) => ({ ...row, lines: wrapText(ctx, row.name, NAME_W) }))
+    ctx.font = font(400, 12)
+    return { ...section, rows, noteLines: section.note ? wrapText(ctx, section.note, FULL_W) : [] }
+  })
+  ctx.font = font(400, 13)
+  const subtitle = fitText(ctx, spec.subtitle, FULL_W)
+
+  const HEADER_H = 74
+  const FOOTER_H = 90
+  const sectionHeight = (section) =>
+    SECTION_HEAD_H +
+    section.rows.reduce((sum, row) => sum + rowHeight(row), 0) +
+    section.noteLines.length * NOTE_LINE_H +
+    14
+  const height = HEADER_H + sections.reduce((sum, section) => sum + sectionHeight(section), 0) + FOOTER_H
+
+  const canvas = document.createElement('canvas')
+  canvas.width = WIDTH * SCALE
+  canvas.height = height * SCALE
+  const g = canvas.getContext('2d')
+  g.scale(SCALE, SCALE)
+  g.textBaseline = 'top'
+
+  g.fillStyle = COLORS.bg
+  g.fillRect(0, 0, WIDTH, height)
+
+  // Sarlavha
+  g.fillStyle = COLORS.fg
+  g.font = font(700, 20)
+  g.fillText(spec.title, PAD, PAD)
+  g.fillStyle = COLORS.muted
+  g.font = font(400, 13)
+  g.fillText(subtitle, PAD, PAD + 28)
+
+  let y = HEADER_H
+  g.fillStyle = COLORS.strongLine
+  g.fillRect(PAD, y, FULL_W, 2)
+
+  sections.forEach((section) => {
+    // Bo'lim sarlavhasi: chapda savdo raqami va sanasi, o'ngda shu savdo qarzi.
+    g.textAlign = 'right'
+    g.fillStyle = COLORS.danger
+    g.font = font(700, 14)
+    const debtText = `${t('Долг')}: ${money(section.debt)}`
+    g.fillText(debtText, WIDTH - PAD, y + 12)
+    const debtWidth = g.measureText(debtText).width
+
+    g.textAlign = 'left'
+    g.fillStyle = COLORS.fg
+    g.font = font(700, 14)
+    g.fillText(fitText(g, section.heading, FULL_W - debtWidth - 16), PAD, y + 12)
+
+    y += SECTION_HEAD_H
+    section.rows.forEach((row, index) => {
+      y = drawItemRow(g, font, row, index, y)
+    })
+
+    g.textAlign = 'left'
+    g.fillStyle = COLORS.muted
+    g.font = font(400, 12)
+    section.noteLines.forEach((line, i) => g.fillText(line, PAD, y + 8 + i * NOTE_LINE_H))
+    y += section.noteLines.length * NOTE_LINE_H + 14
+
+    g.fillStyle = COLORS.strongLine
+    g.fillRect(PAD, y, FULL_W, 2)
+  })
+
+  // Jami
+  g.textAlign = 'left'
+  g.fillStyle = COLORS.muted
+  g.font = font(400, 13)
+  g.fillText(spec.countLabel, PAD, y + 16)
+
+  g.fillStyle = COLORS.fg
+  g.font = font(700, 16)
+  g.fillText(spec.totalLabel, PAD, y + 46)
+
+  g.textAlign = 'right'
+  g.fillStyle = COLORS.danger
+  g.font = font(800, 22)
+  g.fillText(money(spec.total), WIDTH - PAD, y + 42)
 
   return canvas
 }
@@ -259,6 +381,82 @@ function saleSpec(sale, label) {
   }
 }
 
+/** `/customer/operations` dagi operatsiya qatorlari — rasm qatorlari shaklida. */
+const operationRows = (op) =>
+  op.items.map((item) => ({
+    name: item.name ?? t('Товар удалён'),
+    quantity: item.quantity,
+    unit: item.unit ? td(item.unit) : '',
+    price: item.price,
+    sum: item.amount,
+    wholesale: false,
+    change: 0,
+    was: item.price,
+  }))
+
+/**
+ * Kontragent kartochkasidagi operatsiya (`/customer/operations` javobidagi shaklda: savdo, qaytarish, kirim).
+ * Savdoda qarz qolgan bo'lsa «Оплачено» va «Остаток долга» chiqadi; `customerDebt` (mijozning umumiy qarzi)
+ * shu savdo qarzidan katta bo'lsa — «Общий долг клиента» ham.
+ */
+function operationSpec(op, label, customerDebt = 0) {
+  const rows = operationRows(op)
+
+  const extras = [...serviceExtra(op.masterFees).extras]
+  if (op.discount > 0) extras.push({ label: t('Скидка'), value: `−${money(op.discount)}` })
+  if (op.debt > 0) {
+    extras.push({ label: t('Оплачено'), value: money(op.paid) })
+    extras.push({ label: t('Остаток долга'), value: money(op.debt) })
+  }
+  if (op.type === 'sale' && customerDebt > op.debt) {
+    extras.push({ label: t('Общий долг клиента'), value: money(customerDebt) })
+  }
+
+  return {
+    title: t('Список товаров'),
+    subtitle: `${label} #${op.id} · ${new Date(op.date).toLocaleString(locale)}`,
+    rows,
+    extras,
+    total: op.net,
+  }
+}
+
+/**
+ * Mijozning qarzli savdolari (`/customer/operations?debt=true` qatorlari) — bitta rasm uchun: eskisi tepada,
+ * har birida tovarlar (usta xizmatidan kompaniya ulushi ham qator bo'lib) va shu savdo qarzi, oxirida umumiy qarz.
+ */
+function debtsSpec(sales, customerName) {
+  const sections = [...sales]
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .map((op) => {
+      const service = serviceExtra(op.masterFees).amount
+      const rows = operationRows(op)
+      if (service > 0) {
+        rows.push({ name: t('Услуга мастера'), quantity: 1, unit: '', price: service, sum: service, change: 0, was: service })
+      }
+      const note = [
+        `${t('Сумма')}: ${money(op.total)}`,
+        ...(op.discount > 0 ? [`${t('Скидка')}: −${money(op.discount)}`] : []),
+        `${t('Оплачено')}: ${money(op.paid)}`,
+      ].join(' · ')
+      return {
+        heading: `${t('Продажа')} #${op.id} · ${new Date(op.date).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' })}`,
+        rows,
+        note,
+        debt: op.debt,
+      }
+    })
+
+  return {
+    title: t('Долги клиента'),
+    subtitle: [customerName, new Date().toLocaleString(locale)].filter(Boolean).join(' · '),
+    sections,
+    countLabel: t('Продаж в долг: {count}', { count: sections.length }),
+    totalLabel: t('ОБЩИЙ ДОЛГ'),
+    total: sections.reduce((sum, section) => sum + section.debt, 0),
+  }
+}
+
 /**
  * Brauzer rasmni clipboard ga yozishga ruxsat bermaydi: Async Clipboard API faqat xavfsiz saytda
  * (https:// yoki http://localhost) bor. Oddiy `http://IP` da u umuman yo'q va rasmni boshqa yo'l bilan
@@ -274,14 +472,18 @@ class ClipboardUnavailableError extends Error {
   }
 }
 
-async function deliver(canvas) {
+/** `source` — tayyor canvas yoki uni beradigan Promise (avval ma'lumot yuklanadigan rasm uchun). */
+async function deliver(source) {
   if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
-    throw new ClipboardUnavailableError(canvas.toDataURL('image/png'))
+    throw new ClipboardUnavailableError((await source).toDataURL('image/png'))
   }
-  // Blob ni Promise sifatida berish — `toBlob` kutilayotganda ham bosish
-  // (user activation) yoʻqolmasligi uchun.
-  const blob = new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),
+  // Blob ni Promise sifatida berish — ma'lumot yuklanib, `toBlob` kutilayotganda ham bosish
+  // (user activation) yoʻqolmasligi uchun: clipboard ga yozish bosilgan zahoti boshlanadi.
+  const blob = Promise.resolve(source).then(
+    (canvas) =>
+      new Promise((resolve, reject) =>
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),
+      ),
   )
   await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
 }
@@ -296,4 +498,21 @@ async function copySaleImage(sale, label) {
   return deliver(renderImage(saleSpec(sale, label)))
 }
 
-export { ClipboardUnavailableError, copyCartImage, copySaleImage }
+/** Kontragent kartochkasidagi operatsiyani (tovarlar va qarz) rasm qilib clipboard ga yozadi. */
+async function copyOperationImage(op, label, customerDebt) {
+  return deliver(renderImage(operationSpec(op, label, customerDebt)))
+}
+
+/**
+ * Mijozning barcha qarzli savdolarini bitta rasm qilib clipboard ga yozadi. `loadSales()` — savdolarni yuklovchi
+ * Promise: rasm ma'lumot kelgach chiziladi, lekin clipboard ga yozish bosilgan zahoti boshlanadi.
+ */
+async function copyDebtsImage(loadSales, customerName) {
+  return deliver(
+    Promise.resolve()
+      .then(loadSales)
+      .then((sales) => renderDebtsImage(debtsSpec(sales, customerName))),
+  )
+}
+
+export { ClipboardUnavailableError, copyCartImage, copyDebtsImage, copyOperationImage, copySaleImage }

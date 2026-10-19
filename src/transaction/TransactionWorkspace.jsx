@@ -107,10 +107,28 @@ const makeDraft = (drafts, extra = {}) => ({
  * "Yangi operatsiya" tabida bir nechta chek parallel ochiladi: har birining o'z savati va
  * hisob-kitobi bor, birini tugatmasdan ikkinchisiga o'tish mumkin. Chek yozilgach faqat o'sha chek
  * yopiladi — sahifa yangilanmaydi, qolgan cheklar joyida turadi.
+ *
+ * `initialSaleId` (boshqa bo'limdan o'tilganda) — ro'yxat ochiladi va shu operatsiya tafsiloti yuklanib, ochiladi.
  */
-function TransactionWorkspace({ config, initialOrderList = [], initialCustomer = null, onSubmitted }) {
-  const [activeTab, setActiveTab] = useState('sale')
+function TransactionWorkspace({ config, initialOrderList = [], initialCustomer = null, initialSaleId = null, onSubmitted }) {
+  const [activeTab, setActiveTab] = useState(initialSaleId && config.fetchDetail ? 'home' : 'sale')
   const [selectedSale, setSelectedSale] = useState(null)
+
+  useEffect(() => {
+    if (!initialSaleId || !config.fetchDetail) return undefined
+    let cancelled = false
+    config
+      .fetchDetail(initialSaleId)
+      .then((sale) => {
+        if (cancelled) return
+        setSelectedSale(sale)
+        setActiveTab('sale_detail')
+      })
+      .catch((error) => console.log(error.message))
+    return () => {
+      cancelled = true
+    }
+  }, [initialSaleId, config])
 
   const sessionKey = `${localStorage.getItem('userid') ?? ''}:${config.title}`
 

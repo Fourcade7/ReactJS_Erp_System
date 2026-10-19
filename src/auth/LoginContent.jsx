@@ -5,6 +5,7 @@ import { NavbarScreenFourAuth } from '../navbar/NavbarContent'
 import { Button, Collapse, Form } from '../ui'
 import { AlertDismissibleDanger, ProgressDismissible } from '../utils/UtilsContent'
 import { loginUser } from './AuthApi'
+import { resetActiveTab } from '../main/menuItems'
 import { t } from '../i18n'
 
 function LoginForm({ clickLogin, busy }) {
@@ -94,6 +95,8 @@ function LoginScreen() {
         return
       }
 
+      // Har kirishda asosiy bo'lim ("Задачи") ochiladi — oldingi sessiyadagi bo'lim emas.
+      resetActiveTab()
       navigate('/home')
       localStorage.setItem('username', result.user.username)
       localStorage.setItem('surname', result.user.surname)

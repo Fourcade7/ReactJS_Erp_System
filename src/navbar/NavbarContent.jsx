@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, LifeBuoy, LogOut, Menu, SlidersHorizontal, Sparkles, UserRound } from 'lucide-react'
+import { ChevronDown, LifeBuoy, LogOut, Menu, ShoppingBag, SlidersHorizontal, Sparkles, UserRound } from 'lucide-react'
+import { cn } from '../lib/cn'
 import { BrandMark, Button, Container, Dropdown, LanguageToggle, ThemeToggle } from '../ui'
 import ServerSettings from './ServerSettings'
 import SupportDialog from './SupportDialog'
 import ProfileDialog from './ProfileDialog'
 import { isAdminRole } from '../users/roles'
 import { clearLocalData } from '../config/api'
+import { useMenuAccess } from '../main/menuAccess'
+import { NAV_ITEMS, SALES_TAB, isVisible, roleKey, saveActiveTab, useActiveTab } from '../main/menuItems'
 import { t } from '../i18n'
 
 /** Brend belgisi — logotip va nom. */
@@ -28,6 +31,39 @@ function Brand({ to = '/', subtitle }) {
 
 function initialsOf(name = '', surname = '') {
   return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase() || 'U'
+}
+
+/**
+ * Navbar o'rtasidagi tezkor "Продажа" tugmasi: qaysi bo'lim (yoki sahifa — Дашборд, Настройки) ochiq bo'lmasin,
+ * bir bosishda savdoga qaytaradi. Ochiq cheklar joyida qoladi. Bo'lim shu rolga yopiq bo'lsa — ko'rinmaydi.
+ */
+function SalesShortcut() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const activeTab = useActiveTab()
+  const { overrides } = useMenuAccess({ load: false })
+  const salesItem = NAV_ITEMS.find((item) => item.key === SALES_TAB)
+
+  if (!isVisible(roleKey(localStorage.getItem('role')), salesItem, overrides)) return null
+
+  const current = pathname === '/home' && activeTab === SALES_TAB
+
+  return (
+    <Button
+      variant={current ? 'outline-primary' : 'primary'}
+      size="sm"
+      aria-current={current ? 'page' : undefined}
+      title={t('Быстро вернуться к продаже')}
+      onClick={() => {
+        saveActiveTab(SALES_TAB)
+        if (pathname !== '/home') navigate('/home')
+      }}
+      className={cn('shrink-0 rounded-full px-4', current && 'bg-primary-soft')}
+    >
+      <ShoppingBag />
+      <span className="hidden sm:inline">{t('Продажа')}</span>
+    </Button>
+  )
 }
 
 /**
@@ -57,37 +93,42 @@ function NavbarScreen({ onMenuClick }) {
 
   return (
     <header className="sticky top-0 z-[1030] border-b border-line bg-app/80 backdrop-blur-xl">
+      {/* Chap va o'ng qism teng (flex-1) — o'rtadagi "Продажа" aynan markazda; joy yetmasa surilgani bilan ustma-ust tushmaydi. */}
       <Container size="full" className="flex h-14 items-center gap-3">
-        {onMenuClick && (
-          <button
-            type="button"
-            onClick={onMenuClick}
-            aria-label={t('Открыть меню')}
-            className="inline-flex size-9 items-center justify-center rounded-lg border border-line bg-surface text-muted transition hover:bg-surface-2 hover:text-fg lg:hidden"
-          >
-            <Menu className="size-4" />
-          </button>
-        )}
+        <div className="flex flex-1 items-center gap-3">
+          {onMenuClick && (
+            <button
+              type="button"
+              onClick={onMenuClick}
+              aria-label={t('Открыть меню')}
+              className="inline-flex size-9 items-center justify-center rounded-lg border border-line bg-surface text-muted transition hover:bg-surface-2 hover:text-fg lg:hidden"
+            >
+              <Menu className="size-4" />
+            </button>
+          )}
 
-        <Brand to="/home" />
+          <Brand to="/home" />
 
-        <nav className="ml-6 hidden items-center gap-1 md:flex">
-          <button
-            type="button"
-            onClick={() => setShowSupport(true)}
-            className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
-          >
-            {t('Поддержка')}
-          </button>
-          <a
-            href="#plans"
-            className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
-          >
-            {t('Планы')}
-          </a>
-        </nav>
+          <nav className="ml-6 hidden items-center gap-1 md:flex">
+            <button
+              type="button"
+              onClick={() => setShowSupport(true)}
+              className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
+            >
+              {t('Поддержка')}
+            </button>
+            <a
+              href="#plans"
+              className="rounded-lg px-2.5 py-1.5 text-[13px] text-muted transition hover:bg-surface-2 hover:text-fg"
+            >
+              {t('Планы')}
+            </a>
+          </nav>
+        </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        <SalesShortcut />
+
+        <div className="flex flex-1 items-center justify-end gap-2">
           <ServerSettings />
 
           <LanguageToggle />

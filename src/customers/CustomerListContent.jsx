@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Building2, CalendarClock, MoreHorizontal, Pencil, Phone, Save, Trash2, Users } from 'lucide-react'
+import { Building2, CalendarClock, MoreHorizontal, Pencil, Phone, Save, Trash2, Users, Wallet } from 'lucide-react'
 import { cn } from '../lib/cn'
 import {
   Badge,
@@ -23,6 +23,9 @@ import {
 } from './CustomerApi'
 import { CustomerFields } from './CustomerFields'
 import { customerPayload, customerToForm, isOrganization, validateCustomer } from './customerForm'
+import { useMenuAccess } from '../main/menuAccess'
+import { NAV_ITEMS, SALES_TAB, isVisible, roleKey } from '../main/menuItems'
+import { setSaleHandoff } from '../sale/saleHandoff'
 import { t } from '../i18n'
 
 /** Ro'yxat filtri: odamlar va tashkilotlar aralash turadi, kerak bo'lsa ajratib olinadi. */
@@ -49,6 +52,7 @@ const CUSTOMER_EXPORT_COLUMNS = [
   { key: 'phone', label: t('Телефон') },
   { key: 'type', label: t('Тип'), value: (row) => (isOrganization(row) ? t('Организация') : t('Человек')) },
   { key: 'inn', label: t('ИНН') },
+  { key: 'debt', label: t('Долг'), value: (row) => row.debt ?? 0 },
   {
     key: 'createdAt',
     label: t('Дата регистрации'),
@@ -69,6 +73,8 @@ function CustomerListGroup(props) {
   const [editForm, setEditForm] = useState(() => customerToForm({}))
   const [editInvalid, setEditInvalid] = useState({})
   const [typeFilter, setTypeFilter] = useState('')
+  // Faqat qarzi borlar (tur filtri bilan birga ishlaydi: masalan, qarzdor tashkilotlar).
+  const [debtOnly, setDebtOnly] = useState(false)
 
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -87,6 +93,17 @@ function CustomerListGroup(props) {
   const [showImport, setShowImport] = useState(false)
   const [exporting, setExporting] = useState(false)
 
+  // Kartochkadagi "Продажа #id" — "Продажа" bo'limida shu savdoning tafsilotini ochadi (bo'lim shu rolga ochiq bo'lsa).
+  const { overrides } = useMenuAccess({ load: false })
+  const salesItem = NAV_ITEMS.find((item) => item.key === SALES_TAB)
+  const openSale =
+    props.goTo && isVisible(roleKey(localStorage.getItem('role')), salesItem, overrides)
+      ? (saleId) => {
+          setSaleHandoff(saleId)
+          props.goTo(salesItem.key)
+        }
+      : undefined
+
   // Har bir belgida soʻrov ketmasligi uchun qidiruv 500 ms kechiktiriladi.
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -100,7 +117,7 @@ function CustomerListGroup(props) {
   useEffect(() => {
     async function loadAllUserPag() {
       try {
-        const userListPag = await getAllCustomersPaginationSearch(active, 10, debouncedSearch, typeFilter)
+        const userListPag = await getAllCustomersPaginationSearch(active, 10, debouncedSearch, typeFilter, debtOnly)
         setPageCount(userListPag.meta.totalPages)
         setCustomerList(userListPag.data)
         setShowLoad(false)
@@ -111,7 +128,7 @@ function CustomerListGroup(props) {
     }
 
     if (props.activeTab === 'home') loadAllUserPag()
-  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch, typeFilter])
+  }, [active, showResAlert, reloadKey, props.activeTab, debouncedSearch, typeFilter, debtOnly])
 
   const handleImportChunk = (rows) => importCustomers(rows)
 
@@ -127,7 +144,8 @@ function CustomerListGroup(props) {
       setExporting(true)
       await exportToExcel({
         fetchRows: async () => {
-          const result = await getAllCustomersPaginationSearch(1, 100000, '', typeFilter)
+          // Eksport ekrandagi filtrlarga mos: "Должники" yoqilgan bo'lsa — faqat qarzdorlar.
+          const result = await getAllCustomersPaginationSearch(1, 100000, '', typeFilter, debtOnly)
           return result?.data ?? []
         },
         columns: CUSTOMER_EXPORT_COLUMNS,
@@ -149,6 +167,7 @@ function CustomerListGroup(props) {
           version={profileVersion}
           onBack={() => setProfileId(null)}
           onEdit={openEdit}
+          onOpenSale={openSale}
         />
       ) : (
         <>
@@ -170,32 +189,57 @@ function CustomerListGroup(props) {
             />
           </div>
 
-          <div role="group" aria-label={t('Тип клиента')} className="inline-flex w-fit rounded-lg border border-line bg-surface-2 p-0.5">
-            {TYPE_FILTERS.map((option) => (
-              <button
-                key={option.key || 'all'}
-                type="button"
-                aria-pressed={typeFilter === option.key}
-                onClick={() => {
-                  setTypeFilter(option.key)
-                  setActive(1)
-                }}
-                className={cn(
-                  'rounded-md px-3 py-1 text-xs font-medium transition',
-                  typeFilter === option.key ? 'bg-surface text-fg shadow-soft' : 'text-muted hover:text-fg',
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div role="group" aria-label={t('Тип клиента')} className="inline-flex w-fit rounded-lg border border-line bg-surface-2 p-0.5">
+              {TYPE_FILTERS.map((option) => (
+                <button
+                  key={option.key || 'all'}
+                  type="button"
+                  aria-pressed={typeFilter === option.key}
+                  onClick={() => {
+                    setTypeFilter(option.key)
+                    setActive(1)
+                  }}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-xs font-medium transition',
+                    typeFilter === option.key ? 'bg-surface text-fg shadow-soft' : 'text-muted hover:text-fg',
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              aria-pressed={debtOnly}
+              onClick={() => {
+                setDebtOnly((value) => !value)
+                setActive(1)
+              }}
+              title={t('Только клиенты с неоплаченными продажами')}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition',
+                debtOnly
+                  ? 'border-danger/40 bg-danger-soft text-danger-soft-fg'
+                  : 'border-line bg-surface-2 text-muted hover:text-fg',
+              )}
+            >
+              <Wallet className="size-3.5" />
+              {t('Должники')}
+            </button>
           </div>
 
           {customerList.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title={t('Клиенты не найдены')}
-              description={t('Измените условия поиска или добавьте нового клиента на соседней вкладке.')}
-            />
+            debtOnly ? (
+              <EmptyState icon={Wallet} title={t('Должников нет')} description={t('Все продажи оплачены.')} />
+            ) : (
+              <EmptyState
+                icon={Users}
+                title={t('Клиенты не найдены')}
+                description={t('Измените условия поиска или добавьте нового клиента на соседней вкладке.')}
+              />
+            )
           ) : (
             <ListGroup as="ol">
               {customerList.map((customer, index) => (
@@ -226,6 +270,17 @@ function CustomerListGroup(props) {
                       {isOrganization(customer) && customer.inn && ` · ${t('ИНН')} ${customer.inn}`}
                     </p>
                   </div>
+
+                  {customer.debt > 0 && (
+                    <Badge
+                      bg="danger"
+                      title={t('Неоплаченных продаж: {count}', { count: customer.debtSales })}
+                      className="font-semibold tabular-nums"
+                    >
+                      <Wallet />
+                      {t('Долг: {amount} сум', { amount: customer.debt.toLocaleString('uz') })}
+                    </Badge>
+                  )}
 
                   {customer.phone && (
                     <Badge bg="success" className="hidden sm:inline-flex">

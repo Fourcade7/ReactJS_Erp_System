@@ -3,6 +3,11 @@ export default {
   'Открыть карточку клиента': 'Mijoz kartochkasini ochish',
   'Назад к списку': "Ro'yxatga qaytish",
   'Долг: {amount} сум': "Qarz: {amount} so'm",
+  // ro'yxatdagi "Должники" filtri
+  'Только клиенты с неоплаченными продажами': "Faqat to'lanmagan savdosi bor mijozlar",
+  'Неоплаченных продаж: {count}': "To'lanmagan savdolar: {count}",
+  'Должников нет': "Qarzdorlar yo'q",
+  'Все продажи оплачены.': "Barcha savdolar to'langan.",
   'Чистый оборот': 'Sof aylanma',
   'продажи − возвраты': 'savdo − qaytarish',
   '{count} шт. · скидки {discount}': '{count} ta · chegirmalar {discount}',
@@ -36,6 +41,28 @@ export default {
   'Цена': 'Narx',
   'Договоров нет': "Shartnomalar yo'q",
   'Задач нет': "Vazifalar yo'q",
+  // operatsiyalar ro'yxati: sahifalash va umumiy qarz
+  'Общий долг клиента': 'Mijozning umumiy qarzi',
+  'Показано {from}–{to} из {total}': "{total} tadan {from}–{to} ko'rsatilmoqda",
+  'Показывать по': 'Sahifada',
+  'Своё': 'Boshqa',
+  'Своё количество строк': "Qatorlar sonini o'zingiz kiriting",
+  'От 1 до {max}': '1 dan {max} gacha',
+  'Долги': 'Qarzlar',
+  'Итого по списку': "Ro'yxat bo'yicha jami",
+  // qarzni to'lash va savdoga o'tish
+  'Оплатить': "To'lash",
+  'Оплата принята: {amount} сум': "To'lov qabul qilindi: {amount} so'm",
+  'Остаток долга: {amount} сум': "Qarz qoldig'i: {amount} so'm",
+  'Открыть продажу в разделе «Продажа»': "Savdoni «Sotuv» bo'limida ochish",
+  'Открыть в «Продажа»': '«Sotuv» da ochish',
+  // barcha qarzlar bitta rasmda
+  'Все долги одной картинкой': 'Barcha qarzlar bitta rasmda',
+  'Скопировать все неоплаченные продажи клиента одной картинкой — чтобы отправить клиенту':
+    "Mijozning barcha to'lanmagan savdolarini bitta rasm qilib nusxalash — mijozga yuborish uchun",
+  'Долги клиента': 'Mijoz qarzlari',
+  'Продаж в долг: {count}': 'Qarzga savdolar: {count}',
+  'ОБЩИЙ ДОЛГ': 'UMUMIY QARZ',
   // odam / tashkilot
   'Человек': 'Shaxs',
   'Люди': 'Shaxslar',

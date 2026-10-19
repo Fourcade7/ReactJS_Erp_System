@@ -4,7 +4,6 @@ import LoginScreen from './auth/LoginContent'
 import { RegisterScreen } from './auth/RegisterContent'
 import MainScreen from './main/MainContent'
 import { WelcomeScreen } from './welcome/WelcomeContent'
-import DashboardScreen from './dashboard/DashboardScreen'
 import SettingsScreen from './settings/SettingsScreen'
 import { useAppearanceSync } from './theme/appearance'
 
@@ -18,7 +17,8 @@ function App() {
         <Routes>
           <Route path="/" element={<WelcomeScreen />} />
           <Route path="/home" element={<MainScreen />} />
-          <Route path="/dashboard" element={<DashboardScreen />} />
+          {/* Dashboard o'z manzilida, lekin boshqa bo'limlar kabi sidebar bilan (qobiq bitta). */}
+          <Route path="/dashboard" element={<MainScreen />} />
           <Route path="/settings" element={<SettingsScreen />} />
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/register" element={<RegisterScreen />} />

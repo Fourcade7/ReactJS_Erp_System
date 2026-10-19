@@ -158,6 +158,8 @@ export default {
   // usta xizmatidan kompaniya ulushi (savdo summasiga kiradi)
   '(в сумму продажи входит только доля компании)': "(savdo summasiga faqat kompaniya ulushi kiradi)",
   'в сумму продажи входит только доля компании': "savdo summasiga faqat kompaniya ulushi kiradi",
+  'В сумму продажи входит только доля компании. Суммы можно не указывать — будет 0.':
+    "Savdo summasiga faqat kompaniya ulushi kiradi. Summalarni yozmasangiz ham bo'ladi — 0 bo'ladi.",
   'Сумма услуги мастера': 'Usta xizmati summasi',
   'услуга мастера': 'usta xizmati',
   'Сколько получает мастер — не входит в сумму продажи': "Usta qancha oladi — savdo summasiga kirmaydi",

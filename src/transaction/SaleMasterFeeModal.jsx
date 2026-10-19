@@ -33,7 +33,7 @@ function SaleMasterFeeModal({ sale, addMasterFee, onHide, onDone }) {
 
   const submit = async () => {
     if (!masterId) return setError(t('Выберите мастера'))
-    if (!fee.valid) return setError(t('Введите сумму больше нуля'))
+    if (!fee.valid) return setError(t('Введите сумму'))
 
     setSaving(true)
     setError('')

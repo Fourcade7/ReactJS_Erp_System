@@ -140,13 +140,16 @@ async function getAllUsersPagination(page,limit){
 }
 
 
-/** `type`: organization - faqat tashkilotlar, user - faqat odamlar, bo'sh - hammasi aralash. */
-async function getAllCustomersPaginationSearch(page,limit,search,type){
+/**
+ * `type`: organization - faqat tashkilotlar, user - faqat odamlar, bo'sh - hammasi aralash.
+ * `debt` — faqat qarzi borlar. Har bir qatorda `debt` (qarz jami) va `debtSales` (qarzli savdolar soni) bor.
+ */
+async function getAllCustomersPaginationSearch(page,limit,search,type,debt){
 
-   
+
 
     try{
-        let response = await fetch(`${API_BASE}/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${type ? `&type=${type}` : ""}`,{ 
+        let response = await fetch(`${API_BASE}/customer/allpagsearch?page=${page}&limit=${limit}&search=${encodeURIComponent(search ?? "")}${type ? `&type=${type}` : ""}${debt ? "&debt=true" : ""}`,{
             method:"GET"
 
         });
@@ -178,9 +181,12 @@ async function getJson(url) {
 /** Ma'lumot + savdo/qaytarish/xarid jamlanmasi + to'lov usullari + top tovarlar + 12 oy. */
 const getCustomerProfile = (id) => getJson(`${API_BASE}/customer/profile/${id}`);
 
-/** Barcha operatsiyalar (savdo, qaytarish, xarid), qatorlar va to'lovlar bilan. `type`: sale | return | purchase. */
-const getCustomerOperations = (id, { page = 1, limit = 10, type = "" } = {}) =>
-    getJson(`${API_BASE}/customer/operations/${id}?page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`);
+/**
+ * Barcha operatsiyalar (savdo, qaytarish, xarid), qatorlar va to'lovlar bilan. `type`: sale | return | purchase;
+ * `debt` — faqat qarzi qolgan savdolar. Javobda `totals` — filtrdagi hamma operatsiyalar bo'yicha jamlanma.
+ */
+const getCustomerOperations = (id, { page = 1, limit = 10, type = "", debt = false } = {}) =>
+    getJson(`${API_BASE}/customer/operations/${id}?page=${page}&limit=${limit}${type ? `&type=${type}` : ""}${debt ? "&debt=true" : ""}`);
 
 /** Kontragent yaratish (odam yoki tashkilot): tayyor tana (`customerPayload`) bilan; javob `Response`. */
 async function createCustomer(payload) {
