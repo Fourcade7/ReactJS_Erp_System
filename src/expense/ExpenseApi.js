@@ -2,6 +2,7 @@ import { API_BASE } from '../config/api'
 import { t } from '../i18n'
 
 const BASE = `${API_BASE}/expense`
+const CATEGORY_BASE = `${API_BASE}/expense-category`
 
 async function request(url, options) {
     const response = await fetch(url, options)
@@ -22,7 +23,17 @@ const json = (method, body) => ({
 const params = (values) =>
     new URLSearchParams(Object.entries(values).filter(([, v]) => v !== undefined && v !== null && v !== '')).toString()
 
-const getExpenseCategories = () => request(`${BASE}/categories`)
+/** `[{ id, name, count }]` — `count`: shu turdagi xarajatlar soni. */
+const getExpenseCategories = () => request(`${CATEGORY_BASE}/getall`)
+
+const addExpenseCategory = (name) => request(`${CATEGORY_BASE}/add`, json('POST', { name }))
+
+/** Qayta nomlash: shu turdagi xarajatlar ham yangi nomga o'tadi. */
+const updateExpenseCategory = (id, name) => request(`${CATEGORY_BASE}/update/${id}`, json('PATCH', { name }))
+
+/** Turda xarajatlar bo'lsa `moveTo` (tur id) majburiy: ular shu turga o'tkaziladi. */
+const deleteExpenseCategory = (id, moveTo) =>
+    request(`${CATEGORY_BASE}/delete/${id}?${params({ move_to: moveTo })}`, { method: 'DELETE' })
 
 const getExpenses = ({ page, limit, search, category, month }) =>
     request(`${BASE}/allpagsearch?${params({ page, limit, search, category, month })}`)
@@ -34,4 +45,13 @@ const updateExpense = (id, expense) => request(`${BASE}/update/${id}`, json('PAT
 
 const deleteExpense = (id) => request(`${BASE}/delete/${id}`, { method: 'DELETE' })
 
-export { getExpenseCategories, getExpenses, addExpense, updateExpense, deleteExpense }
+export {
+    getExpenseCategories,
+    addExpenseCategory,
+    updateExpenseCategory,
+    deleteExpenseCategory,
+    getExpenses,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+}

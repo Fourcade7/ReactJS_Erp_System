@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Pencil, Plus, ReceiptText, Trash2 } from 'lucide-react'
+import { Pencil, Plus, ReceiptText, Tags, Trash2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { currentMonth, formatDayTime, formatMoney, formatMonth, parseAmount, plural, RECORDS } from '../lib/format'
 import { Alert, Button, Card, EmptyState, Form, Modal, PageHeader, SearchField, Spinner, Table } from '../ui'
@@ -13,10 +13,11 @@ import {
   getExpenses,
   updateExpense,
 } from './ExpenseApi'
+import ExpenseCategories from './ExpenseCategories'
 import { t, td } from '../i18n'
 
 const OTHER = '__other__'
-const EMPTY_CATEGORIES = { defaults: [], custom: [] }
+const EMPTY_CATEGORIES = []
 
 function Chip({ active, onClick, children }) {
   return (
@@ -38,7 +39,7 @@ function Chip({ active, onClick, children }) {
 
 /** Xarajat qo'shish/tahrirlash. Tur — tayyor ro'yxatdan yoki "Другое" bilan qo'lda. */
 function ExpenseModal({ expense, categories, onHide, onSaved }) {
-  const known = [...categories.defaults, ...categories.custom]
+  const known = categories.map((item) => item.name)
   const initialCategory = expense?.category ?? ''
   const startsKnown = !expense || known.includes(initialCategory)
 
@@ -164,6 +165,7 @@ function ExpenseScreen() {
   const [actionError, setActionError] = useState('')
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
+  const [managingCategories, setManagingCategories] = useState(false)
   const [reload, setReload] = useState(0)
 
   useEffect(() => {
@@ -206,10 +208,16 @@ function ExpenseScreen() {
         title={t('Расходы')}
         description={t('Газ, свет, вода, аренда, зарплата и другие расходы — по месяцам')}
         actions={
-          <Button onClick={() => setEditing('new')}>
-            <Plus />
-            {t('Добавить расход')}
-          </Button>
+          <>
+            <Button variant="outline-secondary" onClick={() => setManagingCategories(true)}>
+              <Tags />
+              {t('Виды расходов')}
+            </Button>
+            <Button onClick={() => setEditing('new')}>
+              <Plus />
+              {t('Добавить расход')}
+            </Button>
+          </>
         }
       />
 
@@ -246,9 +254,9 @@ function ExpenseScreen() {
             }}
           >
             <option value="">{t('Все виды')}</option>
-            {[...categories.defaults, ...categories.custom].map((name) => (
-              <option key={name} value={name}>
-                {td(name)}
+            {categories.map((item) => (
+              <option key={item.id} value={item.name}>
+                {td(item.name)}
               </option>
             ))}
           </Form.Select>
@@ -353,6 +361,21 @@ function ExpenseScreen() {
           onHide={() => setEditing(null)}
           onSaved={() => {
             setEditing(null)
+            refresh()
+          }}
+        />
+      )}
+
+      {managingCategories && (
+        <ExpenseCategories
+          categories={categories}
+          onHide={() => setManagingCategories(false)}
+          onChanged={({ from, to } = {}) => {
+            // Filtrda qayta nomlangan yoki o'chirilgan tur tanlangan bo'lsa — yangisiga (yoki "Все виды") o'tadi.
+            if (from && category === from) {
+              setCategory(to ?? '')
+              setPage(1)
+            }
             refresh()
           }}
         />

@@ -28,6 +28,20 @@ export default {
   'Нажмите «Добавить расход».': "«Xarajat qo'shish» tugmasini bosing.",
   'Удалить расход?': "Xarajat o'chirilsinmi?",
   '{category} · {month} · {amount} сум': "{category} · {month} · {amount} so'm",
+  // xarajat turlarini sozlash
+  'Виды расходов': 'Xarajat turlari',
+  'Новое название сохраняется, когда поле теряет фокус, и меняется во всех расходах этого вида.':
+    "Yangi nom maydondan chiqqanda saqlanadi va shu turdagi barcha xarajatlarda ham o'zgaradi.",
+  'Название вида': 'Tur nomi',
+  'Удалить вид': "Turni o'chirish",
+  'В виде «{name}» {count}. Чтобы удалить вид, перенесите их в другой:':
+    "«{name}» turida {count} bor. Turni o'chirish uchun ularni boshqa turga o'tkazing:",
+  'Удалить вид «{name}»? Расходов в нём нет.': "«{name}» turi o'chirilsinmi? Unda xarajatlar yo'q.",
+  'Перенести в вид': "Qaysi turga o'tkazish",
+  'Выберите вид…': 'Turni tanlang…',
+  'Перенести и удалить': "O'tkazish va o'chirish",
+  'Новый вид': 'Yangi tur',
+  'Добавить вид': "Tur qo'shish",
   // bosh sahifa
   'Сумма сегодняшних продаж': 'Bugungi sotuvlar summasi',
   'Еженедельная сумма продаж': 'Haftalik sotuvlar summasi',
