@@ -16,6 +16,7 @@ import {
   Undo2,
   UserRound,
   Users,
+  Wallet,
   Warehouse,
 } from 'lucide-react'
 import { t } from '../i18n'
@@ -57,6 +58,12 @@ export const NAV_GROUPS = [
       { key: 'masters', label: t('Заказы мастеров'), Icon: HardHat, badgeKey: 'newMasterOrders' },
       { key: 'elevn', label: t('Возврат'), Icon: Undo2 },
       { key: 'twelw', label: t('Платеж'), Icon: Banknote },
+    ],
+  },
+  {
+    label: t('Финансы'),
+    items: [
+      { key: 'salary', label: t('Зарплата'), Icon: Wallet },
       { key: 'expenses', label: t('Расходы'), Icon: ReceiptText },
     ],
   },

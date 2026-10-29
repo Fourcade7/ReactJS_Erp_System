@@ -12,6 +12,7 @@ import {
   RefreshCw,
   ShoppingBag,
   Undo2,
+  Wallet,
 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { formatCompact, formatMoney, plural, RECORDS, SALES } from '../lib/format'
@@ -23,6 +24,7 @@ import { useRequest } from '../lib/useRequest'
 import { getDashboard, getHistory, getKpis } from './DashboardApi'
 import { ChartLegend, ColumnChart, DonutChart, TrendChart } from './charts'
 import YearCalendar from './YearCalendar'
+import PayrollCards from './PayrollCards'
 import { useChartColors } from './chartColors'
 import { formatShare } from './segments'
 
@@ -238,6 +240,7 @@ const HISTORY_TYPES = [
   { key: 'return', label: t('Возвраты') },
   { key: 'purchase', label: t('Приходы') },
   { key: 'expense', label: t('Расходы') },
+  { key: 'salary', label: t('Зарплата') },
 ]
 
 const EVENT = {
@@ -245,13 +248,15 @@ const EVENT = {
   return: { label: t('Возврат'), Icon: Undo2, sign: '−' },
   purchase: { label: t('Приход'), Icon: ArrowDownLeft, sign: '−' },
   expense: { label: t('Расход'), Icon: ReceiptText, sign: '−' },
+  salary: { label: t('Зарплата'), Icon: Wallet, sign: '−' },
 }
 
-/** Backend izohni ruscha yozadi ("Из продажи #5", "за 10.2026") — ekranda tilga qarab tarjima qilinadi. */
+/** Backend izohni ruscha yozadi ("Из продажи #5", "за 10.2026 · аванс") — ekranda tilga qarab tarjima qilinadi. */
 function historyNote(note) {
   return note
     .replace(/^Из продажи #(\d+)/, (_, id) => t('Из продажи #{id}', { id }))
     .replace(/^за (\d{2}\.\d{4})/, (_, month) => t('за {month}', { month }))
+    .replace(/ · аванс(?= · |$)/, ` · ${t('аванс')}`)
 }
 
 function HistoryCard({ from, to }) {
@@ -418,6 +423,9 @@ function DashboardScreen() {
   const s = data?.summary
   const p = data?.previous
   const monthly = granularity === 'month' || granularity === 'year'
+  // Maosh ikki karta bo'lib chiqsa (oklad belgilangan) — qator uch ustunga bo'linadi.
+  const payrollWide = data?.payroll?.employees > 0
+  const salaryVisible = isVisible(role, NAV_ITEMS.find((item) => item.key === 'salary'), overrides)
 
   return (
     <div className="flex flex-col gap-5">
@@ -522,25 +530,27 @@ function DashboardScreen() {
         </div>
       ) : (
         <div className={cn('flex flex-col gap-5 transition-opacity', loading && 'opacity-60')}>
-          {/* Asosiy raqam */}
-          <Card padded={false} className="p-5">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-medium text-muted">
-                  {t('Выручка за период · {from} — {to} ({days} дн.)', { from: formatDate(data.range.from), to: formatDate(data.range.to), days: data.range.days })}
-                </p>
-                <p className="mt-1 text-5xl font-semibold tracking-tight text-fg">
-                  {formatMoney(s.revenue)}
-                  <span className="ml-2 text-lg font-medium text-subtle">{t('сум')}</span>
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <Delta current={s.revenue} previous={p.revenue} suffix={t('к предыдущему периоду')} />
-                  <span className="text-[11px] text-subtle">
-                    {t('{from} — {to}: {amount} сум', { from: formatDate(data.previousRange.from), to: formatDate(data.previousRange.to), amount: formatMoney(p.revenue) })}
-                  </span>
-                </div>
+          {/* Asosiy raqamlar: davr tushumi va maosh (to'lash qolgani, kimga qancha). */}
+          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+            <Card
+              padded={false}
+              className={cn('flex flex-col p-5', !data.payroll ? 'lg:col-span-2 xl:col-span-3' : !payrollWide && 'xl:col-span-2')}
+            >
+              <p className="text-xs font-medium text-muted">
+                {t('Выручка за период · {from} — {to} ({days} дн.)', { from: formatDate(data.range.from), to: formatDate(data.range.to), days: data.range.days })}
+              </p>
+              <p className="mt-1 text-4xl font-semibold tracking-tight tabular-nums text-fg">
+                {formatMoney(s.revenue)}
+                <span className="ml-2 text-base font-medium text-subtle">{t('сум')}</span>
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <Delta current={s.revenue} previous={p.revenue} suffix={t('к предыдущему периоду')} />
+                <span className="text-[11px] text-subtle">
+                  {t('{from} — {to}: {amount} сум', { from: formatDate(data.previousRange.from), to: formatDate(data.previousRange.to), amount: formatMoney(p.revenue) })}
+                </span>
               </div>
-              <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
+              {/* Ustunlarga cho'zilmaydi: chapda, yonma-yon (joy yetmasa keyingi qatorga o'tadi). */}
+              <dl className="mt-auto flex flex-wrap gap-x-6 gap-y-2 pt-3 text-xs">
                 {[
                   [t('Продажи'), s.gross],
                   [t('Скидки'), s.discount],
@@ -553,8 +563,10 @@ function DashboardScreen() {
                   </div>
                 ))}
               </dl>
-            </div>
-          </Card>
+            </Card>
+            {/* Eski backend `payroll` bermasa — karta chiqmaydi, tushum kartasi kengayadi. */}
+            {data.payroll && <PayrollCards payroll={data.payroll} canOpen={salaryVisible} />}
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
             <MetricTile label={t('Поступления в кассу')} value={s.cashIn} previous={p.cashIn} hint={t('оплаты по продажам')} />
@@ -632,7 +644,7 @@ function DashboardScreen() {
               <DonutChart
                 centerLabel={t('Расходы')}
                 total={s.expenses}
-                rows={data.expensesByCategory.map((row) => ({ key: row.category, label: row.category, value: row.amount }))}
+                rows={data.expensesByCategory.map((row) => ({ key: row.category, label: td(row.category), value: row.amount }))}
                 emptyText={t('Расходов за период нет')}
               />
             </ChartCard>

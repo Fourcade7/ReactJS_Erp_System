@@ -18,6 +18,7 @@ import { IntegrationScreen } from '../integration/IntegrationContent'
 import { MasterOrderScreen } from '../masterorder/MasterOrderContent'
 import { getNewMasterOrderCount } from '../masterorder/MasterOrderApi'
 import { ExpenseScreen } from '../expense/ExpenseContent'
+import { SalaryScreen } from '../salary/SalaryContent'
 import { TaskScreen } from '../task/TaskContent'
 import { ContractScreen } from '../contract/ContractContent'
 import DashboardScreen from '../dashboard/DashboardScreen'
@@ -42,6 +43,7 @@ const SCREENS = {
   elevn: ReturnScreen,
   twelw: PaymentScreen,
   expenses: ExpenseScreen,
+  salary: SalaryScreen,
   integration: IntegrationScreen,
 }
 

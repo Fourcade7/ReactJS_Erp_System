@@ -13,7 +13,8 @@ export default {
   'Комментарий': 'Izoh',
   'Например: счёт №123, оплачено наличными': "Masalan: hisob №123, naqd to'langan",
   'за всё время': 'butun vaqt uchun',
-  'Газ, свет, вода, аренда, зарплата и другие расходы — по месяцам': "Gaz, elektr, suv, ijara, maosh va boshqa xarajatlar — oylar bo'yicha",
+  'Газ, свет, вода, аренда и другие расходы — по месяцам. Зарплата ведётся в разделе «Зарплата».':
+    "Gaz, elektr, suv, ijara va boshqa xarajatlar — oylar bo'yicha. Maosh «Maosh» bo'limida yuritiladi.",
   'Добавить расход': "Xarajat qo'shish",
   'Все месяцы': 'Barcha oylar',
   'Все виды': 'Barcha turlar',

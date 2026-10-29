@@ -206,7 +206,7 @@ function ExpenseScreen() {
       <PageHeader
         icon={ReceiptText}
         title={t('Расходы')}
-        description={t('Газ, свет, вода, аренда, зарплата и другие расходы — по месяцам')}
+        description={t('Газ, свет, вода, аренда и другие расходы — по месяцам. Зарплата ведётся в разделе «Зарплата».')}
         actions={
           <>
             <Button variant="outline-secondary" onClick={() => setManagingCategories(true)}>

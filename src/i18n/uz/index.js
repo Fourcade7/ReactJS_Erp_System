@@ -13,6 +13,7 @@ import integration from './integration.js'
 import masterorder from './masterorder.js'
 import nav from './nav.js'
 import products from './products.js'
+import salary from './salary.js'
 import system from './system.js'
 import tasks from './tasks.js'
 import trade from './trade.js'
@@ -28,6 +29,7 @@ export default {
   ...masterorder,
   ...nav,
   ...products,
+  ...salary,
   ...system,
   ...tasks,
   ...trade,
