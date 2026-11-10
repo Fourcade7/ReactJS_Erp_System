@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Building2, CalendarClock, MoreHorizontal, Pencil, Phone, Save, Trash2, Users, Wallet } from 'lucide-react'
+import { Building2, CalendarClock, MoreHorizontal, PiggyBank, Pencil, Phone, Save, Trash2, Users, Wallet } from 'lucide-react'
 import { cn } from '../lib/cn'
 import {
   Badge,
@@ -53,6 +53,7 @@ const CUSTOMER_EXPORT_COLUMNS = [
   { key: 'type', label: t('Тип'), value: (row) => (isOrganization(row) ? t('Организация') : t('Человек')) },
   { key: 'inn', label: t('ИНН') },
   { key: 'debt', label: t('Долг'), value: (row) => row.debt ?? 0 },
+  { key: 'balance', label: t('Баланс'), value: (row) => row.balance ?? 0 },
   {
     key: 'createdAt',
     label: t('Дата регистрации'),
@@ -279,6 +280,17 @@ function CustomerListGroup(props) {
                     >
                       <Wallet />
                       {t('Долг: {amount} сум', { amount: customer.debt.toLocaleString('uz') })}
+                    </Badge>
+                  )}
+
+                  {customer.balance > 0 && (
+                    <Badge
+                      bg="info"
+                      title={t('Деньги клиента в магазине: можно погасить долг или оплатить покупку')}
+                      className="font-semibold tabular-nums"
+                    >
+                      <PiggyBank />
+                      {t('Баланс: {amount} сум', { amount: customer.balance.toLocaleString('uz') })}
                     </Badge>
                   )}
 

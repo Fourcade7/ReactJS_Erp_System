@@ -381,6 +381,8 @@ function TransactionWorkspace({ config, initialOrderList = [], initialCustomer =
                       onSubmitted={draft.onSubmitted}
                       onFinished={() => finishDraft(draft.id)}
                       contractSale={Boolean(config.contractSale)}
+                      balancePay={Boolean(config.balancePay)}
+                      balanceRefund={Boolean(config.balanceRefund)}
                       masterFees={draft.masterFees ?? []}
                     />
                   </div>

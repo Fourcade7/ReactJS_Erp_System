@@ -31,6 +31,8 @@ const RETURN_CONFIG = {
   fetchCustomers: getAllCustomersForSale,
   submit: addNewReturn,
   addNewPayment,
+  // "На баланс": qaytarish summasi naqd berilmay, kontragent balansiga yoziladi.
+  balanceRefund: true,
 }
 
 function ReturnScreen() {

@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { ChevronDown, ChevronRight, ClipboardList, HandCoins, History, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardList, Coins, HandCoins, History, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { currentMonth, formatDayTime, formatMoney, formatMonth, plural } from '../lib/format'
 import { useRequest } from '../lib/useRequest'
@@ -88,6 +88,16 @@ function SalarySheet({ month, onMonthChange, request, onPay, onRate, onEdit, onD
       else next.add(id)
       return next
     })
+
+  // Ortiqcha to'langan oyni tuzatish: to'lov bitta bo'lsa — darhol uning tahriri, bir nechta bo'lsa — ro'yxati ochiladi
+  // (har bir to'lov yonida "Изменить" / "Удалить"). Qatordagi qalam — oklad uchun, to'lov uchun emas.
+  const fixOverpaid = (row) => {
+    if (row.payments.length === 1) {
+      onEdit({ ...row.payments[0], employee: row.employee })
+      return
+    }
+    setExpanded((prev) => new Set(prev).add(row.employee.id))
+  }
 
   const statusFilters = [
     { key: '', label: t('Все'), count: rows.length },
@@ -209,9 +219,14 @@ function SalarySheet({ month, onMonthChange, request, onPay, onRate, onEdit, onD
                       </td>
                       <td className="whitespace-nowrap text-right tabular-nums">
                         {row.overpaid > 0 ? (
-                          <span className="text-warning-soft-fg" title={t('Переплата')}>
+                          <button
+                            type="button"
+                            onClick={() => fixOverpaid(row)}
+                            title={t('Переплата — нажмите, чтобы исправить выплату')}
+                            className="text-warning-soft-fg hover:underline"
+                          >
                             +{formatMoney(row.overpaid)}
-                          </span>
+                          </button>
                         ) : (
                           <span className={row.remaining > 0 ? 'font-semibold text-fg' : 'text-subtle'}>{formatMoney(row.remaining)}</span>
                         )}
@@ -228,15 +243,31 @@ function SalarySheet({ month, onMonthChange, request, onPay, onRate, onEdit, onD
                             {t('Выплатить')}
                           </Button>
                         )}
+                        {row.overpaid > 0 && (
+                          <Button
+                            variant="outline-warning"
+                            size="xs"
+                            onClick={() => fixOverpaid(row)}
+                            title={
+                              row.payments.length === 1
+                                ? t('Изменить сумму выплаты')
+                                : t('Открыть выплаты месяца: у каждой есть «Изменить» и «Удалить»')
+                            }
+                          >
+                            <Pencil />
+                            {t('Исправить переплату')}
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
                           icon
-                          title={t('Оклад')}
-                          aria-label={t('Оклад')}
+                          title={t('Изменить оклад')}
+                          aria-label={t('Изменить оклад')}
                           onClick={() => onRate({ ...row.employee, salary: row.salary })}
                         >
-                          <Pencil />
+                          {/* Oklad — to'lovni tahrirlash bilan adashtirilmasin (u ochiladigan ro'yxatda). */}
+                          <Coins />
                         </Button>
                       </td>
                     </tr>

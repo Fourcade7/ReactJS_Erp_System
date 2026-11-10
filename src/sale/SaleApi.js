@@ -1,5 +1,6 @@
 import { API_BASE } from '../config/api'
 import { t } from '../i18n'
+import { BALANCE_PAY_METHOD } from '../customers/balance'
 
 
 
@@ -124,14 +125,11 @@ async function addNewSale(orderList,finalCost,paymentType,discount,customerId,us
        }
     ))
 
-    const payments =[{
-        method:paymentType,
-        amount:finalCost
-    }];
-    
-
-
-
+    // `extra.balanceAmount` — kontragent balansidan to'lanadigan qism ("С баланса"); `extra.balanceOnly` — savdo
+    // to'liq balansdan, boshqa to'lov yozilmaydi. Qolgani (`finalCost`) tanlangan usulda yoki qarzga.
+    const payments = [];
+    if (extra.balanceAmount > 0) payments.push({ method: BALANCE_PAY_METHOD, amount: extra.balanceAmount });
+    if (!extra.balanceOnly) payments.push({ method: paymentType, amount: finalCost });
 
     try {
         let response = await fetch(`${API_BASE}/sale/addfull`, {
@@ -213,7 +211,32 @@ async function addNewPayment(saleId,method,amount) {
 
 
 
-// Savdo tafsiloti: har bir qatordan qancha qaytarilgani (`returned`) bilan.
+// Qarzni aniq tovarlar bo'yicha to'lash ("310 metrdan 10 metri uchun"). items — [{ sale_item_id, quantity }].
+// `fromBalance` — kontragent balansidan. Summa server hisoblaydi. Javob — yangilangan savdo tafsiloti; xato bo'lsa istisno.
+async function paySaleItems(saleId, items, { fromBalance = false } = {}) {
+    let response
+    try {
+        response = await fetch(`${API_BASE}/sale/pay-items/${saleId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                items,
+                from_balance: fromBalance || undefined,
+                user_id: Number(localStorage.getItem('userid')) || undefined
+            })
+        });
+    } catch {
+        throw new Error(t('Не удалось подключиться к серверу'));
+    }
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+        throw new Error((Array.isArray(data?.message) ? data.message.join(', ') : data?.message) || t('Ошибка сервера'));
+    }
+    return data;
+}
+
+
+// Savdo tafsiloti: har bir qatordan qancha qaytarilgani (`returned`) va alohida shu tovar uchun to'langani (`paid`) bilan.
 async function getSaleDetail(id) {
 
     const response = await fetch(`${API_BASE}/sale/detail/${id}`);
@@ -226,6 +249,7 @@ async function getSaleDetail(id) {
 
 // Список продаж ichidan qaytarish. items — [{ sale_item_id, quantity }].
 // `method` faqat mijozga pul qaytariladigan boʻlsa kerak (qarz boʻlsa — qarzdan ayiriladi).
+// `method` = «На баланс» — pul berilmaydi, mijoz balansiga yoziladi.
 async function returnFromSale(saleId, items, method, userId) {
 
     return fetch(`${API_BASE}/return/fromsale`, {
@@ -292,4 +316,4 @@ async function removeSaleMasterFee(feeId, userId) {
 }
 
 
-export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale,changeSaleCustomer,addSaleMasterFee,removeSaleMasterFee}
+export {getAllProductPaginationSearch,addNewSale,getAllSaleListPaginationSearch,getAllCustomersForSale,addNewPayment,getAllSaleDebtList,getSaleDetail,returnFromSale,changeSaleCustomer,addSaleMasterFee,removeSaleMasterFee,paySaleItems}

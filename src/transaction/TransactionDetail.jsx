@@ -11,6 +11,7 @@ import {
   Mail,
   Pencil,
   Phone,
+  PiggyBank,
   Plus,
   Trash2,
   Undo2,
@@ -29,6 +30,9 @@ import SaleMasterFeeModal from './SaleMasterFeeModal'
 import { isAdminRole } from '../users/roles'
 import CopyImageModal from './CopyImageModal'
 import { ClipboardUnavailableError, copySaleImage } from './cartImage'
+import { BALANCE_PAY_METHOD, BALANCE_REFUND_METHOD, parseAmount } from '../customers/balance'
+import DebtPaymentModal from './DebtPaymentModal'
+import { unpaidQty } from './amounts'
 import { t, td } from '../i18n'
 
 const PAYMENT_ICONS = {
@@ -38,6 +42,8 @@ const PAYMENT_ICONS = {
   'Зачёт возврата': Undo2,
   'По договору': FileText,
   Перечисление: Landmark,
+  [BALANCE_PAY_METHOD]: PiggyBank,
+  [BALANCE_REFUND_METHOD]: PiggyBank,
 }
 
 function InfoRow({ icon: Icon, label, children }) {
@@ -80,6 +86,9 @@ function TransactionDetail({
   const [debtAmount, setDebtAmount] = useState('')
   const [debtError, setDebtError] = useState('')
   const [debtSaving, setDebtSaving] = useState(false)
+  // Savdo qarzini to'lash oynasi (summa yoki tovarlar bo'yicha) va natija xabari.
+  const [saleDebtOpen, setSaleDebtOpen] = useState(false)
+  const [debtDone, setDebtDone] = useState('')
 
   const [detail, setDetail] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -127,6 +136,15 @@ function TransactionDetail({
   const totalPayed = sale.payments.reduce((sum, item) => sum + item.amount, 0)
   const remaining = sale.total - (totalPayed + sale.discount)
   const settled = remaining <= 0
+  // Savdo (tafsiloti yuklangan): qarz to'lovi umumiy oynada — summa yoki aniq tovarlar uchun, pul yoki balansdan.
+  const saleDebtPayment = Boolean(fetchDetail && detail)
+  // Qarzning bir qismi aniq tovarlar uchun to'langan — qatorlarda "to'langan / qolgan" ko'rsatiladi.
+  const itemPayments = sale.items.some((item) => (item.paid ?? 0) > 0)
+  const itemName = (saleItemId) => {
+    const found = sale.items.find((item) => item.id === saleItemId)
+    return found ? `${found.product?.name ?? t('Товар удалён')}` : t('Товар удалён')
+  }
+  const itemUnit = (saleItemId) => td(sale.items.find((item) => item.id === saleItemId)?.product?.unit ?? '')
   const returnedTotal = sale.returnedTotal ?? 0
   // Usta xizmatidan kompaniya ulushi: `sale.total` ichida, mahsulotlar ro'yxatida alohida qator bo'lib chiqadi.
   const masterFees = sale.masterFees ?? []
@@ -418,6 +436,25 @@ function TransactionDetail({
                           {returned}
                         </span>
                       )}
+                      {/* Qarz tovar bo'yicha to'langan bo'lsa: shu tovardan qancha to'langan va qancha qolgan. */}
+                      {item.paid > 0 && (
+                        <span
+                          title={t('Оплачено за этот товар: {quantity} {unit}', { quantity: item.paid, unit })}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-success/40 bg-success-soft px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-success-soft-fg"
+                        >
+                          <Check className="size-3" />
+                          {item.paid}
+                        </span>
+                      )}
+                      {itemPayments && !settled && unpaidQty(item) > 0 && (
+                        <span
+                          title={t('Не оплачено: {quantity} {unit}', { quantity: unpaidQty(item), unit })}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-danger/40 bg-danger-soft px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-danger-soft-fg"
+                        >
+                          <Wallet className="size-3" />
+                          {unpaidQty(item)}
+                        </span>
+                      )}
                     </div>
 
                     <span className="inline-flex h-6 shrink-0 items-center justify-center rounded-md border border-line bg-surface-2 px-2 text-[12px] font-semibold tabular-nums text-fg @lg:min-w-[4.5rem]">
@@ -497,6 +534,7 @@ function TransactionDetail({
                 const PayIcon = PAYMENT_ICONS[method] ?? CreditCard
                 const debt = item.method === 'В долг' || method === 'По договору'
                 const offset = method === 'Зачёт возврата'
+                const fromBalance = method === BALANCE_PAY_METHOD
                 return (
                   <li key={item.id ?? index} className="flex items-center gap-3 px-4 py-2.5">
                     <span
@@ -506,13 +544,24 @@ function TransactionDetail({
                           ? 'bg-danger-soft text-danger-soft-fg'
                           : offset
                             ? 'bg-warning-soft text-warning-soft-fg'
-                            : 'bg-success-soft text-success-soft-fg',
+                            : fromBalance
+                              ? 'bg-info-soft text-info-soft-fg'
+                              : 'bg-success-soft text-success-soft-fg',
                       )}
                     >
                       <PayIcon className="size-3.5" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-medium text-fg">{td(method)}</p>
+                      {item.allocations?.length > 0 && (
+                        <p className="text-[11.5px] text-success-soft-fg">
+                          {t('за товары: {items}', {
+                            items: item.allocations
+                              .map((a) => `${itemName(a.saleItemId)} ${a.quantity} ${itemUnit(a.saleItemId)}`.trim())
+                              .join(', '),
+                          })}
+                        </p>
+                      )}
                       <p className="text-[11px] text-subtle">
                         {new Date(item.date).toLocaleString('uz')}
                       </p>
@@ -592,6 +641,11 @@ function TransactionDetail({
               variant="danger"
               block
               onClick={() => {
+                // Savdo: umumiy oyna (summa yoki aniq tovarlar uchun, pul yoki balansdan). Boshqalar: oddiy summa.
+                if (saleDebtPayment) {
+                  setSaleDebtOpen(true)
+                  return
+                }
                 setShowDebtEdit(true)
                 setDebtError('')
                 setDebtAmount(remaining)
@@ -629,7 +683,7 @@ function TransactionDetail({
             variant="warning"
             loading={debtSaving}
             onClick={async () => {
-              const amount = Math.round(Number(`${debtAmount}`.replace(/\s/g, '').replace(',', '.')))
+              const amount = parseAmount(debtAmount)
               if (!Number.isFinite(amount) || amount <= 0) {
                 setDebtError(t('Введите сумму больше нуля'))
                 return
@@ -638,7 +692,6 @@ function TransactionDetail({
                 setDebtError(t('Сумма больше остатка долга'))
                 return
               }
-
               setDebtSaving(true)
               setDebtError('')
               try {
@@ -664,6 +717,19 @@ function TransactionDetail({
         </Modal.Footer>
       </Modal>
 
+      {saleDebtOpen && (
+        <DebtPaymentModal
+          saleId={sale.id}
+          onHide={() => setSaleDebtOpen(false)}
+          onDone={(message) => {
+            setSaleDebtOpen(false)
+            // Tafsilot yangilanadi: tovar qatorlarida "to'langan / qolgan" va qolgan qarz darhol ko'rinadi.
+            setReloadKey((k) => k + 1)
+            setDebtDone(message)
+          }}
+        />
+      )}
+
       {returnItem && (
         <SaleReturnModal
           sale={sale}
@@ -673,11 +739,17 @@ function TransactionDetail({
           onDone={(result) => {
             setReturnItem(null)
             setReloadKey((k) => k + 1)
-            setReturnDone(
-              result.offset > 0
-                ? t("Возврат оформлен: {amount} So'm (с долга списано {offset})", { amount: result.value.toLocaleString('uz'), offset: result.offset.toLocaleString('uz') })
-                : t("Возврат оформлен: {amount} So'm", { amount: result.value.toLocaleString('uz') }),
-            )
+            const parts = [t("Возврат оформлен: {amount} So'm", { amount: result.value.toLocaleString('uz') })]
+            if (result.offset > 0) parts.push(t('с долга списано {offset}', { offset: result.offset.toLocaleString('uz') }))
+            if (result.toBalance) {
+              parts.push(
+                t('на баланс клиента зачислено {refund} (баланс: {balance})', {
+                  refund: result.refund.toLocaleString('uz'),
+                  balance: Number(result.balance ?? 0).toLocaleString('uz'),
+                }),
+              )
+            }
+            setReturnDone(parts.join(' · '))
           }}
         />
       )}
@@ -751,6 +823,8 @@ function TransactionDetail({
       <ResultModal show={Boolean(customerDone)} onHide={() => setCustomerDone('')} success message={customerDone} />
 
       <ResultModal show={Boolean(feeDone)} onHide={() => setFeeDone('')} success message={feeDone} />
+
+      <ResultModal show={Boolean(debtDone)} onHide={() => setDebtDone('')} success message={debtDone} />
 
       <ResultModal
         show={Boolean(returnDone)}

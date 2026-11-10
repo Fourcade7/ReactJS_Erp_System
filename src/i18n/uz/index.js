@@ -4,6 +4,7 @@
  * Kalitdagi `{nom}` oʻrinlari tarjimada ham aynan shunday boʻlishi shart.
  */
 import auth from './auth.js'
+import balance from './balance.js'
 import catalog from './catalog.js'
 import contracts from './contracts.js'
 import customers from './customers.js'
@@ -20,6 +21,7 @@ import trade from './trade.js'
 
 export default {
   ...auth,
+  ...balance,
   ...catalog,
   ...contracts,
   ...customers,

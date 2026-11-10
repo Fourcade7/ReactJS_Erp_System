@@ -187,7 +187,8 @@ function SalaryPaymentModal({ payment, initial, employees, onHide, onSaved }) {
             />
             {remaining > 0 && value !== remaining && (
               <Button variant="outline-secondary" className="shrink-0" onClick={() => setAmount(formatMoney(remaining))}>
-                {t('Весь остаток')}
+                {/* Tahrirda ortiqcha summa: bosilsa summa oklad qoldig'igacha kamayadi — переплата yo'qoladi. */}
+                {overpay > 0 ? t('Убрать переплату') : t('Весь остаток')}
               </Button>
             )}
           </div>

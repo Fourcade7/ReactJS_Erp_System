@@ -188,6 +188,50 @@ const getCustomerProfile = (id) => getJson(`${API_BASE}/customer/profile/${id}`)
 const getCustomerOperations = (id, { page = 1, limit = 10, type = "", debt = false } = {}) =>
     getJson(`${API_BASE}/customer/operations/${id}?page=${page}&limit=${limit}${type ? `&type=${type}` : ""}${debt ? "&debt=true" : ""}`);
 
+/**
+ * Mijoz balansi: `balance`, `debt`, `totals` (kiritilgan / qaytarishdan / sarflangan / qaytarib berilgan)
+ * va harakatlar tarixi (`data`, sahifalangan, yangilari tepada).
+ */
+const getCustomerBalance = (id, { page = 1, limit = 20 } = {}) =>
+    getJson(`${API_BASE}/customer/balance/${id}?page=${page}&limit=${limit}`);
+
+// Balans amallari: xato bo'lsa istisno (backend xabari bilan) otadi, muvaffaqiyatda javob qaytadi.
+async function postJson(url, body) {
+    let response
+    try {
+        response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+    } catch {
+        throw new Error(t('Не удалось подключиться к серверу'));
+    }
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+        const message = Array.isArray(data?.message) ? data.message.join(", ") : data?.message;
+        throw new Error(message || t('Ошибка сервера'));
+    }
+    return data;
+}
+
+const currentUserId = () => Number(localStorage.getItem('userid')) || undefined;
+
+/** Mijoz pul olib keldi (savdosiz ham) — balansga yoziladi. `method`: «Наличные», «Click» … */
+const depositBalance = (id, { amount, method, note }) =>
+    postJson(`${API_BASE}/customer/balance/${id}/deposit`, { amount, method, note: note || undefined, user_id: currentUserId() });
+
+/** Balansdagi pulni mijozga qaytarib berish (balansdan ortiq emas). */
+const withdrawBalance = (id, { amount, method, note }) =>
+    postJson(`${API_BASE}/customer/balance/${id}/withdraw`, { amount, method, note: note || undefined, user_id: currentUserId() });
+
+/**
+ * Qarzni balansdan yopish: `saleId` — bitta savdo, bo'lmasa eng eski qarzdan boshlab. `amount` — ko'pi bilan shuncha.
+ * Javob: { paid, sales: [{ saleId, amount }], balance }.
+ */
+const payFromBalance = (id, { saleId, amount } = {}) =>
+    postJson(`${API_BASE}/customer/balance/${id}/pay`, { sale_id: saleId || undefined, amount: amount || undefined, user_id: currentUserId() });
+
 /** Kontragent yaratish (odam yoki tashkilot): tayyor tana (`customerPayload`) bilan; javob `Response`. */
 async function createCustomer(payload) {
     try {
@@ -214,4 +258,4 @@ async function updateCustomerData(id, payload) {
     }
 }
 
-export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations,createCustomer,updateCustomerData}
+export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations,createCustomer,updateCustomerData,getCustomerBalance,depositBalance,withdrawBalance,payFromBalance}

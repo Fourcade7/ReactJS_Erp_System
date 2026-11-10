@@ -77,4 +77,11 @@ export default {
     "«Maosh» bo'limida oklad belgilang — bu yerda qancha to'lash kerakligi va qancha qolgani chiqadi.",
   'Кому сколько осталось': 'Kimga qancha qoldi',
   'Всем выплачено полностью': "Hammaga to'liq to'langan",
+  // ortiqcha to'langan oyni tuzatish
+  'Переплата — нажмите, чтобы исправить выплату': "Ortiqcha to'langan — to'lovni tuzatish uchun bosing",
+  'Изменить сумму выплаты': "To'lov summasini o'zgartirish",
+  'Открыть выплаты месяца: у каждой есть «Изменить» и «Удалить»':
+    "Oy to'lovlarini ochish: har birida «O'zgartirish» va «O'chirish» bor",
+  'Исправить переплату': "Ortiqcha to'lovni tuzatish",
+  'Убрать переплату': "Ortiqchasini olib tashlash",
 }

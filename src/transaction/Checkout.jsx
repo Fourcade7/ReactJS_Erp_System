@@ -5,6 +5,7 @@ import {
   ChevronDown,
   CreditCard,
   FileText,
+  PiggyBank,
   Printer,
   Receipt,
   Search,
@@ -23,6 +24,8 @@ import {
 } from '../utils/UtilsContent'
 import logobgtransparent from '../assets/logobgtransparent.png'
 import { priceChange, stockOf, unitPrice } from './pricing'
+import { BALANCE_REFUND_METHOD } from '../customers/balance'
+import { getCustomerBalance } from '../customers/CustomerApi'
 import { t, td } from '../i18n'
 
 const PAYMENTS = [
@@ -36,6 +39,9 @@ const PAYMENTS = [
 
 /** "По договору": bank o'tkazmasi bilan, shartnoma avtomatik ochiladi (faqat savdoda). Backend CONTRACT_METHOD bilan bir xil. */
 const CONTRACT_PAYMENT = { value: 'По договору', Icon: FileText, contract: true }
+
+/** "На баланс" (faqat qaytarishda): pul naqd berilmaydi, kontragent balansiga yoziladi. */
+const BALANCE_REFUND_PAYMENT = { value: BALANCE_REFUND_METHOD, Icon: PiggyBank }
 
 /**
  * Kontragentni qidirib tanlash (combobox). Yozilgan matn (`label`) tashqarida saqlanadi: chek
@@ -232,6 +238,8 @@ function Checkout({
   onFinished,
   contractSale = false,
   masterFees = [],
+  balancePay = false,
+  balanceRefund = false,
 }) {
   const componentRef = useRef(null)
 
@@ -251,6 +259,10 @@ function Checkout({
   const [paymentType, setPaymentType] = useState(initialState?.paymentType ?? 'Наличные')
   const [discountType, setDiscountType] = useState(initialState?.discountType ?? 'sum')
   const [discountSum, setDiscountSum] = useState(initialState?.discountSum ?? 0)
+  // Savdoning bir qismi (yoki hammasi) kontragent balansidan to'lansinmi (kassir tanlaydi).
+  const [useBalance, setUseBalance] = useState(initialState?.useBalance ?? false)
+  // Tanlangan kontragentning balansi — har tanlanganda serverdan yangisi olinadi.
+  const [balanceInfo, setBalanceInfo] = useState({ customerId: null, amount: 0 })
   // Savdo yozildi: chek yopilguncha qayta yuborib bo'lmaydi (ikki marta savdo bo'lib ketmasin).
   const [sold, setSold] = useState(false)
 
@@ -259,8 +271,20 @@ function Checkout({
     report.current = onStateChange
   })
   useEffect(() => {
-    report.current?.({ customerId, customerLabel, customerType, contractChoice, paymentType, discountType, discountSum })
-  }, [customerId, customerLabel, customerType, contractChoice, paymentType, discountType, discountSum])
+    report.current?.({ customerId, customerLabel, customerType, contractChoice, paymentType, discountType, discountSum, useBalance })
+  }, [customerId, customerLabel, customerType, contractChoice, paymentType, discountType, discountSum, useBalance])
+
+  useEffect(() => {
+    if (!balancePay || !customerId) return undefined
+    let stale = false
+    getCustomerBalance(customerId, { limit: 1 })
+      .then((data) => !stale && setBalanceInfo({ customerId, amount: data.balance }))
+      .catch((error) => console.log(error.message))
+    return () => {
+      stale = true
+    }
+  }, [balancePay, customerId])
+  const customerBalance = balancePay && customerId && balanceInfo.customerId === customerId ? balanceInfo.amount : 0
 
   const [pshow, psetShow] = useState(false)
   const [showDanger, setShowDanger] = useState(false)
@@ -311,7 +335,19 @@ function Checkout({
   const isDebt = paymentType === 'В долг'
   // "По договору": qarz kabi (to'lov 0) yoziladi, shartnoma ochiladi; kontragent majburiy.
   const isContract = contractSale && paymentType === CONTRACT_PAYMENT.value
-  const payments = contractSale ? [...PAYMENTS, CONTRACT_PAYMENT] : PAYMENTS
+  // "На баланс" (qaytarishda): pul berilmaydi, kontragent balansiga yoziladi — kontragent majburiy.
+  const isBalanceRefund = balanceRefund && paymentType === BALANCE_REFUND_METHOD
+  const payments = [
+    ...PAYMENTS,
+    ...(contractSale ? [CONTRACT_PAYMENT] : []),
+    ...(balanceRefund ? [BALANCE_REFUND_PAYMENT] : []),
+  ]
+
+  // Balansdan: ko'pi bilan balans yoki savdo summasi. Qolgani (`restCost`) tanlangan usulda to'lanadi yoki qarzga qoladi.
+  const canUseBalance = balancePay && customerBalance > 0 && !isContract
+  const balanceAmount = canUseBalance && useBalance ? Math.min(customerBalance, Math.max(0, finalCost)) : 0
+  const restCost = finalCost - balanceAmount
+  const fullyFromBalance = balanceAmount > 0 && restCost === 0
 
   // Shartnoma so'rovi: "По договору" to'lovida yoki kontragent tashkilot bo'lsa (tumbler bilan).
   // "По договору" da standart — ochish (avvalgidek), tashkilotga boshqa to'lov turida — ochmaslik.
@@ -339,9 +375,15 @@ function Checkout({
   const handleSubmit = async () => {
     if (sold || overStockItems.length > 0) return
 
-    if (isDebt && !customerId) {
+    if (isDebt && !customerId && !fullyFromBalance) {
       setShowSuccess(false)
       setAlertMessage(t('Для оформления в долг выберите контрагента'))
+      setShowDanger(true)
+      return
+    }
+    if (isBalanceRefund && !customerId) {
+      setShowSuccess(false)
+      setAlertMessage(t('Чтобы зачислить на баланс, выберите контрагента'))
       setShowDanger(true)
       return
     }
@@ -354,12 +396,18 @@ function Checkout({
 
       const res = await submit(
         orderList,
-        isDebt || isContract ? 0 : finalCost,
+        isDebt || isContract ? 0 : restCost,
         paymentType,
         discountAmount,
         customerId,
         userId,
-        { openContract: askContract ? openContract : undefined, masterFees },
+        {
+          openContract: askContract ? openContract : undefined,
+          masterFees,
+          // Balansdan to'lanadigan qism; `balanceOnly` — savdo to'liq balansdan (boshqa to'lov yozilmaydi).
+          balanceAmount,
+          balanceOnly: fullyFromBalance,
+        },
       )
       const result = await res.json()
 
@@ -530,7 +578,34 @@ function Checkout({
           )}
         </div>
 
-        <div>
+        {canUseBalance && (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-success/30 bg-success-soft px-2.5 py-2 text-success-soft-fg">
+            <div className="flex items-center justify-between gap-2">
+              <Form.Check
+                type="switch"
+                id="useBalance"
+                label={t('Оплатить с баланса')}
+                checked={useBalance}
+                onChange={(e) => setUseBalance(e.target.checked)}
+              />
+              <span className="text-[11.5px] tabular-nums">
+                {t('Баланс: {amount}', { amount: customerBalance.toLocaleString('uz') })}
+              </span>
+            </div>
+            {useBalance && (
+              <p className="m-0 text-[11.5px] leading-snug">
+                {fullyFromBalance
+                  ? t('Покупка полностью оплачивается с баланса клиента.')
+                  : t('С баланса: {balance}. Остаток {rest} — выберите способ оплаты ниже.', {
+                      balance: balanceAmount.toLocaleString('uz'),
+                      rest: restCost.toLocaleString('uz'),
+                    })}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className={cn(fullyFromBalance && 'pointer-events-none opacity-40')} aria-disabled={fullyFromBalance}>
           <p className="mb-1.5 text-xs font-medium text-muted">{t('Способ оплаты')}</p>
           <div className="grid grid-cols-3 gap-1.5">
             {payments.map(({ value, Icon, danger }) => {
@@ -598,6 +673,12 @@ function Checkout({
               <dd className="tabular-nums">{masterFeeTotal.toLocaleString('uz')}</dd>
             </div>
           )}
+          {balanceAmount > 0 && (
+            <div className="flex justify-between font-medium text-success-soft-fg">
+              <dt>{t('С баланса клиента')}</dt>
+              <dd className="tabular-nums">−{balanceAmount.toLocaleString('uz')}</dd>
+            </div>
+          )}
         </dl>
 
         {overStockItems.length > 0 && (
@@ -636,14 +717,22 @@ function Checkout({
           className={cn(
             'flex w-full flex-col items-center justify-center rounded-xl px-4 py-3 shadow-soft transition active:translate-y-px',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            isDebt ? 'bg-danger text-white hover:bg-danger-hover' : (TONES[tone] ?? TONES.primary),
+            isDebt && !fullyFromBalance ? 'bg-danger text-white hover:bg-danger-hover' : (TONES[tone] ?? TONES.primary),
           )}
         >
           <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">
-            {isDebt ? t('Оформить в долг') : isContract ? t('Оформить по договору') : t('Итого к оплате')}
+            {fullyFromBalance
+              ? t('Оплатить с баланса')
+              : isDebt
+                ? t('Оформить в долг')
+                : isContract
+                  ? t('Оформить по договору')
+                  : isBalanceRefund
+                    ? t('Зачислить на баланс')
+                    : t('Итого к оплате')}
           </span>
           <span className="text-lg font-semibold tabular-nums">
-            {finalCost.toLocaleString('uz')} UZS
+            {(fullyFromBalance ? finalCost : restCost).toLocaleString('uz')} UZS
           </span>
         </button>
       </div>

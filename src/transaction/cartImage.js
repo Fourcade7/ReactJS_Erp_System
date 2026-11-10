@@ -1,4 +1,5 @@
 import { priceChange, unitPrice } from './pricing'
+import { unpaidQty } from './amounts'
 import { locale, t, td } from '../i18n'
 
 /**
@@ -344,10 +345,11 @@ function cartSpec(orderList, priceField, services) {
  * jami = summa − chegirma − qaytarilgan; qarz qolgan bo'lsa «Оплачено» va «Остаток долга» ham chiqadi.
  */
 function saleSpec(sale, label) {
+  const inDebt = sale.total - sale.discount - sale.payments.reduce((sum, item) => sum + item.amount, 0) > 0
   const rows = sale.items.map((item) => {
     const price = Number(item.price || 0)
     return {
-      name: item.product?.name ?? t('Товар удалён'),
+      name: (item.product?.name ?? t('Товар удалён')) + paidNote(item, item.product?.unit ? td(item.product.unit) : '', inDebt),
       quantity: item.quantity,
       unit: item.product?.unit ? td(item.product.unit) : '',
       price,
@@ -381,10 +383,21 @@ function saleSpec(sale, label) {
   }
 }
 
+/**
+ * Qarz tovar bo'yicha qisman to'langan bo'lsa — nom yonida mijoz ham ko'radi: "— to'langan 10 m, qoldi 300 m".
+ * Savdo to'liq to'langan bo'lsa yoki tovar uchun alohida to'lov bo'lmasa — bo'sh.
+ */
+function paidNote(item, unit, inDebt) {
+  const paid = Number(item.paid ?? 0)
+  if (!(paid > 0) || !inDebt) return ''
+  const withUnit = (value) => `${value}${unit ? ` ${unit}` : ''}`
+  return ` — ${t('оплачено {paid}, осталось {left}', { paid: withUnit(paid), left: withUnit(unpaidQty(item)) })}`
+}
+
 /** `/customer/operations` dagi operatsiya qatorlari — rasm qatorlari shaklida. */
 const operationRows = (op) =>
   op.items.map((item) => ({
-    name: item.name ?? t('Товар удалён'),
+    name: (item.name ?? t('Товар удалён')) + paidNote(item, item.unit ? td(item.unit) : '', op.debt > 0),
     quantity: item.quantity,
     unit: item.unit ? td(item.unit) : '',
     price: item.price,

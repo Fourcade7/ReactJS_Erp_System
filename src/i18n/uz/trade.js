@@ -104,7 +104,6 @@ export default {
   'Введите сумму': 'Summani kiriting',
   "Остаток долга: {amount} So'm": "Qarz qoldig'i: {amount} So'm",
   'Сумма больше остатка долга': "Summa qarz qoldig'idan katta",
-  "Возврат оформлен: {amount} So'm (с долга списано {offset})": "Qaytarish rasmiylashtirildi: {amount} So'm (qarzdan ayirildi: {offset})",
   "Возврат оформлен: {amount} So'm": "Qaytarish rasmiylashtirildi: {amount} So'm",
   'Операций пока нет': "Hozircha operatsiyalar yo'q",
   'из продажи #{id}': 'sotuv #{id} dan',

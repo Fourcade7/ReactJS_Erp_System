@@ -42,6 +42,8 @@ const SALE_CONFIG = {
   maxDiscountPercent: 20,
   // Kassada "По договору" to'lov turi: shartnoma va kuzatuv vazifasi avtomatik ochiladi.
   contractSale: true,
+  // Kassada kontragent balansidan to'lash ("С баланса"): qisman yoki to'liq, qolgani boshqa usulda.
+  balancePay: true,
   // Tovarlar ro'yxatida usta xizmati: ustaning ulushi savdo summasi va foydaga kirmaydi, kompaniya ulushi — kiradi.
   masterFees: true,
   onlyStocked: false,

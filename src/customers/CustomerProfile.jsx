@@ -32,17 +32,17 @@ import { getTasks } from '../task/TaskApi'
 import { formatShortDateTime, fullName } from '../task/taskView'
 import CopyImageModal from '../transaction/CopyImageModal'
 import { ClipboardUnavailableError, copyDebtsImage, copyOperationImage } from '../transaction/cartImage'
-import { addNewPayment } from '../sale/SaleApi'
 import { locale, t, td } from '../i18n'
 import { getCustomerOperations, getCustomerProfile } from './CustomerApi'
 import { isOrganization } from './customerForm'
+import CustomerBalance from './CustomerBalance'
+import DebtPaymentModal from '../transaction/DebtPaymentModal'
+import { unpaidQty } from '../transaction/amounts'
 
 // Operatsiyalar sahifasi: standart 10 ta; o'z qiymati 1…MAX_PAGE_SIZE (backend ham shu chegarani tekshiradi).
 const PAGE_SIZES = [10, 50, 100]
 const MAX_PAGE_SIZE = 500
 const DAY = 86_400_000
-// Qarzni to'lash savdo tafsilotidagi kabi yoziladi: shu usuldagi to'lov savdo qarzini kamaytiradi.
-const DEBT_PAYMENT_METHOD = 'В долг'
 
 const OP_TYPES = {
   sale: { label: t('Продажа'), Icon: ShoppingBag, tone: 'primary', sign: '+' },
@@ -202,80 +202,28 @@ function MasterFeeChips({ fees }) {
 }
 
 /**
- * Savdo qarzini shu yerning o'zida to'lash: tugma bosilsa summa maydoni ochiladi (qolgan qarz bilan to'ldirilgan).
- * To'lov savdo tafsilotidagi "Оплата долга" bilan bir xil yoziladi; `onPaid(amount)` — muvaffaqiyatli bo'lsa.
+ * Savdo qarzini to'lash: savdo tafsilotidagi bilan bir xil oyna — summa bilan yoki aniq tovarlar uchun
+ * ("310 metrdan 10 metri"), pul bilan yoki mijoz balansidan. `onPaid(message)` — to'lov yozildi.
  */
 function DebtPayment({ op, onPaid }) {
-  const [editing, setEditing] = useState(false)
-  const [amount, setAmount] = useState('')
-  const [error, setError] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  if (!editing) {
-    return (
-      <Button
-        variant="danger"
-        size="sm"
-        onClick={() => {
-          setAmount(String(op.debt))
-          setError('')
-          setEditing(true)
-        }}
-      >
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
         <Wallet />
         {t('Оплата долга')}
       </Button>
-    )
-  }
-
-  const submit = async () => {
-    const value = Math.round(Number(amount.replace(/\s/g, '').replace(',', '.')))
-    if (!Number.isFinite(value) || value <= 0) return setError(t('Введите сумму больше нуля'))
-    if (value > op.debt) return setError(t('Сумма больше остатка долга'))
-
-    setSaving(true)
-    setError('')
-    try {
-      const res = await addNewPayment(op.id, DEBT_PAYMENT_METHOD, value)
-      if (!res) return setError(t('Не удалось подключиться к серверу'))
-      if (!res.ok) {
-        const result = await res.json().catch(() => null)
-        return setError((Array.isArray(result?.message) ? result.message.join(', ') : result?.message) || t('Ошибка сервера'))
-      }
-      setEditing(false)
-      onPaid?.(value)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Form onSubmit={(event) => { event.preventDefault(); submit() }} className="flex w-auto flex-wrap items-center gap-2">
-      <Form.Control
-        size="sm"
-        inputMode="decimal"
-        autoFocus
-        aria-label={t('Сумма')}
-        title={t('Остаток долга: {amount} сум', { amount: formatMoney(op.debt) })}
-        className="w-32 tabular-nums"
-        value={amount}
-        onChange={(event) => {
-          setAmount(event.target.value.replace(/[^\d\s.,]/g, ''))
-          setError('')
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') setEditing(false)
-        }}
-      />
-      <Button type="submit" variant="danger" size="sm" loading={saving}>
-        {!saving && <Check />}
-        {t('Оплатить')}
-      </Button>
-      <Button variant="outline-secondary" size="sm" onClick={() => setEditing(false)} disabled={saving}>
-        {t('Отмена')}
-      </Button>
-      {error && <p className="m-0 w-full text-[12px] text-danger-soft-fg">{error}</p>}
-    </Form>
+      {open && (
+        <DebtPaymentModal
+          saleId={op.id}
+          onHide={() => setOpen(false)}
+          onDone={(message) => {
+            setOpen(false)
+            onPaid?.(message)
+          }}
+        />
+      )}
+    </>
   )
 }
 
@@ -290,6 +238,8 @@ function OperationDetails({ op, customerDebt, onPaid, onOpenSale }) {
   // Kompaniya ulushi savdo summasida — tovarlar ro'yxatida alohida qator, summa mos kelishi uchun.
   const services = fees.filter((fee) => fee.companyAmount > 0)
   const hasLines = op.items.length > 0 || services.length > 0
+  // Qarzning bir qismi aniq tovarlar uchun to'langan — qatorlarda "to'langan / qolgan" ko'rsatiladi.
+  const itemPayments = op.items.some((item) => (item.paid ?? 0) > 0)
 
   // 'idle' | 'done' | 'error' — natija tugma yonida 2 soniya ko'rinadi.
   const [copyState, setCopyState] = useState('idle')
@@ -373,6 +323,25 @@ function OperationDetails({ op, customerDebt, onPaid, onOpenSale }) {
                   {item.quantity.toLocaleString(locale)}
                   {item.unit && <span className="ml-1 font-normal text-subtle">{td(item.unit)}</span>}
                 </span>
+                {/* Qarz tovar bo'yicha to'langan bo'lsa: shu tovardan qancha to'langan va qancha to'lanmagan. */}
+                {item.paid > 0 && (
+                  <span
+                    title={t('Оплачено за этот товар: {quantity} {unit}', { quantity: item.paid, unit: td(item.unit ?? '') })}
+                    className="inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-success/40 bg-success-soft px-1.5 text-[11px] font-semibold tabular-nums text-success-soft-fg"
+                  >
+                    <Check className="size-3" />
+                    {item.paid.toLocaleString(locale)}
+                  </span>
+                )}
+                {itemPayments && op.debt > 0 && unpaidQty(item) > 0 && (
+                  <span
+                    title={t('Не оплачено: {quantity} {unit}', { quantity: unpaidQty(item), unit: td(item.unit ?? '') })}
+                    className="inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-danger/40 bg-danger-soft px-1.5 text-[11px] font-semibold tabular-nums text-danger-soft-fg"
+                  >
+                    <Wallet className="size-3" />
+                    {unpaidQty(item).toLocaleString(locale)}
+                  </span>
+                )}
                 <span className="shrink-0 text-right text-[12px] tabular-nums text-muted @lg:min-w-[4.5rem]">
                   × {formatMoney(item.price)}
                 </span>
@@ -475,8 +444,8 @@ function OperationDetails({ op, customerDebt, onPaid, onOpenSale }) {
           {canPay && (
             <DebtPayment
               op={op}
-              onPaid={(amount) => {
-                setPaidNotice(t('Оплата принята: {amount} сум', { amount: formatMoney(amount) }))
+              onPaid={(message) => {
+                setPaidNotice(message)
                 onPaid?.()
               }}
             />
@@ -1006,6 +975,18 @@ function CustomerProfile({ customerId, onBack, onEdit, onOpenSale, version = 0 }
             {customer.phone ? `${customer.phone} · ` : ''}ID {customer.id}
           </p>
         </div>
+        {summary.balance > 0 && (
+          <button
+            type="button"
+            onClick={() => setRelated('balance')}
+            title={t('Открыть баланс клиента')}
+            className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            <Badge bg="success" dot className="hover:underline">
+              {t('Баланс: {amount} сум', { amount: formatMoney(summary.balance) })}
+            </Badge>
+          </button>
+        )}
         <Badge bg={summary.debt > 0 ? 'danger' : 'success'} dot>
           {summary.debt > 0 ? t('Долг: {amount} сум', { amount: formatMoney(summary.debt) }) : t('Долгов нет')}
         </Badge>
@@ -1028,6 +1009,27 @@ function CustomerProfile({ customerId, onBack, onEdit, onOpenSale, version = 0 }
                 customerId={customerId}
                 customerName={name}
                 summary={summary}
+                version={`${version}-${reload}`}
+                onChanged={() => setReload((n) => n + 1)}
+                onOpenSale={onOpenSale}
+              />
+            </div>
+          </Tab>
+          <Tab
+            eventKey="balance"
+            title={
+              <>
+                <Wallet />
+                {t('Баланс')}{' '}
+                <span className={summary.balance > 0 ? 'font-medium text-success-soft-fg' : 'text-subtle'}>
+                  {formatMoney(summary.balance ?? 0)}
+                </span>
+              </>
+            }
+          >
+            <div className="py-4">
+              <CustomerBalance
+                customerId={customerId}
                 version={`${version}-${reload}`}
                 onChanged={() => setReload((n) => n + 1)}
                 onOpenSale={onOpenSale}

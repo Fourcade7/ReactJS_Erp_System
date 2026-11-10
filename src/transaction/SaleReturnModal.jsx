@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Banknote, CreditCard, Minus, Plus, Undo2 } from 'lucide-react'
+import { Banknote, CreditCard, Minus, PiggyBank, Plus, Undo2 } from 'lucide-react'
 import { cn } from '../lib/cn'
 import { Button, Form, Modal } from '../ui'
 import { parseQty, roundQty } from '../lib/quantity'
+import { BALANCE_REFUND_METHOD } from '../customers/balance'
 import { t, td } from '../i18n'
 
-const REFUND_METHODS = [
+const CASH_REFUND_METHODS = [
   { value: 'Наличные', Icon: Banknote },
   { value: 'Банковская карта', Icon: CreditCard },
   { value: 'Click', Icon: CreditCard },
@@ -13,18 +14,25 @@ const REFUND_METHODS = [
   { value: 'Uzum', Icon: CreditCard },
 ]
 
+/** Pul naqd berilmaydi — mijoz balansida qoladi (keyin qarzni yopish yoki yangi savdo uchun). */
+const BALANCE_REFUND = { value: BALANCE_REFUND_METHOD, Icon: PiggyBank, balance: true }
+
 const money = (value) => `${Number(value || 0).toLocaleString('uz')} So'm`
 
 /**
  * Savdo qatoridan qaytarish oynasi. Summa backend dagi `createFromSale` bilan
  * bir xil hisoblanadi: savdodagi narx, chegirma mutanosib, qarz boʻlsa — avval
- * qarzdan ayiriladi, qolgani mijozga tanlangan usulda qaytariladi.
+ * qarzdan ayiriladi, qolgani mijozga tanlangan usulda qaytariladi yoki
+ * (savdoda kontragent boʻlsa) uning balansiga yoziladi — bu standart tanlov.
  */
 function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
   const returnable = roundQty(item.quantity - (item.returned ?? 0))
+  const customer = sale.customer ?? null
+  const refundMethods = customer ? [BALANCE_REFUND, ...CASH_REFUND_METHODS] : CASH_REFUND_METHODS
 
   const [quantity, setQuantity] = useState(String(Math.min(1, returnable)))
-  const [method, setMethod] = useState(REFUND_METHODS[0].value)
+  const [method, setMethod] = useState(refundMethods[0].value)
+  const toBalance = method === BALANCE_REFUND_METHOD
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -128,7 +136,7 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted">{t('Способ возврата денег')}</p>
             <div className="grid grid-cols-3 gap-1.5">
-              {REFUND_METHODS.map((option) => {
+              {refundMethods.map((option) => {
                 const selected = method === option.value
                 return (
                   <button
@@ -139,7 +147,9 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
                     className={cn(
                       'flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10.5px] leading-tight transition',
                       selected
-                        ? 'border-primary/50 bg-primary-soft text-primary-soft-fg'
+                        ? option.balance
+                          ? 'border-success/50 bg-success-soft text-success-soft-fg'
+                          : 'border-primary/50 bg-primary-soft text-primary-soft-fg'
                         : 'border-line text-muted hover:bg-surface-2 hover:text-fg',
                     )}
                   >
@@ -149,6 +159,13 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
                 )
               })}
             </div>
+            {toBalance && (
+              <p className="mt-1.5 text-[11.5px] leading-snug text-subtle">
+                {t('Деньги не выдаются — сумма ляжет на баланс клиента. Ею можно погасить долг или оплатить следующую покупку.')}
+                {customer?.balance > 0 &&
+                  ` ${t('Сейчас на балансе: {amount} сум', { amount: Number(customer.balance).toLocaleString('uz') })}`}
+              </p>
+            )}
           </div>
         )}
 
@@ -161,16 +178,16 @@ function SaleReturnModal({ sale, item, returnFromSale, onHide, onDone }) {
             <p className="text-[11px] text-subtle">{t('С учётом скидки продажи')}</p>
           )}
           {offset > 0 && (
-            <>
-              <div className="flex justify-between text-warning-soft-fg">
-                <dt>{t('Списать с долга')}</dt>
-                <dd className="tabular-nums">{money(offset)}</dd>
-              </div>
-              <div className="flex justify-between text-fg">
-                <dt>{t('Выдать клиенту')}</dt>
-                <dd className="tabular-nums">{money(refund)}</dd>
-              </div>
-            </>
+            <div className="flex justify-between text-warning-soft-fg">
+              <dt>{t('Списать с долга')}</dt>
+              <dd className="tabular-nums">{money(offset)}</dd>
+            </div>
+          )}
+          {(offset > 0 || toBalance) && refund > 0 && (
+            <div className={cn('flex justify-between', toBalance ? 'text-success-soft-fg' : 'text-fg')}>
+              <dt>{toBalance ? t('На баланс клиента') : t('Выдать клиенту')}</dt>
+              <dd className="tabular-nums">{money(refund)}</dd>
+            </div>
           )}
         </dl>
 
