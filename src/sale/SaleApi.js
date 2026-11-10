@@ -212,8 +212,9 @@ async function addNewPayment(saleId,method,amount) {
 
 
 // Qarzni aniq tovarlar bo'yicha to'lash ("310 metrdan 10 metri uchun"). items — [{ sale_item_id, quantity }].
-// `fromBalance` — kontragent balansidan. Summa server hisoblaydi. Javob — yangilangan savdo tafsiloti; xato bo'lsa istisno.
-async function paySaleItems(saleId, items, { fromBalance = false } = {}) {
+// `fromBalance` — kontragent balansidan; `method` — pul bilan to'langanda usul ("Наличные", "Click" …).
+// Summa server hisoblaydi. Javob — yangilangan savdo tafsiloti; xato bo'lsa istisno.
+async function paySaleItems(saleId, items, { fromBalance = false, method } = {}) {
     let response
     try {
         response = await fetch(`${API_BASE}/sale/pay-items/${saleId}`, {
@@ -222,6 +223,7 @@ async function paySaleItems(saleId, items, { fromBalance = false } = {}) {
             body: JSON.stringify({
                 items,
                 from_balance: fromBalance || undefined,
+                method: fromBalance ? undefined : method,
                 user_id: Number(localStorage.getItem('userid')) || undefined
             })
         });

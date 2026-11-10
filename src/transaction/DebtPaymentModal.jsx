@@ -4,13 +4,10 @@ import { cn } from '../lib/cn'
 import { Alert, Button, Form, Modal, Spinner } from '../ui'
 import { parseQty, roundQty } from '../lib/quantity'
 import { addNewPayment, getSaleDetail, paySaleItems } from '../sale/SaleApi'
-import { payFromBalance } from '../customers/CustomerApi'
-import { parseAmount } from '../customers/balance'
+import { acceptPayment, payFromBalance } from '../customers/CustomerApi'
+import { BALANCE_CASH_METHODS, parseAmount } from '../customers/balance'
 import { unpaidQty } from './amounts'
 import { t, td } from '../i18n'
-
-// Qarz to'lovi savdo tafsilotidagi kabi shu usulda yoziladi (summa savdo qarzini kamaytiradi).
-const DEBT_PAYMENT_METHOD = 'В долг'
 
 const money = (value) => `${Math.round(Number(value) || 0).toLocaleString('uz')} So'm`
 
@@ -42,15 +39,21 @@ function Toggle({ options, value, onChange, label }) {
  *  - «Суммой» — umumiy qarzdan istalgan summa;
  *  - «За товары» — aniq tovar va miqdor uchun ("310 metrdan 10 metri"): summa savdodagi narx bo'yicha
  *    (chegirma mutanosib) o'zi hisoblanadi, tovar qatorida qancha to'langani va qancha qolgani ko'rinib turadi.
- * Kontragent balansida pul bo'lsa — «С баланса» bilan balansdan to'lanadi.
+ * Pul bilan to'lansa — usuli (naqd, karta …) tanlanadi. Mijoz qarzdan ko'p bersa (qarz 500 000, berdi 1 000 000) —
+ * qaytim mijoz balansiga yoziladi yoki qo'lga berilgan deb belgilanadi.
+ * Kontragent balansida pul bo'lsa — «Оплатить с баланса» bilan balansdan to'lanadi.
  *
- * `saleId` — savdo (tafsilot shu yerda yangidan yuklanadi); `onDone(message)` — to'lov yozildi.
+ * `saleId` — savdo (tafsilot shu yerda yangidan yuklanadi); `initialSource` — 'balance' bo'lsa balansdan to'lash
+ * tanlangan holda ochiladi; `onDone(message)` — to'lov yozildi.
  */
-function DebtPaymentModal({ saleId, onHide, onDone }) {
+function DebtPaymentModal({ saleId, initialSource = 'money', onHide, onDone }) {
   const [sale, setSale] = useState(null)
   const [loadError, setLoadError] = useState('')
   const [mode, setMode] = useState('amount')
-  const [source, setSource] = useState('money')
+  const [source, setSource] = useState(initialSource)
+  const [method, setMethod] = useState(BALANCE_CASH_METHODS[0].value)
+  // Mijoz qarzdan ko'p bersa: qaytim balansga ('balance') yoki qo'lga berildi ('cash').
+  const [changeTo, setChangeTo] = useState('balance')
   const [amount, setAmount] = useState('')
   const [quantities, setQuantities] = useState({})
   const [error, setError] = useState('')
@@ -63,13 +66,16 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
         if (cancelled) return
         setSale(data)
         const paid = data.payments.reduce((sum, p) => sum + p.amount, 0)
-        setAmount(String(Math.max(0, data.total - data.discount - paid)))
+        const left = Math.max(0, data.total - data.discount - paid)
+        // Balansdan ochilganda — ko'pi bilan balans.
+        const balance = Number(data.customer?.balance) || 0
+        setAmount(String(initialSource === 'balance' ? Math.min(left, balance) : left))
       })
       .catch((err) => !cancelled && setLoadError(err.message))
     return () => {
       cancelled = true
     }
-  }, [saleId])
+  }, [saleId, initialSource])
 
   if (!sale) {
     return (
@@ -93,7 +99,11 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
   const net = sale.total - sale.discount
   const debt = Math.max(0, net - sale.payments.reduce((sum, p) => sum + p.amount, 0))
   const balance = Number(sale.customer?.balance) || 0
-  const fromBalance = source === 'balance'
+  const canUseBalance = balance > 0 && Boolean(sale.customer)
+  const fromBalance = canUseBalance && source === 'balance'
+  // Qaytim: pul bilan summa rejimida mijoz qarzdan ko'p bersa (faqat kontragent bor savdoda — balansga yozish uchun).
+  const typed = parseAmount(amount)
+  const change = mode === 'amount' && !fromBalance && Number.isFinite(typed) && typed > debt ? typed - debt : 0
   // Chegirma (va usta xizmati ulushi) qatorlarga mutanosib — backend dagi hisob bilan bir xil.
   const share = sale.total > 0 ? net / sale.total : 0
   const lines = sale.items.filter((item) => unpaidQty(item) > 0)
@@ -130,7 +140,8 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
     if (mode === 'amount') {
       payAmount = parseAmount(amount)
       if (!Number.isFinite(payAmount) || payAmount <= 0) return setError(t('Введите сумму больше нуля'))
-      if (payAmount > debt) return setError(t('Сумма больше остатка долга'))
+      // Ortiqcha pul (qaytim) faqat pul bilan va kontragent bor savdoda: u balansga yoziladi yoki qo'lga beriladi.
+      if (payAmount > debt && (fromBalance || !sale.customer)) return setError(t('Сумма больше остатка долга'))
     } else {
       if (invalidLine) {
         return setError(t('«{name}»: не оплачено только {quantity}', { name: invalidLine.product?.name ?? '', quantity: unpaidQty(invalidLine) }))
@@ -146,7 +157,7 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
     try {
       if (mode === 'items') {
         const items = lines.filter((item) => lineQty(item) > 0).map((item) => ({ sale_item_id: item.id, quantity: lineQty(item) }))
-        await paySaleItems(sale.id, items, { fromBalance })
+        await paySaleItems(sale.id, items, { fromBalance, method })
         const what = lines
           .filter((item) => lineQty(item) > 0)
           .map((item) => `${item.product?.name ?? ''} ${lineQty(item)} ${td(item.product?.unit ?? '')}`.trim())
@@ -155,8 +166,25 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
       } else if (fromBalance) {
         await payFromBalance(sale.customer.id, { saleId: sale.id, amount: payAmount })
         onDone(t("Долг погашен с баланса: {amount} So'm", { amount: payAmount.toLocaleString('uz') }))
+      } else if (sale.customer) {
+        // Pul bilan: qarz yopiladi, ortgani (qaytim) — balansga yoki qo'lga.
+        const result = await acceptPayment(sale.customer.id, {
+          amount: payAmount,
+          method,
+          saleId: sale.id,
+          keepChange: changeTo === 'balance',
+        })
+        const parts = [t("Оплата принята: {amount} So'm", { amount: result.paid.toLocaleString('uz') })]
+        if (result.deposited > 0) {
+          parts.push(t("сдача {amount} So'm зачислена на баланс (баланс: {balance})", {
+            amount: result.deposited.toLocaleString('uz'),
+            balance: result.balance.toLocaleString('uz'),
+          }))
+        }
+        if (result.change > 0) parts.push(t("сдача {amount} So'm выдана клиенту", { amount: result.change.toLocaleString('uz') }))
+        onDone(parts.join(' · '))
       } else {
-        const res = await addNewPayment(sale.id, DEBT_PAYMENT_METHOD, payAmount)
+        const res = await addNewPayment(sale.id, method, payAmount)
         if (!res) throw new Error(t('Не удалось подключиться к серверу'))
         if (!res.ok) {
           const result = await res.json().catch(() => null)
@@ -177,31 +205,68 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
         <Modal.Title>{t('Оплата долга')}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <Toggle
-            label={t('Как оплатить долг')}
-            value={mode}
-            onChange={(key) => {
-              setMode(key)
-              setError('')
-            }}
-            options={[
-              { key: 'amount', label: t('Суммой') },
-              { key: 'items', label: t('За товары') },
-            ]}
-          />
-          {balance > 0 && sale.customer && (
-            <Toggle
-              label={t('Чем оплатить')}
-              value={source}
-              onChange={switchSource}
-              options={[
-                { key: 'money', label: t('Деньги'), icon: <Wallet /> },
-                { key: 'balance', label: t('С баланса ({amount})', { amount: balance.toLocaleString('uz') }), icon: <PiggyBank /> },
-              ]}
+        {/* Mijoz balansida pul bo'lsa — ko'zga tashlanadigan joyda: qarzni shundan yopish mumkin. */}
+        {canUseBalance && (
+          <div
+            className={cn(
+              'flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2',
+              fromBalance ? 'border-success/50 bg-success-soft text-success-soft-fg' : 'border-success/30 bg-success-soft/60 text-success-soft-fg',
+            )}
+          >
+            <span className="inline-flex items-center gap-1.5 text-[13px]">
+              <PiggyBank className="size-4" />
+              {t('На балансе клиента:')} <b className="tabular-nums">{money(balance)}</b>
+            </span>
+            <Form.Check
+              type="switch"
+              id="debtFromBalance"
+              label={t('Оплатить с баланса')}
+              checked={fromBalance}
+              onChange={(e) => switchSource(e.target.checked ? 'balance' : 'money')}
             />
-          )}
-        </div>
+          </div>
+        )}
+
+        <Toggle
+          label={t('Как оплатить долг')}
+          value={mode}
+          onChange={(key) => {
+            setMode(key)
+            setError('')
+          }}
+          options={[
+            { key: 'amount', label: t('Суммой') },
+            { key: 'items', label: t('За товары') },
+          ]}
+        />
+
+        {!fromBalance && (
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-muted">{t('Как оплачено')}</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {BALANCE_CASH_METHODS.map((option) => {
+                const selected = method === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setMethod(option.value)}
+                    aria-pressed={selected}
+                    className={cn(
+                      'flex items-center justify-center gap-1.5 rounded-lg border px-1 py-1.5 text-[11px] leading-tight transition',
+                      selected
+                        ? 'border-primary/50 bg-primary-soft text-primary-soft-fg'
+                        : 'border-line text-muted hover:bg-surface-2 hover:text-fg',
+                    )}
+                  >
+                    <option.Icon className="size-3.5 shrink-0" />
+                    <span className="truncate">{td(option.value)}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {mode === 'amount' ? (
           <Form.Group controlId="debtPaymentAmount">
@@ -217,7 +282,10 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
                 setError('')
               }}
             />
-            <Form.Text>{t('Сумма спишется с общего долга продажи, без привязки к товарам.')}</Form.Text>
+            <Form.Text>
+              {t('Сумма спишется с общего долга продажи, без привязки к товарам.')}
+              {sale.customer && !fromBalance && ` ${t('Если клиент дал больше — сдачу можно оставить на его балансе.')}`}
+            </Form.Text>
           </Form.Group>
         ) : lines.length === 0 ? (
           <p className="m-0 rounded-lg border border-line bg-surface-2/60 px-3 py-2.5 text-[12.5px] text-subtle">
@@ -300,10 +368,39 @@ function DebtPaymentModal({ saleId, onHide, onDone }) {
               <dd className="m-0 tabular-nums">{money(itemsAmount)}</dd>
             </div>
           )}
+          {change > 0 && sale.customer && (
+            <div className="flex justify-between gap-3 border-t border-line pt-1 font-semibold text-success-soft-fg">
+              <dt>{t('Сдача')}</dt>
+              <dd className="m-0 tabular-nums">{money(change)}</dd>
+            </div>
+          )}
           {sale.discount > 0 && mode === 'items' && (
             <p className="m-0 text-[11px] text-subtle">{t('С учётом скидки продажи')}</p>
           )}
         </dl>
+
+        {/* Mijoz qarzdan ko'p berdi: qaytimni balansda qoldirish yoki qo'lga berish. */}
+        {change > 0 && sale.customer && (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-success/30 bg-success-soft/60 px-3 py-2">
+            <p className="m-0 text-[12.5px] text-fg">
+              {t('Клиент дал больше долга. Что сделать со сдачей {amount}?', { amount: money(change) })}
+            </p>
+            <Toggle
+              label={t('Сдача')}
+              value={changeTo}
+              onChange={setChangeTo}
+              options={[
+                { key: 'balance', label: t('Оставить на балансе'), icon: <PiggyBank /> },
+                { key: 'cash', label: t('Выдать сдачу'), icon: <Wallet /> },
+              ]}
+            />
+          </div>
+        )}
+        {change > 0 && !sale.customer && (
+          <p className="m-0 text-[12px] text-danger-soft-fg">
+            {t('В продаже нет контрагента — сдачу нельзя оставить на балансе. Введите сумму не больше долга.')}
+          </p>
+        )}
 
         {error && <p className="m-0 text-[12px] text-danger-soft-fg">{error}</p>}
       </Modal.Body>

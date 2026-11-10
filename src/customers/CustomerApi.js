@@ -226,6 +226,21 @@ const withdrawBalance = (id, { amount, method, note }) =>
     postJson(`${API_BASE}/customer/balance/${id}/withdraw`, { amount, method, note: note || undefined, user_id: currentUserId() });
 
 /**
+ * Mijoz qarz uchun pul berdi: qarz yopiladi (`saleId` — bitta savdo, bo'lmasa eng eski qarzdan boshlab), ortgani
+ * (qaytim) `keepChange` bo'lsa (standart) — balansga, aks holda qaytim qo'lga berilgan.
+ * Javob: { paid, sales: [{ saleId, amount }], deposited, change, balance }.
+ */
+const acceptPayment = (id, { amount, method, saleId, keepChange = true, note }) =>
+    postJson(`${API_BASE}/customer/balance/${id}/accept`, {
+        amount,
+        method,
+        sale_id: saleId || undefined,
+        keep_change: keepChange,
+        note: note || undefined,
+        user_id: currentUserId()
+    });
+
+/**
  * Qarzni balansdan yopish: `saleId` — bitta savdo, bo'lmasa eng eski qarzdan boshlab. `amount` — ko'pi bilan shuncha.
  * Javob: { paid, sales: [{ saleId, amount }], balance }.
  */
@@ -258,4 +273,4 @@ async function updateCustomerData(id, payload) {
     }
 }
 
-export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations,createCustomer,updateCustomerData,getCustomerBalance,depositBalance,withdrawBalance,payFromBalance}
+export {getAllUsersPagination,deleteCustomer,updateCustomer,getAllCustomersPaginationSearch,addCustomer,importCustomers,getCustomerProfile,getCustomerOperations,createCustomer,updateCustomerData,getCustomerBalance,depositBalance,withdrawBalance,payFromBalance,acceptPayment}

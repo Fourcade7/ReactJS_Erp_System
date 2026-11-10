@@ -86,7 +86,7 @@ function TransactionDetail({
   const [debtAmount, setDebtAmount] = useState('')
   const [debtError, setDebtError] = useState('')
   const [debtSaving, setDebtSaving] = useState(false)
-  // Savdo qarzini to'lash oynasi (summa yoki tovarlar bo'yicha) va natija xabari.
+  // Savdo qarzini to'lash oynasi: false — yopiq, 'money' — pul bilan, 'balance' — balansdan tanlangan holda ochiq.
   const [saleDebtOpen, setSaleDebtOpen] = useState(false)
   const [debtDone, setDebtDone] = useState('')
 
@@ -138,6 +138,8 @@ function TransactionDetail({
   const settled = remaining <= 0
   // Savdo (tafsiloti yuklangan): qarz to'lovi umumiy oynada — summa yoki aniq tovarlar uchun, pul yoki balansdan.
   const saleDebtPayment = Boolean(fetchDetail && detail)
+  // Kontragentning do'kondagi puli: savdo qarzini shundan yopish mumkin.
+  const customerBalance = saleDebtPayment ? Number(sale.customer?.balance) || 0 : 0
   // Qarzning bir qismi aniq tovarlar uchun to'langan — qatorlarda "to'langan / qolgan" ko'rsatiladi.
   const itemPayments = sale.items.some((item) => (item.paid ?? 0) > 0)
   const itemName = (saleItemId) => {
@@ -643,7 +645,7 @@ function TransactionDetail({
               onClick={() => {
                 // Savdo: umumiy oyna (summa yoki aniq tovarlar uchun, pul yoki balansdan). Boshqalar: oddiy summa.
                 if (saleDebtPayment) {
-                  setSaleDebtOpen(true)
+                  setSaleDebtOpen('money')
                   return
                 }
                 setShowDebtEdit(true)
@@ -653,6 +655,13 @@ function TransactionDetail({
             >
               <Wallet />
               {t('Оплата долга')}
+            </Button>
+          )}
+          {/* Mijoz balansida pul bo'lsa — qarzni shundan yopish bir bosishda. */}
+          {!settled && saleDebtPayment && customerBalance > 0 && (
+            <Button variant="outline-success" block onClick={() => setSaleDebtOpen('balance')}>
+              <PiggyBank />
+              {t("Погасить с баланса (на балансе {amount} So'm)", { amount: customerBalance.toLocaleString('uz') })}
             </Button>
           )}
         </div>
@@ -720,6 +729,7 @@ function TransactionDetail({
       {saleDebtOpen && (
         <DebtPaymentModal
           saleId={sale.id}
+          initialSource={saleDebtOpen}
           onHide={() => setSaleDebtOpen(false)}
           onDone={(message) => {
             setSaleDebtOpen(false)

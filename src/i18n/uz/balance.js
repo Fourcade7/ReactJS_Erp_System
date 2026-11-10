@@ -43,9 +43,6 @@ export default {
   'Не больше {amount} сум': "Ko'pi bilan {amount} so'm",
   'Долги гасятся начиная с самой старой продажи': 'Qarzlar eng eski savdodan boshlab yopiladi',
   'С баланса погашено {amount} сум ({count} прод.)': "Balansdan {amount} so'm yopildi ({count} ta savdo)",
-  'Чем оплатить': "Nima bilan to'lash",
-  'Деньги': 'Pul',
-  'С баланса ({amount})': 'Balansdan ({amount})',
   'С баланса клиента': 'Mijoz balansidan',
 
   // kassa
@@ -85,4 +82,26 @@ export default {
   "Оплата принята: {amount} So'm": "To'lov qabul qilindi: {amount} so'm",
   'за товары: {items}': 'tovarlar uchun: {items}',
   'оплачено {paid}, осталось {left}': "to'langan {paid}, qoldi {left}",
+
+  // qarz uchun pul qabul qilish, qaytim balansga
+  'Принять оплату долга': "Qarz to'lovini qabul qilish",
+  'Сколько дал клиент': 'Mijoz qancha berdi',
+  'Долг клиента': 'Mijoz qarzi',
+  'Погасится долга': 'Qarzdan yopiladi',
+  'Сдача': 'Qaytim',
+  'Клиент дал больше долга. Что сделать со сдачей {amount}?': "Mijoz qarzdan ko'p berdi. {amount} qaytimni nima qilamiz?",
+  'Оставить на балансе': 'Balansda qoldirish',
+  'Выдать сдачу': 'Qaytimni berish',
+  'Долг погашен: {amount} сум': "Qarz yopildi: {amount} so'm",
+  'на баланс: {amount} сум': "balansga: {amount} so'm",
+  'сдача выдана: {amount} сум': "qaytim berildi: {amount} so'm",
+  "сдача {amount} So'm зачислена на баланс (баланс: {balance})": "qaytim {amount} so'm balansga yozildi (balans: {balance})",
+  "сдача {amount} So'm выдана клиенту": "qaytim {amount} so'm mijozga berildi",
+  'На балансе клиента:': 'Mijoz balansida:',
+  'Как оплачено': "Qanday to'landi",
+  'Если клиент дал больше — сдачу можно оставить на его балансе.':
+    "Mijoz ko'proq bersa — qaytimni uning balansida qoldirish mumkin.",
+  'В продаже нет контрагента — сдачу нельзя оставить на балансе. Введите сумму не больше долга.':
+    "Savdoda kontragent yo'q — qaytimni balansda qoldirib bo'lmaydi. Qarzdan ko'p bo'lmagan summani kiriting.",
+  "Погасить с баланса (на балансе {amount} So'm)": "Balansdan yopish (balansda {amount} so'm)",
 }

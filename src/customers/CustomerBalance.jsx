@@ -7,7 +7,7 @@ import { useRequest } from '../lib/useRequest'
 import { formatMoney } from '../lib/format'
 import { fullName } from '../task/taskView'
 import { locale, t, td } from '../i18n'
-import { depositBalance, getCustomerBalance, payFromBalance, withdrawBalance } from './CustomerApi'
+import { acceptPayment, depositBalance, getCustomerBalance, payFromBalance, withdrawBalance } from './CustomerApi'
 import { BALANCE_CASH_METHODS, parseAmount } from './balance'
 
 const PAGE_SIZE = 10
@@ -155,6 +155,138 @@ function MoneyModal({ mode, customerId, balance, onHide, onDone }) {
   )
 }
 
+/**
+ * Mijoz qarz uchun pul berdi (masalan qarz 500 000, berdi 1 000 000): qarzlar eng eskisidan boshlab yopiladi,
+ * ortgani (qaytim) — balansga yoki qo'lga beriladi. Hammasi bitta amalda.
+ */
+function AcceptPaymentModal({ customerId, debt, onHide, onDone }) {
+  const [amount, setAmount] = useState(String(debt))
+  const [method, setMethod] = useState(BALANCE_CASH_METHODS[0].value)
+  const [keepChange, setKeepChange] = useState(true)
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const value = parseAmount(amount)
+  const valid = Number.isFinite(value) && value > 0
+  const toDebt = valid ? Math.min(value, debt) : 0
+  const change = valid ? Math.max(0, value - debt) : 0
+
+  const submit = async () => {
+    if (!valid) return setError(t('Введите сумму больше нуля'))
+    setSaving(true)
+    setError('')
+    try {
+      const result = await acceptPayment(customerId, { amount: value, method, keepChange })
+      const parts = [t('Долг погашен: {amount} сум', { amount: formatMoney(result.paid) })]
+      if (result.deposited > 0) parts.push(t('на баланс: {amount} сум', { amount: formatMoney(result.deposited) }))
+      if (result.change > 0) parts.push(t('сдача выдана: {amount} сум', { amount: formatMoney(result.change) }))
+      onDone(parts.join(' · '))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal show onHide={saving ? undefined : onHide} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{t('Принять оплату долга')}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form
+          id="acceptPaymentForm"
+          onSubmit={(event) => {
+            event.preventDefault()
+            submit()
+          }}
+          className="flex flex-col gap-4"
+        >
+          <Form.Group controlId="acceptAmount">
+            <Form.Label>{t('Сколько дал клиент')}</Form.Label>
+            <Form.Control
+              inputMode="decimal"
+              autoFocus
+              className="tabular-nums"
+              value={amount}
+              onChange={(event) => {
+                setAmount(event.target.value.replace(/[^\d\s.,]/g, ''))
+                setError('')
+              }}
+            />
+            <Form.Text>{t('Долги гасятся начиная с самой старой продажи')}</Form.Text>
+          </Form.Group>
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-muted">{t('Как внесены деньги')}</p>
+            <MethodPicker value={method} onChange={setMethod} />
+          </div>
+
+          <dl className="m-0 flex flex-col gap-1 rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[13px]">
+            <div className="flex justify-between gap-3">
+              <dt className="text-subtle">{t('Долг клиента')}</dt>
+              <dd className="m-0">
+                <Money value={debt} className="text-danger-soft-fg" />
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-subtle">{t('Погасится долга')}</dt>
+              <dd className="m-0">
+                <Money value={toDebt} className="text-fg" />
+              </dd>
+            </div>
+            {change > 0 && (
+              <div className="flex justify-between gap-3 border-t border-line pt-1 font-semibold text-success-soft-fg">
+                <dt>{t('Сдача')}</dt>
+                <dd className="m-0">
+                  <Money value={change} />
+                </dd>
+              </div>
+            )}
+          </dl>
+
+          {change > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <p className="m-0 text-[12.5px] text-fg">
+                {t('Клиент дал больше долга. Что сделать со сдачей {amount}?', { amount: `${formatMoney(change)} ${t('сум')}` })}
+              </p>
+              <div role="group" aria-label={t('Сдача')} className="inline-flex w-fit rounded-lg border border-line bg-surface-2 p-0.5">
+                {[
+                  { key: true, label: t('Оставить на балансе') },
+                  { key: false, label: t('Выдать сдачу') },
+                ].map((option) => (
+                  <button
+                    key={String(option.key)}
+                    type="button"
+                    aria-pressed={keepChange === option.key}
+                    onClick={() => setKeepChange(option.key)}
+                    className={cn(
+                      'rounded-md px-2.5 py-1 text-xs font-medium transition',
+                      keepChange === option.key ? 'bg-surface text-fg shadow-soft' : 'text-muted hover:text-fg',
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {error && <p className="m-0 text-[12px] text-danger-soft-fg">{error}</p>}
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="outline-secondary" onClick={onHide} disabled={saving}>
+          {t('Отмена')}
+        </Button>
+        <Button type="submit" form="acceptPaymentForm" variant="danger" loading={saving}>
+          {!saving && <Check />}
+          {t('Принять оплату')}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  )
+}
+
 /** Qarzni balansdan yopish — eng eski qarzdan boshlab. Summa: standart — balans yoki qarz (qaysi kichik bo'lsa). */
 function PayDebtsModal({ customerId, balance, debt, onHide, onDone }) {
   const max = Math.min(balance, debt)
@@ -251,7 +383,7 @@ function PayDebtsModal({ customerId, balance, debt, onHide, onDone }) {
  */
 function CustomerBalance({ customerId, version, onChanged, onOpenSale }) {
   const [page, setPage] = useState(1)
-  const [modal, setModal] = useState(null) // 'deposit' | 'withdraw' | 'pay'
+  const [modal, setModal] = useState(null) // 'accept' | 'deposit' | 'withdraw' | 'pay'
   const [notice, setNotice] = useState('')
 
   const request = useRequest(
@@ -295,6 +427,12 @@ function CustomerBalance({ customerId, version, onChanged, onOpenSale }) {
           </div>
         )}
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          {data.debt > 0 && (
+            <Button variant="danger" size="sm" onClick={() => setModal('accept')}>
+              <Wallet />
+              {t('Принять оплату долга')}
+            </Button>
+          )}
           <Button variant="success" size="sm" onClick={() => setModal('deposit')}>
             <Plus />
             {t('Пополнить')}
@@ -406,6 +544,14 @@ function CustomerBalance({ customerId, version, onChanged, onOpenSale }) {
           mode={modal}
           customerId={customerId}
           balance={data.balance}
+          onHide={() => setModal(null)}
+          onDone={done}
+        />
+      )}
+      {modal === 'accept' && (
+        <AcceptPaymentModal
+          customerId={customerId}
+          debt={data.debt}
           onHide={() => setModal(null)}
           onDone={done}
         />
