@@ -11,10 +11,14 @@ import { t, td } from '../i18n'
 
 const money = (value) => `${Math.round(Number(value) || 0).toLocaleString('uz')} So'm`
 
-/** Kichik tanlov (ikki-uch variant). */
+/** Kichik tanlov (ikki-uch variant): butun enni egallaydi, variantlar teng ustunlarda. */
 function Toggle({ options, value, onChange, label }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex rounded-lg border border-line bg-surface-2 p-0.5">
+    <div
+      role="group"
+      aria-label={label}
+      className="grid w-full auto-cols-fr grid-flow-col gap-0.5 rounded-lg border border-line bg-surface-2 p-0.5"
+    >
       {options.map((option) => (
         <button
           key={option.key}
@@ -22,7 +26,7 @@ function Toggle({ options, value, onChange, label }) {
           aria-pressed={value === option.key}
           onClick={() => onChange(option.key)}
           className={cn(
-            'inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition [&_svg]:size-3.5',
+            'inline-flex min-w-0 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition [&_svg]:size-3.5 [&_svg]:shrink-0',
             value === option.key ? 'bg-surface text-fg shadow-soft' : 'text-muted hover:text-fg',
           )}
         >

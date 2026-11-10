@@ -249,7 +249,7 @@ function AcceptPaymentModal({ customerId, debt, onHide, onDone }) {
               <p className="m-0 text-[12.5px] text-fg">
                 {t('Клиент дал больше долга. Что сделать со сдачей {amount}?', { amount: `${formatMoney(change)} ${t('сум')}` })}
               </p>
-              <div role="group" aria-label={t('Сдача')} className="inline-flex w-fit rounded-lg border border-line bg-surface-2 p-0.5">
+              <div role="group" aria-label={t('Сдача')} className="grid w-full grid-cols-2 gap-0.5 rounded-lg border border-line bg-surface-2 p-0.5">
                 {[
                   { key: true, label: t('Оставить на балансе') },
                   { key: false, label: t('Выдать сдачу') },
@@ -260,7 +260,7 @@ function AcceptPaymentModal({ customerId, debt, onHide, onDone }) {
                     aria-pressed={keepChange === option.key}
                     onClick={() => setKeepChange(option.key)}
                     className={cn(
-                      'rounded-md px-2.5 py-1 text-xs font-medium transition',
+                      'rounded-md px-2.5 py-1.5 text-center text-xs font-medium transition',
                       keepChange === option.key ? 'bg-surface text-fg shadow-soft' : 'text-muted hover:text-fg',
                     )}
                   >
